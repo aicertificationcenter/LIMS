@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  passwordHash   String
+  name           String
+  role           Role
+  createdAt      DateTime  @default(now())
+  tests          Test[]
+  approvedTests  TestResult[] @relation("ApprovedBy")
+  auditLogs      AuditLog[]
+}
+
+enum Role {
+  ADMIN
+  TESTER
+  TECH_MGR
+  QUAL_MGR
+  PENDING
+  GUEST
+  RESIGNED
+  MANAGER
+  CLIENT
+}
+
+model Equipment {
+  id                 String   @id @default(uuid())
+  name               String
+  status             String
+  lastCalibration    DateTime
+  nextCalibration    DateTime
+  tests              Test[]
+}
+
+model Sample {
+  id           String   @id @default(uuid())
+  barcode      String   @unique
+  clientId     String
+  clientName   String?
+  phone        String?
+  email        String?
+  content      String?
+  consultation String?
+  status       SampleStatus @default(RECEIVED)
+  location     String?
+  receivedAt   DateTime @default(now())
+  tests        Test[]
+}
+
+enum SampleStatus {
+  RECEIVED
+  IN_PROGRESS
+  COMPLETED
+  DISPOSED
+}
+
+model Test {
+  id             String   @id @default(uuid())
+  sampleId       String
+  testerId       String
+  equipmentId    String
+  envTemp        Float?
+  envHumidity    Float?
+  isEnvValid     Boolean  @default(false)
+  startTime      DateTime
+  endTime        DateTime?
+  status         TestStatus @default(PENDING)
+  sample         Sample    @relation(fields: [sampleId], references: [id])
+  tester         User      @relation(fields: [testerId], references: [id])
+  equipment      Equipment @relation(fields: [equipmentId], references: [id])
+  result         TestResult?
+}
+
+enum TestStatus {
+  PENDING
+  READY
+  IN_PROGRESS
+  REVIEW
+  APPROVED
+  REJECTED
+}
+
+model TestResult {
+  id              String   @id @default(uuid())
+  testId          String   @unique
+  rawData         String
+  calculatedValue Float
+  uncertainty     Float
+  isApproved      Boolean  @default(false)
+  approvedById    String?
+  approvedAt      DateTime?
+  test            Test     @relation(fields: [testId], references: [id])
+  approvedBy      User?    @relation("ApprovedBy", fields: [approvedById], references: [id])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  tableName     String
+  recordId      String
+  action        String
+  oldValue      String?
+  newValue      String?
+  changedById   String
+  reason        String
+  timestamp     DateTime @default(now())
+  signatureHash String
+  changedBy     User     @relation(fields: [changedById], references: [id])
+}
