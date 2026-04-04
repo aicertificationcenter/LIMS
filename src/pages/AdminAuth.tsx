@@ -27,7 +27,6 @@ export const AdminAuth = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [receptions, setReceptions] = useState<TestReception[]>(MockAPI.getReceptions());
-  const [loading, setLoading] = useState(true);
 
   // Fetch real users from DB
   const fetchUsers = async () => {
@@ -39,8 +38,6 @@ export const AdminAuth = () => {
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
