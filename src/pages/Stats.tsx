@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { BarChart3, Users, ClipboardCheck, Timer, ArrowUpRight, ArrowDownRight, CheckCircle } from 'lucide-react';
+import { BarChart3, ClipboardCheck, Timer } from 'lucide-react';
 
 const StatusBadge = ({ status, label }: { status: string, label: string }) => {
   const roleMap: Record<string, string> = {

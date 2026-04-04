@@ -1,0 +1,42 @@
+﻿
+> lims@0.0.0 build
+> prisma generate && tsc -b && vite build
+
+node.exe : Loaded Prisma config from prisma.config.ts.
+위치 줄:1 문자:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ..
+.
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Loaded Prisma c...isma.confi 
+   g.ts.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Prisma schema loaded from prisma\schema.prisma.
+warn Preview feature "driverAdapters" is deprecated. The functionality can
+ be used without specifying it as a preview feature.
+
+??Generated Prisma Client (v7.6.0) to .\node_modules\@prisma\client in 1.52s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+src/pages/AdminAuth.tsx(45,10): error TS6133: 'error' is declared but its value is never read.
+src/pages/MyTests.tsx(38,10): error TS6133: 'schedStartDate' is declared but its value is never read.
+src/pages/MyTests.tsx(38,26): error TS6133: 'setSchedStartDate' is declared but its value is never read.
+src/pages/MyTests.tsx(39,10): error TS6133: 'schedEndDate' is declared but its value is never read.
+src/pages/MyTests.tsx(39,24): error TS6133: 'setSchedEndDate' is declared but its value is never read.
+src/pages/MyTests.tsx(40,10): error TS6133: 'schedStartTime' is declared but its value is never read.
+src/pages/MyTests.tsx(40,26): error TS6133: 'setSchedStartTime' is declared but its value is never read.
+src/pages/MyTests.tsx(41,10): error TS6133: 'schedEndTime' is declared but its value is never read.
+src/pages/MyTests.tsx(41,24): error TS6133: 'setSchedEndTime' is declared but its value is never read.
+src/pages/MyTests.tsx(42,10): error TS6133: 'schedLocationType' is declared but its value is never read.
+src/pages/MyTests.tsx(42,29): error TS6133: 'setSchedLocationType' is declared but its value is never read.
+src/pages/MyTests.tsx(43,10): error TS6133: 'schedLocationDetail' is declared but its value is never read.
+src/pages/MyTests.tsx(43,31): error TS6133: 'setSchedLocationDetail' is declared but its value is never read.
+src/pages/MyTests.tsx(44,10): error TS6133: 'schedTestType' is declared but its value is never read.
+src/pages/MyTests.tsx(44,25): error TS6133: 'setSchedTestType' is declared but its value is never read.
+src/pages/Stats.tsx(4,21): error TS6133: 'Users' is declared but its value is never read.
+src/pages/Stats.tsx(4,51): error TS6133: 'ArrowUpRight' is declared but its value is never read.
+src/pages/Stats.tsx(4,65): error TS6133: 'ArrowDownRight' is declared but its value is never read.
+src/pages/Stats.tsx(4,81): error TS6133: 'CheckCircle' is declared but its value is never read.

@@ -42,7 +42,6 @@ export const AdminAuth = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [receptions, setReceptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -53,10 +52,8 @@ export const AdminAuth = () => {
       ]);
       setUsers(uData);
       setReceptions(rData);
-      setError(null);
     } catch (err: any) {
       console.error('Fetch admin data failed:', err);
-      setError('서버 연결 실패');
     } finally {
       setLoading(false);
     }

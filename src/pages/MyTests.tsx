@@ -33,15 +33,6 @@ export const MyTests = () => {
 
   // States for the detail view
   const [newConsultText, setNewConsultText] = useState('');
-  
-  // Schedule states (kept as local since we can update Sample status)
-  const [schedStartDate, setSchedStartDate] = useState('');
-  const [schedEndDate, setSchedEndDate] = useState('');
-  const [schedStartTime, setSchedStartTime] = useState('');
-  const [schedEndTime, setSchedEndTime] = useState('');
-  const [schedLocationType, setSchedLocationType] = useState('');
-  const [schedLocationDetail, setSchedLocationDetail] = useState('');
-  const [schedTestType, setSchedTestType] = useState<'GENERAL' | 'KOLAS' | ''>('');
 
   const handleOpenDetail = (id: string) => {
     setSelectedId(id);
