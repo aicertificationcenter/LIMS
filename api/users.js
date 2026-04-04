@@ -32,5 +32,17 @@ export default async function handler(req, res) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    const { id } = req.body;
+    try {
+      await prisma.user.delete({
+        where: { id },
+      });
+      return res.status(200).json({ message: '사용자 삭제 성공' });
+    } catch (error) {
+      return res.status(500).json({ message: '사용자 삭제 실패', error: error.message });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }

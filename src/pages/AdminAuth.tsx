@@ -75,6 +75,26 @@ export const AdminAuth = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm(`사용자 [${id}]를 정말로 삭제하시겠습니까?`)) return;
+    try {
+      const response = await fetch('/api/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (response.ok) {
+        fetchUsers();
+        alert('성공적으로 삭제되었습니다.');
+      } else {
+        const err = await response.json();
+        alert('삭제 실패: ' + err.message);
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
+  };
+
   const handleStatusChange = (id: string, newStatus: TestStatus) => {
     MockAPI.updateReceptionStatus(id, newStatus);
     setReceptions([...MockAPI.getReceptions()]);
@@ -95,9 +115,9 @@ export const AdminAuth = () => {
             <tr>
               <th>아이디</th>
               <th>이메일</th>
-              <th>전화번호</th>
               <th>현재 권한</th>
               <th>권한 부여(승인) 작업</th>
+              <th style={{ textAlign: 'center' }}>가입 거절</th>
             </tr>
           </thead>
           <tbody>
@@ -117,12 +137,8 @@ export const AdminAuth = () => {
             )}
             {users.map(u => (
               <tr key={u.id}>
-                <td style={{ fontWeight: 600 }}>
-                  {u.id}
-                  <span style={{ color: '#ef4444', fontWeight: 400, marginLeft: '6px', fontSize: '0.85rem' }}>(PW: {u.pw})</span>
-                </td>
+                <td style={{ fontWeight: 600 }}>{u.id}</td>
                 <td>{u.email}</td>
-                <td>{u.phone}</td>
                 <td>
                   {u.role === 'PENDING' ? (
                     <span className="badge badge-pending">승인 대기</span>
@@ -148,6 +164,16 @@ export const AdminAuth = () => {
                     <option value="QUAL_MGR">품질책임자</option>
                     <option value="RESIGNED" style={{ color: 'red' }}>퇴사 처리 (로그인 불가)</option>
                   </select>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <button 
+                    className="btn" 
+                    style={{ background: '#fecaca', color: '#b91c1c', padding: '4px 12px', fontSize: '0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    onClick={() => handleDelete(u.id)}
+                    disabled={u.role === 'ADMIN'}
+                  >
+                    완전 삭제
+                  </button>
                 </td>
               </tr>
             ))}
