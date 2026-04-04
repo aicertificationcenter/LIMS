@@ -9,8 +9,6 @@ export default async function handler(req, res) {
           name: true,
           email: true,
           role: true,
-          phone: true,
-          pw: true,
         }
       });
       console.log(`[API] Fethced ${users.length} users from DB.`);
