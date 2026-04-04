@@ -76,10 +76,27 @@ export default async function handler(req, res) {
               data: { testerId }
             });
           } else {
+            // Find any equipment to satisfy the mandatory equipmentId field
+            let equipment = await prisma.equipment.findFirst();
+            
+            // If no equipment exists, create a default one
+            if (!equipment) {
+              equipment = await prisma.equipment.create({
+                data: {
+                  name: '기본 시험 장비',
+                  status: 'AVAILABLE',
+                  lastCalibration: new Date(),
+                  nextCalibration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                }
+              });
+            }
+
             await prisma.test.create({
               data: {
                 sampleId: id,
                 testerId,
+                equipmentId: equipment.id,
+                startTime: new Date(),
                 status: 'IN_PROGRESS'
               }
             });
