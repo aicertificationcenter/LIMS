@@ -51,8 +51,48 @@ export default async function handler(req, res) {
         return res.status(500).json({ message: '등록 중 오류 발생', error: error.message });
       }
 
+    case 'PATCH':
+      try {
+        const { id, testerId, status } = req.body;
+        
+        // Update sample status
+        const updatedSample = await prisma.sample.update({
+          where: { id },
+          data: { 
+             status: status || 'TESTING' 
+          }
+        });
+
+        // Create or update Test record for the assignment
+        if (testerId) {
+          // Check if test record already exists
+          const existingTest = await prisma.test.findFirst({
+            where: { sampleId: id }
+          });
+
+          if (existingTest) {
+            await prisma.test.update({
+              where: { id: existingTest.id },
+              data: { testerId }
+            });
+          } else {
+            await prisma.test.create({
+              data: {
+                sampleId: id,
+                testerId,
+                status: 'IN_PROGRESS'
+              }
+            });
+          }
+        }
+
+        return res.status(200).json(updatedSample);
+      } catch (error) {
+        return res.status(500).json({ message: '배정 중 오류 발생', error: error.message });
+      }
+
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader('Allow', ['GET', 'POST', 'PATCH']);
       return res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
