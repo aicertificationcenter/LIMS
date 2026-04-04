@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { MockAPI } from '../mocks';
+import { MockAPI } from '../mocks'; // Keep MockAPI only for receptions for now
 import type { Role, User, TestReception, TestStatus } from '../mocks';
 import { Navigate } from 'react-router-dom';
 
@@ -25,18 +25,52 @@ const ReceptionCard = ({ data, onStatusChange }: { data: TestReception, onStatus
 
 export const AdminAuth = () => {
   const { user } = useAuth();
-  // Read users and trigger re-render
-  const [users, setUsers] = useState<User[]>(MockAPI.getUsers());
+  const [users, setUsers] = useState<User[]>([]);
   const [receptions, setReceptions] = useState<TestReception[]>(MockAPI.getReceptions());
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real users from DB
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // Only Admin protection
   if (user?.role !== 'ADMIN') {
     return <Navigate to="/stats" />;
   }
 
-  const handleRoleChange = (id: string, newRole: Role) => {
-    MockAPI.updateRole(id, newRole);
-    setUsers([...MockAPI.getUsers()]); // Refresh from mock API
+  const handleRoleChange = async (id: string, newRole: Role) => {
+    try {
+      const response = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, role: newRole }),
+      });
+      
+      if (response.ok) {
+        // Refresh list after change
+        fetchUsers();
+      } else {
+        const err = await response.json();
+        alert('권한 변경 실패: ' + err.message);
+      }
+    } catch (error) {
+       console.error('Update Role failed:', error);
+    }
   };
 
   const handleStatusChange = (id: string, newStatus: TestStatus) => {
