@@ -47,9 +47,9 @@ export const apiClient = {
         body: JSON.stringify(data),
       }),
     assign: (id: string, testerId: string) =>
-      apiClient.fetch(`/receptions/${id}/assign`, {
-        method: 'POST',
-        body: JSON.stringify({ testerId }),
+      apiClient.fetch('/receptions', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, testerId }),
       }),
   }
 };
