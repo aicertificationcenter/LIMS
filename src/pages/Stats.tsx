@@ -1,15 +1,21 @@
-import { useState, useMemo } from 'react';
-import { MockAPI } from '../mocks';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
+import { apiClient } from '../api/client';
+import { BarChart3, Users, ClipboardCheck, Timer, ArrowUpRight, ArrowDownRight, CheckCircle } from 'lucide-react';
 
-// --- Shared Components --- //
-
-const StatusBadge = ({ status, label }: { status: 'received' | 'testing' | 'progress' | 'completed', label: string }) => {
-  return <span className={`badge badge-${status}`}>{label}</span>;
+const StatusBadge = ({ status, label }: { status: string, label: string }) => {
+  const roleMap: Record<string, string> = {
+    'RECEIVED': 'received',
+    'IN_PROGRESS': 'progress',
+    'COMPLETED': 'completed',
+  };
+  return <span className={`badge badge-${roleMap[status] || 'received'}`}>{label}</span>;
 };
 
 export const Stats = () => {
   const { user } = useAuth();
+  const [receptions, setReceptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all');
   const [viewingTest, setViewingTest] = useState<any>(null);
   
@@ -17,281 +23,232 @@ export const Stats = () => {
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
 
-  const allReceptions = MockAPI.getReceptions();
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await apiClient.receptions.list();
+      setReceptions(data);
+    } catch (err) {
+      console.error('Fetch stats failed:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const targetYear = selectedMonth.split('-')[0];
   const targetMonthNum = parseInt(selectedMonth.split('-')[1], 10);
 
   const filteredByMonth = useMemo(() => {
-    if (!selectedMonth) return allReceptions; // 전체 보기
-    
-    return allReceptions.filter(r => {
-      let year, month;
-      if (r.date.includes('-')) {
-        const parts = r.date.split(' ')[0].split('-');
-        year = parts[0]; month = parseInt(parts[1], 10);
-      } else if (r.date.includes('.')) {
-        const parts = r.date.split('.');
-        year = parts[0].trim(); month = parseInt(parts[1].trim(), 10);
-      } else {
-        return false; // 알 수 없는 날짜 포맷
-      }
-      return year === targetYear && month === targetMonthNum;
+    if (!selectedMonth) return receptions;
+    return receptions.filter(r => {
+      const date = new Date(r.receivedAt);
+      return date.getFullYear().toString() === targetYear && (date.getMonth() + 1) === targetMonthNum;
     });
-  }, [allReceptions, selectedMonth, targetYear, targetMonthNum]);
+  }, [receptions, selectedMonth, targetYear, targetMonthNum]);
 
-  // Global KPIs (Updated logic)
-  const newReceptions = filteredByMonth.filter(r => !r.testId).length;
-  const consultationCount = filteredByMonth.filter(r => r.testId && r.status !== 'PROGRESS' && r.status !== 'COMPLETED').length;
-  const testingCount = filteredByMonth.filter(r => r.status === 'PROGRESS').length;
-  const completedCount = filteredByMonth.filter(r => r.status === 'COMPLETED').length;
+  const displayTests = useMemo(() => {
+    return filteredByMonth.filter(test => {
+      if (activeTab === 'all') return true;
+      if (activeTab === 'progress') return test.status === 'IN_PROGRESS' || test.status === 'RECEIVED';
+      return test.status === 'COMPLETED';
+    });
+  }, [filteredByMonth, activeTab]);
 
-  // My KPIs
-  const myReceptions = filteredByMonth.filter(r => r.assignedTesterId === user?.id);
-  const myTotalAssigned = myReceptions.length;
-  const myInProgressCount = myReceptions.filter(r => r.status === 'TESTING' || r.status === 'PROGRESS').length;
-  const myCompletedCount = myReceptions.filter(r => r.status === 'COMPLETED').length;
+  const total = filteredByMonth.length;
+  const inProgress = filteredByMonth.filter(r => r.status === 'IN_PROGRESS').length;
+  const completed = filteredByMonth.filter(r => r.status === 'COMPLETED').length;
+  const receivedCount = filteredByMonth.filter(r => r.status === 'RECEIVED').length;
 
-  const getStatusInfo = (status: string, hasTestId: boolean) => {
-    if (!hasTestId) return { role: 'received', label: '신규 접수' };
+  const getStatusLabel = (status: string) => {
     switch(status) {
-      case 'RECEIVED': 
-      case 'TESTING': return { role: 'testing', label: '시험 상담' };
-      case 'PROGRESS': return { role: 'progress', label: '시험중' };
-      case 'COMPLETED': return { role: 'completed', label: '발행 완료' };
-      default: return { role: 'received', label: status };
+      case 'RECEIVED': return '접수 대기';
+      case 'IN_PROGRESS': return '시험 중';
+      case 'COMPLETED': return '발행 완료';
+      default: return status;
     }
   };
 
-  const displayTests = filteredByMonth.filter(test => {
-    // 시험원(TESTER)인 경우 자신에게 배정된 건만 표시
-    if (user?.role === 'TESTER' && test.assignedTesterId !== user?.id) {
-      return false;
-    }
-
-    if (activeTab === 'all') return true;
-    if (activeTab === 'progress') return test.status === 'TESTING' || test.status === 'PROGRESS' || test.status === 'RECEIVED';
-    return test.status === 'COMPLETED';
-  });
+  if (loading) {
+    return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>통계 데이터를 실시간 분석 중...</div>;
+  }
 
   return (
     <main className="dashboard-grid animate-fade-in">
-        {/* Top KPI Widgets */}
-        <section className="card" style={{ marginBottom: '1.5rem', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h2 className="card-title" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>월별 대시보드</h2>
-            <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '0.25rem' }}>지정한 기준 월의 시험 현황을 조회합니다.</p>
-          </div>
-          <div>
-            <input 
-              type="month" 
-              className="input-field" 
-              value={selectedMonth} 
-              onChange={e => setSelectedMonth(e.target.value)}
-              style={{ fontWeight: 600, padding: '0.5rem 1rem', width: '200px' }}
-            />
-          </div>
-        </section>
+      {/* Welcome & Month Filter */}
+      <header className="card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #1e293b 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2rem' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800 }}>안녕하세요, {user?.name}님! 👋</h1>
+          <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8, fontSize: '1.1rem' }}>{targetMonthNum}월 시험 현황을 실시간으로 확인하세요.</p>
+        </div>
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>조회 월 선택</span>
+          <input 
+            type="month" 
+            className="input-field" 
+            value={selectedMonth} 
+            onChange={e => setSelectedMonth(e.target.value)}
+            style={{ fontWeight: 600, padding: '0.5rem 1rem', width: '180px', background: 'white', color: 'black' }}
+          />
+        </div>
+      </header>
 
-        {/* Integrated KPI Dashboard */}
-        <section className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: '2rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' }}>
-          <div style={{ padding: '1.5rem 2rem', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--kaic-navy)', margin: 0 }}>
-              {targetMonthNum}월 통합 업무 현황
-            </h2>
+      {/* KPI Cards */}
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 600 }}>총 접수 건수</span>
+            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '0.5rem 0', color: 'var(--kaic-navy)' }}>{total}</div>
           </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: user?.role === 'TESTER' ? '1fr 1fr' : '1fr', background: 'white' }}>
-            {/* Global KPI Column */}
-            <div style={{ padding: '2rem', borderRight: user?.role === 'TESTER' ? '1px solid #e2e8f0' : 'none' }}>
-              <h3 style={{ fontSize: '0.95rem', color: '#64748b', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#94a3b8' }}></span>
-                전체 부서 현황 (Global)
-              </h3>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>신규 접수</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b' }}>{newReceptions}</div>
-                </div>
-                <div style={{ width: '1px', background: '#e2e8f0' }}></div>
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>시험 상담</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f59e0b' }}>{consultationCount}</div>
-                </div>
-                <div style={{ width: '1px', background: '#e2e8f0' }}></div>
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>시험중</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1d4ed8' }}>{testingCount}</div>
-                </div>
-                <div style={{ width: '1px', background: '#e2e8f0' }}></div>
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>성적서 발행</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#047857' }}>{completedCount}</div>
-                </div>
-              </div>
+          <div style={{ padding: '0.75rem', background: 'rgba(0, 102, 179, 0.1)', borderRadius: '12px', color: 'var(--kaic-blue)' }}>
+            <ClipboardCheck size={24} />
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 600 }}>시험 진행 중</span>
+            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '0.5rem 0', color: '#f59e0b' }}>{inProgress}</div>
+          </div>
+          <div style={{ padding: '0.75rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '12px', color: '#f59e0b' }}>
+            <Timer size={24} />
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 600 }}>발행 완료</span>
+            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '0.5rem 0', color: '#10b981' }}>{completed}</div>
+          </div>
+          <div style={{ padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
+            <BarChart3 size={24} />
+          </div>
+        </div>
+      </div>
+
+      {/* Process Distribution */}
+      <section className="card" style={{ gridColumn: 'span 2' }}>
+        <h2 className="card-title">시험 프로세스 분포</h2>
+        <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem' }}>
+          <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#e2e8f0" strokeWidth="3.8"></circle>
+              {total > 0 && (
+                <>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#10b981" strokeWidth="3.8" strokeDasharray={`${(completed/total)*100} 100`} strokeDashoffset="0"></circle>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#f59e0b" strokeWidth="3.8" strokeDasharray={`${(inProgress/total)*100} 100`} strokeDashoffset={`-${(completed/total)*100}`}></circle>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#3b82f6" strokeWidth="3.8" strokeDasharray={`${(receivedCount/total)*100} 100`} strokeDashoffset={`-${((completed+inProgress)/total)*100}`}></circle>
+                </>
+              )}
+            </svg>
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--kaic-navy)' }}>{total}</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Total</div>
             </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#3b82f6' }}></div>
+              <span style={{ fontSize: '0.875rem', color: '#475569', minWidth: '80px' }}>접수 대기</span>
+              <span style={{ fontWeight: 700 }}>{receivedCount}건</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#f59e0b' }}></div>
+              <span style={{ fontSize: '0.875rem', color: '#475569', minWidth: '80px' }}>진행 중</span>
+              <span style={{ fontWeight: 700 }}>{inProgress}건</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#10b981' }}></div>
+              <span style={{ fontSize: '0.875rem', color: '#475569', minWidth: '80px' }}>발행 완료</span>
+              <span style={{ fontWeight: 700 }}>{completed}건</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            {/* My KPI Column (Only for Testes) */}
-            {user?.role === 'TESTER' && (
-              <div style={{ padding: '2rem' }}>
-                <h3 style={{ fontSize: '0.95rem', color: '#8b5cf6', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6' }}></span>
-                  나의 배정 내역 (Personal)
-                </h3>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                  <div style={{ flex: 1, textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>배정된 담당 건수</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 800, color: '#8b5cf6' }}>{myTotalAssigned}</div>
-                  </div>
-                  <div style={{ width: '1px', background: '#e2e8f0' }}></div>
-                  <div style={{ flex: 1, textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>현재 나의 시험중</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1d4ed8' }}>{myInProgressCount}</div>
-                  </div>
-                  <div style={{ width: '1px', background: '#e2e8f0' }}></div>
-                  <div style={{ flex: 1, textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>직접 완료 처리</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 800, color: '#047857' }}>{myCompletedCount}</div>
-                  </div>
-                </div>
-              </div>
+      {/* Recent List */}
+      <section className="card" style={{ gridColumn: 'span 3' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 className="card-title" style={{ margin: 0, border: 'none' }}>{targetMonthNum}월 상세 목록</h2>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {(['all', 'progress', 'completed'] as const).map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '8px 16px', borderRadius: '20px', fontWeight: 600, border: '1px solid #cbd5e1',
+                  background: activeTab === tab ? 'var(--kaic-navy)' : 'white',
+                  color: activeTab === tab ? 'white' : 'var(--neutral-800)',
+                  cursor: 'pointer'
+                }}
+              >
+                {tab === 'all' ? '전체' : tab === 'progress' ? '진행/대기' : '완료'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>의뢰 기관</th>
+              <th>의뢰자</th>
+              <th>상태</th>
+              <th>접수 일시</th>
+              <th>상세</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayTests.map(r => (
+              <tr key={r.id}>
+                <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{r.barcode}</td>
+                <td style={{ fontWeight: 600 }}>{r.clientId}</td>
+                <td>{r.clientName}</td>
+                <td><StatusBadge status={r.status} label={getStatusLabel(r.status)} /></td>
+                <td style={{ fontSize: '0.85rem', color: '#64748b' }}>{new Date(r.receivedAt).toLocaleString()}</td>
+                <td>
+                  <button className="btn btn-secondary" style={{ padding: '4px 12px', minHeight: 'auto', fontSize: '0.8rem', marginBottom: 0 }} onClick={() => setViewingTest(r)}>조회</button>
+                </td>
+              </tr>
+            ))}
+            {displayTests.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
             )}
-          </div>
-        </section>
+          </tbody>
+        </table>
+      </section>
 
-        {/* Status List with Tagging */}
-        <section className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--neutral-100)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-            <h2 className="card-title" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>
-              {targetMonthNum}월 시험 접수 목록
-            </h2>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button 
-                onClick={() => setActiveTab('all')}
-                style={{
-                  padding: '8px 16px', borderRadius: '20px', fontWeight: 600, border: '1px solid #cbd5e1',
-                  background: activeTab === 'all' ? 'var(--kaic-navy)' : 'white',
-                  color: activeTab === 'all' ? 'white' : 'var(--neutral-800)',
-                  cursor: 'pointer'
-                }}
-              >전체 보기</button>
-              <button 
-                onClick={() => setActiveTab('progress')}
-                style={{
-                  padding: '8px 16px', borderRadius: '20px', fontWeight: 600, border: '1px solid #cbd5e1',
-                  background: activeTab === 'progress' ? 'var(--kaic-navy)' : 'white',
-                  color: activeTab === 'progress' ? 'white' : 'var(--neutral-800)',
-                  cursor: 'pointer'
-                }}
-              >진행/대기 내역</button>
-               <button 
-                onClick={() => setActiveTab('completed')}
-                style={{
-                  padding: '8px 16px', borderRadius: '20px', fontWeight: 600, border: '1px solid #cbd5e1',
-                  background: activeTab === 'completed' ? 'var(--kaic-navy)' : 'white',
-                  color: activeTab === 'completed' ? 'white' : 'var(--neutral-800)',
-                  cursor: 'pointer'
-                }}
-              >완료 내역</button>
+      {/* Detail Modal */}
+      {viewingTest && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+            <div style={{ padding: '1.5rem 2rem', background: 'var(--kaic-navy)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem' }}>상세 내역</h2>
+              <button style={{ background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', lineHeight: 1 }} onClick={() => setViewingTest(null)}>&times;</button>
+            </div>
+            <div style={{ padding: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                <div><strong style={{ color: '#64748b' }}>번호:</strong> {viewingTest.barcode}</div>
+                <div><strong style={{ color: '#64748b' }}>의뢰기관:</strong> {viewingTest.clientId}</div>
+                <div><strong style={{ color: '#64748b' }}>의뢰자:</strong> {viewingTest.clientName}</div>
+                <div><strong style={{ color: '#64748b' }}>상태:</strong> {viewingTest.status}</div>
+              </div>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>의뢰 내용</h3>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{viewingTest.content}</div>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>상담 내역</h3>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap' }}>{viewingTest.consultation}</div>
             </div>
           </div>
-
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>접수 번호</th>
-                  <th>의뢰 기관</th>
-                  <th>시험 의뢰 내용</th>
-                  <th>담당 평가원</th>
-                  <th style={{ textAlign: 'center' }}>진행 상태</th>
-                  <th>날짜</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayTests.map((test) => {
-                  const info = getStatusInfo(test.status, !!test.testId);
-                  return (
-                    <tr key={test.id}>
-                      <td 
-                        style={{ fontWeight: 700, color: 'var(--kaic-navy)', cursor: 'pointer', textDecoration: 'underline' }}
-                        onClick={() => setViewingTest(test)}
-                        title="클릭하여 상세 내역을 조회합니다."
-                      >
-                        {test.id}
-                      </td>
-                      <td style={{ fontWeight: 600, color: 'var(--neutral-800)' }}>{test.client}</td>
-                      <td>{test.content.length > 20 ? test.content.substring(0, 20) + '...' : test.content}</td>
-                      <td>{test.assignedTesterId || '미배정'}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <StatusBadge status={info.role as 'received' | 'testing' | 'progress' | 'completed'} label={info.label} />
-                      </td>
-                      <td style={{ fontSize: '0.85rem', color: '#64748b' }}>{test.date}</td>
-                    </tr>
-                  )
-                })}
-                {displayTests.length === 0 && (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>해당 조건에 맞는 데이터가 없습니다.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {viewingTest && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
-            <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
-              <div style={{ padding: '1.5rem 2rem', background: 'var(--kaic-navy)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem' }}>접수 상세 내역 (조회 전용)</h2>
-                <button style={{ background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', lineHeight: 1 }} onClick={() => setViewingTest(null)}>&times;</button>
-              </div>
-              <div style={{ padding: '2rem' }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem' }}>기본 정보</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
-                  <div><strong style={{ color: '#475569' }}>원 접수번호:</strong> {viewingTest.id}</div>
-                  <div><strong style={{ color: '#475569' }}>시험접수번호(채번):</strong> {viewingTest.testId || <span style={{ color: '#ef4444' }}>미발급</span>}</div>
-                  <div><strong style={{ color: '#475569' }}>의뢰처:</strong> {viewingTest.client} ({viewingTest.clientName})</div>
-                  <div><strong style={{ color: '#475569' }}>담당 시험원:</strong> {viewingTest.assignedTesterId || '미배정'}</div>
-                </div>
-
-                <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem' }}>사전 의뢰 내역 (고객)</h3>
-                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', color: '#334155' }}>{viewingTest.content}</div>
-
-                <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem' }}>시험 협의 이력 (시험원 작성)</h3>
-                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px' }}>
-                  {viewingTest.consultations?.map((c: any) => (
-                    <div key={c.id} style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1rem' }}>
-                      <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem', fontWeight: 600 }}>작성자: {c.authorId} | 일시: {c.date}</div>
-                      <div style={{ whiteSpace: 'pre-wrap', color: '#0f172a', lineHeight: 1.5 }}>{c.text}</div>
-                      {c.history?.length > 0 && (
-                        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#f1f5f9', fontSize: '0.85rem', color: '#64748b', borderRadius: '4px' }}>
-                          * 이 내역은 총 {c.history.length}번 수정된 이력이 있습니다. (상세 수정 내역은 시험원 메뉴에서 열람 가능)
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {(!viewingTest.consultations || viewingTest.consultations.length === 0) && (
-                    <div style={{ color: '#94a3b8', textAlign: 'center' }}>시험원이 등록한 상담 내역이 없습니다.</div>
-                  )}
-                </div>
-
-                <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem' }}>시험 시행 일정</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px' }}>
-                  <div><strong style={{ color: '#475569', display: 'block', marginBottom: '0.25rem' }}>시험 날짜:</strong> <div style={{ color: '#0f172a' }}>{viewingTest.schedule?.startDate ? `${viewingTest.schedule.startDate} ~ ${viewingTest.schedule.endDate}` : '미정'}</div></div>
-                  <div><strong style={{ color: '#475569', display: 'block', marginBottom: '0.25rem' }}>시험 시간:</strong> <div style={{ color: '#0f172a' }}>{viewingTest.schedule?.startTime ? `${viewingTest.schedule.startTime} ~ ${viewingTest.schedule.endTime}` : '미정'}</div></div>
-                  <div style={{ gridColumn: 'span 2', marginTop: '0.5rem' }}>
-                    <strong style={{ color: '#475569', display: 'block', marginBottom: '0.25rem' }}>장소:</strong> 
-                    <div style={{ color: '#0f172a' }}>
-                      {viewingTest.schedule?.locationType === 'FIXED_LAB' ? '고정 시험실' : viewingTest.schedule?.locationType === 'ON_SITE' ? `현장 시험 (상세주소: ${viewingTest.schedule.locationDetail})` : '미정'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+        </div>
+      )}
+    </main>
   );
 };

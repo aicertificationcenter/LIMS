@@ -1,22 +1,49 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { MockAPI } from '../mocks';
+import { apiClient } from '../api/client';
 import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle } from 'lucide-react';
+
 export const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showNoti, setShowNoti] = useState(false);
-  const notifications = user ? MockAPI.getNotifications(user.id).filter(n => !n.read) : [];
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      // Poll every 30 seconds for new notifications
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await apiClient.notifications.list(user.id);
+      setNotifications(data);
+    } catch (err) {
+      console.error('Fetch notifications failed:', err);
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const clearNoti = () => {
-    if (user) MockAPI.markNotiRead(user.id);
+  const clearNoti = async () => {
+    if (user) {
+      try {
+        await apiClient.notifications.markAsRead(user.id);
+        setNotifications([]);
+      } catch (err) {
+        console.error('Mark read failed:', err);
+      }
+    }
     setShowNoti(false);
   };
 

@@ -39,6 +39,41 @@ export const apiClient = {
     list: () => apiClient.fetch('/users'),
   },
 
+  notifications: {
+    list: (userId: string) => apiClient.fetch(`/notifications?userId=${userId}`),
+    markAsRead: (userId: string) => 
+      apiClient.fetch(`/notifications?userId=${userId}`, {
+        method: 'PATCH',
+      }),
+  },
+
+  tests: {
+    listMyTasks: (testerId: string) => apiClient.fetch(`/tests?testerId=${testerId}`),
+  },
+
+  consultations: {
+    list: (sampleId: string) => apiClient.fetch(`/consultations?sampleId=${sampleId}`),
+    create: (data: { sampleId: string; authorId: string; message: string }) => 
+      apiClient.fetch('/consultations', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  },
+
+  evidences: {
+    list: (sampleId: string) => apiClient.fetch(`/evidences?sampleId=${sampleId}`),
+    create: (data: { sampleId: string; uploaderId: string; fileName: string; fileType: string; dataUrl: string }) => 
+      apiClient.fetch('/evidences', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) => 
+      apiClient.fetch('/evidences', {
+        method: 'DELETE',
+        body: JSON.stringify({ id }),
+      }),
+  },
+
   receptions: {
     list: () => apiClient.fetch('/receptions'),
     create: (data: any) => 

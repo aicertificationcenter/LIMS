@@ -18,6 +18,7 @@ model User {
   tests          Test[]
   approvedTests  TestResult[] @relation("ApprovedBy")
   auditLogs      AuditLog[]
+  notifications  Notification[]
 }
 
 enum Role {
@@ -54,6 +55,8 @@ model Sample {
   location     String?
   receivedAt   DateTime @default(now())
   tests        Test[]
+  consultations Consultation[]
+  evidences     Evidence[]
 }
 
 enum SampleStatus {
@@ -112,6 +115,34 @@ model AuditLog {
   changedById   String
   reason        String
   timestamp     DateTime @default(now())
-  signatureHash String
   changedBy     User     @relation(fields: [changedById], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Consultation {
+  id        String   @id @default(uuid())
+  sampleId  String
+  authorId  String
+  message   String
+  createdAt DateTime @default(now())
+  sample    Sample   @relation(fields: [sampleId], references: [id])
+}
+
+model Evidence {
+  id        String   @id @default(uuid())
+  sampleId  String
+  uploaderId String
+  fileName  String
+  fileType  String
+  dataUrl   String   // Base64 for now
+  createdAt DateTime @default(now())
+  sample    Sample   @relation(fields: [sampleId], references: [id])
 }
