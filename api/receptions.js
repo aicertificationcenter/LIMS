@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma.js';
+import { prisma } from './lib/prisma.js';
 
 export default async function handler(req, res) {
   const { method } = req;
