@@ -10,11 +10,13 @@ export default async function handler(req, res) {
           email: true,
           role: true,
           phone: true,
-          pw: true, // For admin visibility during development
+          pw: true,
         }
       });
+      console.log(`[API] Fethced ${users.length} users from DB.`);
       return res.status(200).json(users);
     } catch (error) {
+      console.error('[API Error] Fetch Users failed:', error.message);
       return res.status(500).json({ message: '사용자 목록 조회 실패', error: error.message });
     }
   }

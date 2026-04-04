@@ -27,6 +27,7 @@ export const AdminAuth = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [receptions, setReceptions] = useState<TestReception[]>(MockAPI.getReceptions());
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch real users from DB
   const fetchUsers = async () => {
@@ -35,9 +36,13 @@ export const AdminAuth = () => {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+        setError(null);
+      } else {
+        setError(`목록 불러오기 실패 (${response.status}: ${response.statusText})`);
       }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch users:', err);
+      setError('서버 연결 실패: ' + err.message);
     }
   };
 
@@ -96,6 +101,20 @@ export const AdminAuth = () => {
             </tr>
           </thead>
           <tbody>
+            {error && (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', color: '#ef4444', padding: '2rem' }}>
+                   {error} (서버 로그를 확인해 주세요)
+                </td>
+              </tr>
+            )}
+            {!error && users.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
+                   가입된 사용자가 없습니다.
+                </td>
+              </tr>
+            )}
             {users.map(u => (
               <tr key={u.id}>
                 <td style={{ fontWeight: 600 }}>
