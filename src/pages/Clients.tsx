@@ -2,7 +2,8 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Users, Search, FileText, Download, Mail, Send, CheckSquare, Square, Paperclip, Trash2, AlertTriangle } from 'lucide-react';
+import { Users, Search, Download, Mail, Send, CheckSquare, Square, Paperclip, Trash2, AlertTriangle } from 'lucide-react';
+import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
 
 export const Clients = () => {
   const { user } = useAuth();
@@ -285,54 +286,10 @@ export const Clients = () => {
 
       {/* Detail Modal */}
       {selectedReception && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem', backdropFilter: 'blur(4px)' }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto', padding: 0, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <div style={{ padding: '1.5rem 2rem', background: 'var(--kaic-navy)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10 }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <FileText size={20} /> 접수 상세 정보 (Reception Details)
-              </h2>
-              <button style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedReception(null)}>&times;</button>
-            </div>
-            
-            <div style={{ padding: '2.5rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
-                <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>접수번호</label><span style={{ fontWeight: 800, color: 'var(--kaic-navy)' }}>{selectedReception.barcode}</span></div>
-                <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>진행상태</label><span className={`badge badge-${selectedReception.status.toLowerCase()}`}>{getStatusLabel(selectedReception.status)}</span></div>
-                <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>의뢰처 / 의뢰인</label><span style={{ fontWeight: 700 }}>{selectedReception.clientId} / {selectedReception.clientName} 담당</span></div>
-                <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>사업자번호 / 이메일</label><span style={{ fontWeight: 700 }}>{selectedReception.bizNo || 'N/A'} / {selectedReception.email || 'N/A'}</span></div>
-                <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>연락처</label><span style={{ fontWeight: 700 }}>{selectedReception.phone || 'N/A'}</span></div>
-                <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>총괄 담당자</label><span style={{ fontWeight: 700, color: '#047857' }}>{selectedReception.tests?.[0]?.tester?.name || '미배정'}</span></div>
-              </div>
-
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>시험 대상</h3>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', whiteSpace: 'pre-wrap', marginBottom: '2rem', minHeight: '100px', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                {selectedReception.target || selectedReception.content || 'N/A'}
-              </div>
-              
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>기타 및 상담 사항</h3>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', whiteSpace: 'pre-wrap', marginBottom: '2rem', minHeight: '100px', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                {selectedReception.extra || selectedReception.consultation || 'N/A'}
-              </div>
-              
-              {selectedReception.status === 'COMPLETED' && selectedReception.reportPdfUrl && (
-                <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#f0fffa', borderRadius: '16px', border: '1px solid #c6f6d5', textAlign: 'center' }}>
-                  <h4 style={{ margin: '0 0 1rem 0', color: '#276749' }}>✅ 최종 시험 완료 리포트가 업로드되어 있습니다.</h4>
-                  <button 
-                    onClick={() => { const win = window.open(); win?.document.write(`<html><body style="margin:0"><iframe src="${selectedReception.reportPdfUrl}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe></body></html>`); }} 
-                    className="btn btn-primary" 
-                    style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1.5rem' }}
-                  >
-                    <FileText size={18} /> 발행 성적서 (PDF) PDF 열기
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            <div style={{ padding: '1.5rem 2rem', background: '#f8fafc', borderTop: '1px solid #e2e8f0', textAlign: 'right' }}>
-              <button className="btn btn-secondary" style={{ margin: 0, minHeight: '40px' }} onClick={() => setSelectedReception(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
+        <ReceptionDetailModal 
+          reception={selectedReception} 
+          onClose={() => setSelectedReception(null)} 
+        />
       )}
 
       {/* Email Announcement Modal (Attachments & Improved UI) */}

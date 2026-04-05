@@ -5,6 +5,7 @@ import { apiClient } from '../api/client';
 import { Trash2, Send, Download, Search, Plus, Printer, FileText } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
 
 export const Invoices = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ export const Invoices = () => {
   const [items, setItems] = useState<any[]>([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
   const [discountRate, setDiscountRate] = useState(0);
   const [isSending, setIsSending] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -170,7 +172,7 @@ export const Invoices = () => {
               </div>
               
               <button 
-                onClick={() => window.open(`/reception?search=${selectedSample.barcode}`, '_blank')}
+                onClick={() => setShowDetailModal(true)}
                 style={{ 
                   background: 'rgba(255,255,255,0.15)', 
                   border: '1px solid rgba(255,255,255,0.3)', 
@@ -192,6 +194,13 @@ export const Invoices = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {showDetailModal && selectedSample && (
+          <ReceptionDetailModal 
+            reception={selectedSample} 
+            onClose={() => setShowDetailModal(false)} 
+          />
         )}
 
         {/* Invoice Item Editor */}
