@@ -66,6 +66,7 @@ model Sample {
   tests        Test[]
   consultations Consultation[]
   evidences     Evidence[]
+  invoice       Invoice?
 }
 
 enum SampleStatus {
@@ -155,4 +156,30 @@ model Evidence {
   dataUrl   String   // Base64 for now
   createdAt DateTime @default(now())
   sample    Sample   @relation(fields: [sampleId], references: [id])
+}
+
+model Invoice {
+  id           String        @id @default(uuid())
+  invoiceNo    String        @unique  // Usually the barcode of the Sample
+  sampleId     String        @unique
+  date         DateTime      @default(now())
+  validUntil   DateTime?
+  subtotal     Float         @default(0)
+  discountRate Float         @default(0)
+  discountAmt  Float         @default(0)
+  vat          Float         @default(0)
+  total        Float         @default(0)
+  status       String        @default("DRAFT") // DRAFT, SENT, PAID
+  items        InvoiceItem[]
+  sample       Sample        @relation(fields: [sampleId], references: [id])
+}
+
+model InvoiceItem {
+  id        String  @id @default(uuid())
+  invoiceId String
+  title     String
+  unitCost  Float
+  qty       Int     @default(1)
+  price     Float   @default(0)
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }

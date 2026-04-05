@@ -77,6 +77,11 @@ export const Layout = () => {
             </Link>
           )}
           {user.role === 'ADMIN' && (
+            <Link to="/invoices" style={{ color: location.pathname==='/invoices' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={18} /> 견적서 발행
+            </Link>
+          )}
+          {user.role === 'ADMIN' && (
             <Link to="/admin" style={{ color: location.pathname==='/admin' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <UserCheck size={18} /> 시험원관리
             </Link>

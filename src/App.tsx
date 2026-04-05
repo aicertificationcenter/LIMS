@@ -10,6 +10,7 @@ import { MyTests } from './pages/MyTests';
 import { Stats } from './pages/Stats';
 import { Reports } from './pages/Reports';
 import { Clients } from './pages/Clients';
+import { Invoices } from './pages/Invoices';
 import './App.css';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="stats" element={<Stats />} />
             <Route path="reports" element={<Reports />} />
             <Route path="clients" element={<Clients />} />
+            <Route path="invoices" element={<Invoices />} />
             
             {/* Catch All */}
             <Route path="*" element={<Navigate to="/login" />} />
