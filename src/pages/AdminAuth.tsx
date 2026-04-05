@@ -3,15 +3,15 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Navigate } from 'react-router-dom';
-import { Trash2, ShieldAlert, UserCheck, Edit2, Check, X } from 'lucide-react';
+import { Trash2, ShieldAlert, UserCheck, Edit2, X } from 'lucide-react';
 
 export const AdminAuth = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [editingNameId, setEditingNameId] = useState<string | null>(null);
-  const [newName, setNewName] = useState('');
+  // Single Edit Modal State
+  const [editUser, setEditUser] = useState<any>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -40,31 +40,27 @@ export const AdminAuth = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, role: newRole }),
       });
-      if (res.ok) {
-        fetchData();
-      } else {
-        const err = await res.json();
-        alert('권한 변경 실패: ' + err.message);
-      }
+      if (res.ok) fetchData();
     } catch (error: any) {
       alert('오류: ' + error.message);
     }
   };
 
-  const handleNameUpdate = async (id: string) => {
-    if (!newName.trim()) return;
+  const handleUpdateUser = async () => {
+    if (!editUser) return;
     try {
       const res = await fetch('/api/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name: newName }),
+        body: JSON.stringify(editUser),
       });
       if (res.ok) {
-        setEditingNameId(null);
+        setEditUser(null);
         fetchData();
+        alert('사용자 정보가 업데이트되었습니다.');
       } else {
         const err = await res.json();
-        alert('사용자 정보 변경 실패: ' + err.message);
+        alert('수정 실패: ' + err.message);
       }
     } catch (error: any) {
       alert('오류: ' + error.message);
@@ -97,9 +93,9 @@ export const AdminAuth = () => {
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}>데이터를 불러오는 중...</div>;
 
   return (
-    <main className="dashboard-grid animate-fade-in">
+    <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '5rem' }}>
       
-      {/* 1. Account Management */}
+      {/* 1. Account Management Section */}
       <section className="card" style={{ gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
            <UserCheck size={24} color="var(--kaic-navy)" />
@@ -115,7 +111,7 @@ export const AdminAuth = () => {
               {pendingUsers.map(u => (
                 <div key={u.id} style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #fed7aa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontWeight: 700 }}>{u.name} ({u.id})</div>
+                    <div style={{ fontWeight: 700 }}>{u.name} <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>({u.id} / {u.passwordHash})</span></div>
                     <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{u.email}</div>
                   </div>
                   <button className="btn btn-primary" onClick={() => handleRoleChange(u.id, 'TESTER')} style={{ minHeight: '36px', padding: '0 12px', fontSize: '0.85rem' }}>승인(시험원)</button>
@@ -128,8 +124,9 @@ export const AdminAuth = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>성명(ID)</th>
+              <th>성명 (ID / 비밀번호)</th>
               <th>이메일</th>
+              <th>연락처</th>
               <th>현재 권한</th>
               <th>권한 변경</th>
               <th style={{ textAlign: 'center' }}>관리</th>
@@ -139,34 +136,22 @@ export const AdminAuth = () => {
             {activeUsers.map(u => (
               <tr key={u.id}>
                 <td style={{ fontWeight: 600 }}>
-                  {editingNameId === u.id ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input 
-                        className="input-field" 
-                        value={newName} 
-                        onChange={e => setNewName(e.target.value)} 
-                        style={{ padding: '4px 8px', margin: 0, minHeight: '32px', fontSize: '0.9rem', width: '120px' }}
-                        autoFocus
-                      />
-                      <button onClick={() => handleNameUpdate(u.id)} style={{ padding: '4px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}><Check size={14}/></button>
-                      <button onClick={() => setEditingNameId(null)} style={{ padding: '4px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}><X size={14}/></button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {u.name} <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>({u.id})</span>
-                      <button 
-                        onClick={() => { setEditingNameId(u.id); setNewName(u.name || ''); }} 
-                        style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '2px' }}
-                        title="이름 수정"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {u.name} 
+                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500 }}>({u.id} / {u.passwordHash})</span>
+                    <button 
+                      onClick={() => setEditUser({ ...u })} 
+                      style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                      title="상세 수정"
+                    >
+                      <Edit2 size={15} />
+                    </button>
+                  </div>
                 </td>
                 <td>{u.email}</td>
+                <td>{u.phone || '-'}</td>
                 <td>
-                   <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : undefined }}>
+                   <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : undefined, padding: '4px 10px' }}>
                      {u.role === 'ADMIN' ? '최고 관리자' : u.role}
                    </span>
                 </td>
@@ -175,7 +160,7 @@ export const AdminAuth = () => {
                     className="input-field" 
                     value={u.role} 
                     onChange={e => handleRoleChange(u.id, e.target.value)}
-                    style={{ minHeight: '38px', padding: '0 10px', fontSize: '0.9rem', width: '180px', marginBottom: 0 }}
+                    style={{ minHeight: '36px', padding: '0 10px', fontSize: '0.9rem', width: '150px', marginBottom: 0, background: '#f8fafc' }}
                     disabled={u.id === user?.id}
                   >
                     <option value="TESTER">시험원</option>
@@ -194,6 +179,65 @@ export const AdminAuth = () => {
           </tbody>
         </table>
       </section>
+
+      {/* 2. User Detail Edit Modal */}
+      {editUser && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '450px', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Edit2 size={20}/> 사용자 상세 수정</h3>
+              <button onClick={() => setEditUser(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={24}/></button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>성명</label>
+                <input 
+                  className="input-field" 
+                  value={editUser.name} 
+                  onChange={e => setEditUser({ ...editUser, name: e.target.value })} 
+                  style={{ margin: 0 }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>이메일</label>
+                <input 
+                   className="input-field" 
+                   type="email"
+                   value={editUser.email} 
+                   onChange={e => setEditUser({ ...editUser, email: e.target.value })} 
+                   style={{ margin: 0 }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>연락처(휴대폰)</label>
+                <input 
+                   className="input-field" 
+                   placeholder="010-0000-0000"
+                   value={editUser.phone || ''} 
+                   onChange={e => setEditUser({ ...editUser, phone: e.target.value })} 
+                   style={{ margin: 0 }}
+                />
+              </div>
+              <div style={{ background: '#fef2f2', padding: '1rem', borderRadius: '8px', border: '1px solid #fee2e2' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 900, marginBottom: '6px', color: '#b91c1c' }}>비밀번호 초기화/수정</label>
+                <input 
+                   className="input-field" 
+                   value={editUser.passwordHash} 
+                   onChange={e => setEditUser({ ...editUser, passwordHash: e.target.value })} 
+                   style={{ margin: 0, border: '1px solid #f87171' }}
+                />
+                <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>* 저장 시 해당 비밀번호로 즉시 변경됩니다.</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
+                <button className="btn btn-primary" onClick={handleUpdateUser} style={{ flex: 1, margin: 0, padding: '12px' }}>저장하기</button>
+                <button className="btn btn-secondary" onClick={() => setEditUser(null)} style={{ flex: 1, margin: 0, padding: '12px' }}>취소</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 };

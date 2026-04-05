@@ -8,6 +8,8 @@ export default async function handler(req, res) {
           id: true,
           name: true,
           email: true,
+          phone: true,
+          passwordHash: true,
           role: true,
         }
       });
@@ -20,11 +22,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PATCH') {
-    const { id, role, name } = req.body;
+    const { id, role, name, email, phone, passwordHash } = req.body;
     try {
       const updatedUser = await prisma.user.update({
         where: { id },
-        data: { role, name },
+        data: { role, name, email, phone, passwordHash },
       });
       return res.status(200).json(updatedUser);
     } catch (error) {
