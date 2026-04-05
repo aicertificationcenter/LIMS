@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Trash2, Send, Download, Search } from 'lucide-react';
+import { Trash2, Send, Download, Search, Plus, Printer, FileText } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -138,166 +138,235 @@ export const Invoices = () => {
         </div>
       </aside>
 
-      {/* Main Content: Editor & Preview */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', overflowY: 'auto' }}>
+      {/* Main Content: Vertical Editor & Preview */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto', paddingRight: '10px' }}>
         
+        {selectedSample && (
+          <div className="card" style={{ background: 'var(--kaic-navy)', color: 'white' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FileText size={20} /> 시험 대상 정보: <span style={{ color: '#fbbf24' }}>{selectedSample.target || '정보 없음'}</span>
+            </h3>
+            <div style={{ display: 'flex', gap: '2rem', marginTop: '10px', fontSize: '0.9rem', opacity: 0.9 }}>
+               <span><strong>의뢰처:</strong> {selectedSample.clientId}</span>
+               <span><strong>담당자:</strong> {selectedSample.clientName}</span>
+               <span><strong>연락처:</strong> {selectedSample.phone}</span>
+               <span><strong>접수일:</strong> {new Date(selectedSample.receivedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+        )}
+
         {/* Invoice Item Editor */}
         <div className="card">
-           <h2 className="card-title">견적 세부 항목 편집</h2>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
+              <h2 className="card-title" style={{ margin: 0, border: 'none' }}>견적 세부 항목 편집</h2>
+              {selectedSample && (
+                <button className="btn btn-primary" onClick={handleAddItem} style={{ margin: 0, padding: '8px 16px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus size={18} /> 항목 추가
+                </button>
+              )}
+           </div>
+           
            {selectedSample ? (
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <span style={{ fontWeight: 800, color: 'var(--kaic-navy)' }}>{selectedSample.barcode} - 품목 추가</span>
-                   <button className="btn btn-secondary" onClick={handleAddItem} style={{ margin: 0, padding: '4px 12px', fontSize: '0.8rem' }}>+ 항목 추가</button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                   <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 0.6fr 150px 40px', gap: '12px', padding: '0 10px', fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>
+                      <div>품목 또는 시험명</div>
+                      <div>단가 (₩)</div>
+                      <div style={{ textAlign: 'center' }}>수량</div>
+                      <div style={{ textAlign: 'right' }}>금액</div>
+                      <div></div>
+                   </div>
                    {items.map((item, idx) => (
-                     <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 0.5fr 0.8fr 36px', gap: '8px', alignItems: 'center' }}>
-                        <input className="input-field" placeholder="품목 또는 시험명" value={item.title} onChange={e => handleUpdateItem(idx, 'title', e.target.value)} style={{ margin: 0, fontSize: '0.85rem' }} />
-                        <input className="input-field" type="number" placeholder="단가" value={item.unitCost} onChange={e => handleUpdateItem(idx, 'unitCost', parseInt(e.target.value)||0)} style={{ margin: 0, fontSize: '0.85rem' }} />
-                        <input className="input-field" type="number" placeholder="수량" value={item.qty} onChange={e => handleUpdateItem(idx, 'qty', parseInt(e.target.value)||1)} style={{ margin: 0, fontSize: '0.85rem' }} />
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700, textAlign: 'right' }}>{(item.price || 0).toLocaleString()}₩</div>
-                        <button onClick={() => handleRemoveItem(idx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                     <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 0.6fr 150px 40px', gap: '12px', alignItems: 'center', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                        <input 
+                          className="input-field" 
+                          placeholder="시험 내용 입력" 
+                          value={item.title} 
+                          onChange={e => handleUpdateItem(idx, 'title', e.target.value)} 
+                          style={{ margin: 0, fontSize: '1rem', background: 'white', color: 'black', fontWeight: 600, border: '1px solid #cbd5e1' }} 
+                        />
+                        <input 
+                          className="input-field" 
+                          type="number" 
+                          placeholder="0" 
+                          value={item.unitCost} 
+                          onChange={e => handleUpdateItem(idx, 'unitCost', parseInt(e.target.value)||0)} 
+                          style={{ margin: 0, fontSize: '1rem', background: 'white', color: 'black', fontWeight: 600, border: '1px solid #cbd5e1', textAlign: 'right' }} 
+                        />
+                        <input 
+                          className="input-field" 
+                          type="number" 
+                          placeholder="1" 
+                          value={item.qty} 
+                          onChange={e => handleUpdateItem(idx, 'qty', parseInt(e.target.value)||1)} 
+                          style={{ margin: 0, fontSize: '1rem', background: 'white', color: 'black', fontWeight: 600, border: '1px solid #cbd5e1', textAlign: 'center' }} 
+                        />
+                        <div style={{ fontSize: '1.1rem', fontWeight: 900, textAlign: 'right', color: 'var(--kaic-navy)' }}>{(item.price || 0).toLocaleString()}₩</div>
+                        <button onClick={() => handleRemoveItem(idx)} style={{ background: '#fee2e2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px', borderRadius: '6px' }}><Trash2 size={20} /></button>
                      </div>
                    ))}
                 </div>
 
-                <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '8px' }}>할인율 (%)</label>
-                   <input className="input-field" type="number" value={discountRate} onChange={e => setDiscountRate(parseInt(e.target.value)||0)} style={{ width: '100px' }} />
-                </div>
-
-                <div style={{ display: 'flex', gap: '12px', marginTop: '2rem' }}>
-                   <button className="btn btn-primary" style={{ flex: 1, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleMailInvoice} disabled={isSending}>
-                      <Send size={18} /> {isSending ? '발송 중...' : '견적서 메일 발송'}
-                   </button>
-                   <button className="btn btn-secondary" style={{ flex: 1, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={async () => { const blob = await generatePDFBlob(); if(blob) { const url = URL.createObjectURL(blob); window.open(url); } }}>
-                      <Download size={18} /> PDF 다운로드
-                   </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', background: '#f1f5f9', padding: '1.5rem', borderRadius: '12px' }}>
+                   <div>
+                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 800, marginBottom: '8px', color: '#475569' }}>할인율 설정 (%)</label>
+                     <input 
+                       className="input-field" 
+                       type="number" 
+                       value={discountRate} 
+                       onChange={e => setDiscountRate(parseInt(e.target.value)||0)} 
+                       style={{ width: '120px', fontSize: '1.1rem', background: 'white', color: 'black', fontWeight: 800, margin: 0 }} 
+                     />
+                   </div>
+                   <div style={{ display: 'flex', gap: '1rem' }}>
+                     <button className="btn btn-primary" style={{ margin: 0, minHeight: '52px', padding: '0 2rem', fontSize: '1.1rem', background: 'var(--kaic-navy)' }} onClick={handleMailInvoice} disabled={isSending}>
+                        <Send size={20} style={{ marginRight: '8px' }} /> {isSending ? '발송 중...' : '견적서 메일 발송'}
+                     </button>
+                     <button className="btn btn-secondary" style={{ margin: 0, minHeight: '52px', padding: '0 2rem', fontSize: '1.1rem' }} onClick={async () => { const blob = await generatePDFBlob(); if(blob) { const url = URL.createObjectURL(blob); window.open(url); } }}>
+                        <Download size={20} style={{ marginRight: '8px' }} /> PDF 다운로드
+                     </button>
+                   </div>
                 </div>
              </div>
            ) : (
-             <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>왼쪽 목록에서 대상을 선택하세요.</div>
+             <div style={{ textAlign: 'center', padding: '5rem', color: '#94a3b8', fontSize: '1.1rem' }}>왼쪽 목록에서 견적을 발행할 대상을 선택해 주세요.</div>
            )}
         </div>
 
-        {/* Live Preview (Real Invoice Style) */}
-        <div style={{ overflow: 'auto', background: '#334155', padding: '2rem', borderRadius: '16px' }}>
-          <div 
-            ref={invoiceRef}
-            style={{ 
-              width: '210mm', 
-              minHeight: '297mm', 
-              background: 'white', 
-              margin: '0 auto', 
-              padding: '20mm 15mm', 
-              boxSizing: 'border-box',
-              fontFamily: '"Malgun Gothic", sans-serif',
-              color: '#333',
-              position: 'relative'
-            }}
-          >
-            {/* Invoice Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '4px solid #1e3a8a', paddingBottom: '15px', marginBottom: '20px' }}>
-              <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 900, letterSpacing: '4px' }}>견 적 서</h1>
-              <div style={{ textAlign: 'right' }}>
-                <h2 style={{ margin: 0, fontSize: '32px', color: '#64748b', fontWeight: 300 }}>Invoice</h2>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-              <div style={{ fontSize: '10px', color: '#64748b' }}>
-                KOLAS 공인시험기관 제 1177호 (ISO/IEC 25023, 25051)
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                 <div style={{ fontWeight: 900, fontSize: '14px' }}>(주) 한국인공지능검증원</div>
-                 <div style={{ fontSize: '11px' }}>AI Certification</div>
-              </div>
-            </div>
-
-            {/* Client Info Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '30px', marginBottom: '40px' }}>
-               <div style={{ border: '2px solid #e2e8f0', padding: '15px', borderRadius: '4px' }}>
-                  <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#475569', marginBottom: '8px' }}>Client</div>
-                  <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '4px' }}>{selectedSample?.clientId || '의뢰처명'}</div>
-                  <div style={{ fontSize: '13px' }}>({selectedSample?.bizNo || '사업자번호'})</div>
-                  <div style={{ marginTop: '10px', fontWeight: 700 }}>의뢰자: {selectedSample?.clientName || '성함'} 귀하</div>
-               </div>
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '8px', fontSize: '13px', alignItems: 'center' }}>
-                  <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>일련번호</div>
-                  <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>{selectedSample?.barcode || '-'}</div>
-                  <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>견적일자</div>
-                  <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>{new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                  <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>유효기한</div>
-                  <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>견적일로부터 60일</div>
-               </div>
-            </div>
-
-            {/* Items Table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
-              <thead>
-                <tr style={{ background: '#1e3a8a', color: 'white' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>항목 (Title)</th>
-                  <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px' }}>단가 (Unit Cost)</th>
-                  <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>수량 (Qty)</th>
-                  <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px' }}>공급가액 (Price)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '12px', fontSize: '13px', fontWeight: 700 }}>{item.title || '항목 내용을 입력하세요'}</td>
-                    <td style={{ padding: '12px', fontSize: '13px', textAlign: 'right' }}>{(item.unitCost || 0).toLocaleString()}</td>
-                    <td style={{ padding: '12px', fontSize: '13px', textAlign: 'center' }}>{item.qty || 0}</td>
-                    <td style={{ padding: '12px', fontSize: '13px', textAlign: 'right', fontWeight: 700 }}>{(item.price || 0).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Summary / Totals */}
-            <div style={{ marginLeft: 'auto', width: '300px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Sub Total (소계)</span>
-                  <span style={{ fontWeight: 700 }}>{subtotal.toLocaleString()} ₩</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Discount ({discountRate}%)</span>
-                  <span style={{ color: '#ef4444' }}>- {discountAmt.toLocaleString()} ₩</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderTop: '1px solid #e2e8f0', paddingTop: '4px', marginTop: '4px' }}>
-                  <span style={{ fontWeight: 700 }}>Summary (합계)</span>
-                  <span style={{ fontWeight: 900 }}>{summary.toLocaleString()} ₩</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>VAT (Tax 10%)</span>
-                  <span style={{ fontWeight: 700 }}>{vat.toLocaleString()} ₩</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', background: '#f8fafc', padding: '8px', marginTop: '10px', borderTop: '2px solid #1e3a8a' }}>
-                  <span style={{ fontWeight: 900, color: '#1e3a8a' }}>Total (합계)</span>
-                  <span style={{ fontWeight: 900, color: '#1e3a8a' }}>{total.toLocaleString()} ₩</span>
-               </div>
-            </div>
-
-            <div style={{ marginTop: '60px', fontSize: '13px' }}>
-              위와 같이 견적합니다.
-              <div style={{ marginTop: '10px' }}>* 첨부: 시험신청서 1부</div>
-            </div>
-
-            <div style={{ position: 'absolute', bottom: '20mm', right: '15mm', textAlign: 'right' }}>
-               <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '5px' }}>한국인공지능검증원장</div>
-               <div style={{ position: 'relative', display: 'inline-block' }}>
-                 <img src="/stamp.png" alt="Company Stamp" style={{ height: '60px', opacity: 0.8 }} />
-               </div>
-            </div>
+        {/* Live Preview (Scaled to 50%) */}
+        {selectedSample && (
+          <div className="card" style={{ background: '#334155', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h3 style={{ color: 'white', marginTop: 0, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Printer size={20} /> 실시간 견적서 미리보기 (50% 축소 화면)
+            </h3>
             
-            <div style={{ position: 'absolute', bottom: '10mm', left: '15mm', right: '15mm', textAlign: 'center', fontSize: '10px', color: '#94a3b8' }}>
-               서울시 성동구 왕십리로 58, 416호(서울숲 FORHU) | Tel: 02-123-4567 | www.aicerti.com
+            {/* The Scaling Wrapper */}
+            <div style={{ 
+                width: '105mm', // 210mm * 0.5
+                height: '148.5mm', // 297mm * 0.5
+                overflow: 'hidden',
+                borderRadius: '4px',
+                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
+                background: 'white'
+            }}>
+              <div 
+                ref={invoiceRef}
+                style={{ 
+                  width: '210mm', 
+                  minHeight: '297mm', 
+                  background: 'white', 
+                  padding: '20mm 15mm', 
+                  boxSizing: 'border-box',
+                  fontFamily: '"Malgun Gothic", sans-serif',
+                  color: '#333',
+                  position: 'relative',
+                  transform: 'scale(0.5)',
+                  transformOrigin: 'top left',
+                }}
+              >
+                {/* Invoice Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '4px solid #1e3a8a', paddingBottom: '15px', marginBottom: '20px' }}>
+                  <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 900, letterSpacing: '4px' }}>견 적 서</h1>
+                  <div style={{ textAlign: 'right' }}>
+                    <h2 style={{ margin: 0, fontSize: '32px', color: '#64748b', fontWeight: 300 }}>Invoice</h2>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                  <div style={{ fontSize: '10px', color: '#64748b' }}>
+                    KOLAS 공인시험기관 제 1177호 (ISO/IEC 25023, 25051)
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 900, fontSize: '14px' }}>(주) 한국인공지능검증원</div>
+                    <div style={{ fontSize: '11px' }}>AI Certification</div>
+                  </div>
+                </div>
+
+                {/* Client Info Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '30px', marginBottom: '40px' }}>
+                  <div style={{ border: '2px solid #e2e8f0', padding: '15px', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#475569', marginBottom: '8px' }}>Client</div>
+                      <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '4px' }}>{selectedSample?.clientId || '의뢰처명'}</div>
+                      <div style={{ fontSize: '13px' }}>({selectedSample?.bizNo || '사업자번호'})</div>
+                      <div style={{ marginTop: '10px', fontWeight: 700 }}>의뢰자: {selectedSample?.clientName || '성함'} 귀하</div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '8px', fontSize: '13px', alignItems: 'center' }}>
+                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>일련번호</div>
+                      <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>{selectedSample?.barcode || '-'}</div>
+                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>견적일자</div>
+                      <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>{new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>유효기한</div>
+                      <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>견적일로부터 60일</div>
+                  </div>
+                </div>
+
+                {/* Items Table */}
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
+                  <thead>
+                    <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px' }}>항목 (Title)</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px' }}>단가 (Unit Cost)</th>
+                      <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px' }}>수량 (Qty)</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px' }}>공급가액 (Price)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '12px', fontSize: '13px', fontWeight: 700 }}>{item.title || '항목 내용을 입력하세요'}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'right' }}>{(item.unitCost || 0).toLocaleString()}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'center' }}>{item.qty || 0}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'right', fontWeight: 700 }}>{(item.price || 0).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Summary / Totals */}
+                <div style={{ marginLeft: 'auto', width: '300px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: '#64748b' }}>Sub Total (소계)</span>
+                      <span style={{ fontWeight: 700 }}>{subtotal.toLocaleString()} ₩</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: '#64748b' }}>Discount ({discountRate}%)</span>
+                      <span style={{ color: '#ef4444' }}>- {discountAmt.toLocaleString()} ₩</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderTop: '1px solid #e2e8f0', paddingTop: '4px', marginTop: '4px' }}>
+                      <span style={{ fontWeight: 700 }}>Summary (합계)</span>
+                      <span style={{ fontWeight: 900 }}>{summary.toLocaleString()} ₩</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: '#64748b' }}>VAT (Tax 10%)</span>
+                      <span style={{ fontWeight: 700 }}>{vat.toLocaleString()} ₩</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', background: '#f8fafc', padding: '8px', marginTop: '10px', borderTop: '2px solid #1e3a8a' }}>
+                      <span style={{ fontWeight: 900, color: '#1e3a8a' }}>Total (합계)</span>
+                      <span style={{ fontWeight: 900, color: '#1e3a8a' }}>{total.toLocaleString()} ₩</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '60px', fontSize: '13px' }}>
+                  위와 같이 견적합니다.
+                  <div style={{ marginTop: '10px' }}>* 첨부: 시험신청서 1부</div>
+                </div>
+
+                <div style={{ position: 'absolute', bottom: '20mm', right: '15mm', textAlign: 'right' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '5px' }}>한국인공지능검증원장</div>
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <img src="/stamp.png" alt="Company Stamp" style={{ height: '60px', opacity: 0.8 }} />
+                  </div>
+                </div>
+                
+                <div style={{ position: 'absolute', bottom: '10mm', left: '15mm', right: '15mm', textAlign: 'center', fontSize: '10px', color: '#94a3b8' }}>
+                  서울시 성동구 왕십리로 58, 416호(서울숲 FORHU) | Tel: 02-123-4567 | www.aicerti.com
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </section>
     </main>
   );
 };
+
