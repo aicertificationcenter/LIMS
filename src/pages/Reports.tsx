@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Download, FileText, Archive, CheckCircle, Trash2, UploadCloud, FileType } from 'lucide-react';
+import { Download, FileText, Trash2, UploadCloud, FileType } from 'lucide-react';
 
 export const Reports = () => {
   const { user } = useAuth();
