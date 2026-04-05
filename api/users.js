@@ -20,21 +20,32 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PATCH') {
-    const { id, role } = req.body;
+    const { id, role, name } = req.body;
     try {
       const updatedUser = await prisma.user.update({
         where: { id },
-        data: { role },
+        data: { role, name },
       });
       return res.status(200).json(updatedUser);
     } catch (error) {
-      return res.status(500).json({ message: '권한 변경 실패', error: error.message });
+      return res.status(500).json({ message: '사용자 정보 변경 실패', error: error.message });
     }
   }
 
   if (req.method === 'DELETE') {
     const { id } = req.body;
     try {
+      // Check for existing performance data
+      const testCount = await prisma.test.count({
+        where: { testerId: id }
+      });
+      
+      if (testCount > 0) {
+        return res.status(403).json({ 
+          message: '시험 수행 실적이 있는 사용자는 삭제할 수 없습니다. (권한 변경만 가능)' 
+        });
+      }
+
       await prisma.user.delete({
         where: { id },
       });

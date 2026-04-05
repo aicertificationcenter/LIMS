@@ -78,12 +78,16 @@ export const Layout = () => {
               <Users size={18} /> 의뢰처 관리
             </Link>
           )}
-          <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ClipboardList size={18} /> 나의시험
-          </Link>
-          <Link to="/reports" style={{ color: location.pathname==='/reports' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <FileText size={18} /> 성적서 발행
-          </Link>
+          {user.role !== 'ADMIN' && (
+            <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ClipboardList size={18} /> 나의시험
+            </Link>
+          )}
+          {user.role !== 'ADMIN' && (
+            <Link to="/reports" style={{ color: location.pathname==='/reports' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={18} /> 성적서 발행
+            </Link>
+          )}
           <Link to="/stats" style={{ color: location.pathname==='/stats' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <LayoutDashboard size={18} /> 대시보드
           </Link>

@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Navigate } from 'react-router-dom';
-import { Trash2, ShieldAlert, UserCheck, Activity } from 'lucide-react';
+import { Trash2, ShieldAlert, UserCheck, Activity, Edit2, Check, X } from 'lucide-react';
 
 const StatusBadge = ({ status }: { status: string }) => {
   const map: any = {
@@ -42,6 +43,9 @@ export const AdminAuth = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [receptions, setReceptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [newName, setNewName] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -79,6 +83,26 @@ export const AdminAuth = () => {
       } else {
         const err = await res.json();
         alert('권한 변경 실패: ' + err.message);
+      }
+    } catch (error: any) {
+      alert('오류: ' + error.message);
+    }
+  };
+
+  const handleNameUpdate = async (id: string) => {
+    if (!newName.trim()) return;
+    try {
+      const res = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: newName }),
+      });
+      if (res.ok) {
+        setEditingNameId(null);
+        fetchData();
+      } else {
+        const err = await res.json();
+        alert('사용자 정보 변경 실패: ' + err.message);
       }
     } catch (error: any) {
       alert('오류: ' + error.message);
@@ -176,7 +200,32 @@ export const AdminAuth = () => {
           <tbody>
             {activeUsers.map(u => (
               <tr key={u.id}>
-                <td style={{ fontWeight: 600 }}>{u.name} <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>({u.id})</span></td>
+                <td style={{ fontWeight: 600 }}>
+                  {editingNameId === u.id ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input 
+                        className="input-field" 
+                        value={newName} 
+                        onChange={e => setNewName(e.target.value)} 
+                        style={{ padding: '4px 8px', margin: 0, minHeight: '32px', fontSize: '0.9rem', width: '120px' }}
+                        autoFocus
+                      />
+                      <button onClick={() => handleNameUpdate(u.id)} style={{ padding: '4px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}><Check size={14}/></button>
+                      <button onClick={() => setEditingNameId(null)} style={{ padding: '4px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}><X size={14}/></button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {u.name} <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>({u.id})</span>
+                      <button 
+                        onClick={() => { setEditingNameId(u.id); setNewName(u.name || ''); }} 
+                        style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '2px' }}
+                        title="이름 수정"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </td>
                 <td>{u.email}</td>
                 <td>
                    <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : undefined }}>
@@ -184,12 +233,12 @@ export const AdminAuth = () => {
                    </span>
                 </td>
                 <td>
-                  <select 
+                   <select 
                     className="input-field" 
                     value={u.role} 
                     onChange={e => handleRoleChange(u.id, e.target.value)}
                     style={{ minHeight: '38px', padding: '0 10px', fontSize: '0.9rem', width: '180px', marginBottom: 0 }}
-                    disabled={u.id === user?.id} // Don't allow self-role-change
+                    disabled={u.id === user?.id}
                   >
                     <option value="TESTER">시험원</option>
                     <option value="TECH_MGR">기술책임자</option>
