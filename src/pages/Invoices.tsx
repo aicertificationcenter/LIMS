@@ -111,9 +111,8 @@ export const Invoices = () => {
           })
         });
         if (res.ok) {
-           alert('견적서가 이메일로 성공적으로 발송되었습니다. (서버에도 내역이 저장됩니다)');
-           // Also save invoice data to database
-           await apiClient.invoices.create({
+           // Save invoice data to database
+           const savedInvoice = await apiClient.invoices.create({
              sampleId: selectedSample.id,
              invoiceNo: selectedSample.barcode,
              items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
@@ -123,7 +122,12 @@ export const Invoices = () => {
              vat,
              total
            });
-           fetchData(); // Refresh to reflect invoice existence
+           
+           // Update local state instantly so the "Saved" banner appears
+           setSelectedSample({ ...selectedSample, invoice: savedInvoice });
+           
+           alert('견적서가 이메일로 성공적으로 발송되었습니다. (서버에도 내역이 저장되었습니다)');
+           fetchData(); // Refresh sidebar list
         } else alert('발송 실패');
       };
     } catch (err: any) {
@@ -188,11 +192,24 @@ export const Invoices = () => {
                     {selectedSample.target || '정보 없음'}
                   </span>
                 </h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.85rem', opacity: 0.85 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.85rem', opacity: 0.85, alignItems: 'center' }}>
                    <span><strong>의뢰처:</strong> {selectedSample.clientId}</span>
                    <span><strong>담당자:</strong> {selectedSample.clientName}</span>
                    <span><strong>연락처:</strong> {selectedSample.phone || '-'}</span>
                    <span><strong>접수일:</strong> {new Date(selectedSample.receivedAt).toLocaleDateString()}</span>
+                   {selectedSample.invoice && (
+                     <span style={{ 
+                       background: '#10b981', 
+                       color: 'white', 
+                       padding: '2px 8px', 
+                       borderRadius: '4px', 
+                       fontSize: '0.75rem', 
+                       fontWeight: 800,
+                       marginLeft: '10px'
+                     }}>
+                       ✅ 서버 저장 완료
+                     </span>
+                   )}
                 </div>
               </div>
               

@@ -182,26 +182,66 @@ export const Reception = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {filteredReceptions.map(r => (
             <div key={r.id} style={{ padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: 'white' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                   <h3 style={{ margin: 0, color: 'var(--kaic-navy)' }}>{r.barcode} <span className={`badge badge-${r.status.toLowerCase()}`}>{r.status}</span></h3>
-                   <small style={{ color: '#64748b' }}>시스템 자동 채번시간: {new Date(r.receivedAt).toLocaleString('ko-KR')}</small>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                      <h3 style={{ margin: 0, color: 'var(--kaic-navy)', fontSize: '1.4rem', fontWeight: 900 }}>
+                        {r.clientId} 
+                      </h3>
+                      <span className={`badge badge-${r.status.toLowerCase()}`} style={{ fontSize: '0.75rem', padding: '4px 10px' }}>{r.status}</span>
+                   </div>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#64748b' }}>
+                      <span style={{ fontWeight: 800, background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', color: 'var(--kaic-blue)' }}>{r.barcode}</span>
+                      <span style={{ opacity: 0.6 }}>|</span>
+                      <span style={{ fontWeight: 600 }}>담당: {r.clientName}</span>
+                   </div>
                 </div>
-                {user?.role === 'ADMIN' && r.status === 'RECEIVED' ? (
-                  <select 
-                    className="input-field"
-                    style={{ minHeight: '40px', padding: '0 15px', fontSize: '0.9rem', marginBottom: 0, width: '250px' }}
-                    onChange={(e) => handleAssignTester(r.id, e.target.value)}
-                    value=""
-                  >
-                    <option value="" disabled>시험원 배정 (선택)</option>
-                    {users.map(u => (
-                      <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-                    ))}
-                  </select>
-                ) : r.tests?.[0]?.tester?.name ? (
-                  <span style={{ fontWeight: 600, color: '#047857' }}>현재 담당: {r.tests[0].tester.name} 시험원</span>
-                ) : null}
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                   <div style={{ 
+                     background: 'rgba(56, 189, 248, 0.1)', 
+                     color: '#0369a1', 
+                     padding: '8px 16px', 
+                     borderRadius: '12px', 
+                     fontWeight: 800, 
+                     fontSize: '0.95rem',
+                     border: '1px solid rgba(56, 189, 248, 0.2)'
+                   }}>
+                      🕒 {new Date(r.receivedAt).toLocaleString('ko-KR', { 
+                        month: 'long', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                   </div>
+                   <div style={{ marginTop: '6px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
+                      전산 자동 접수 완료
+                   </div>
+                </div>
+              </div>
+
+              {/* Assignment bar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>현장 시험원 배정:</span>
+                    {user?.role === 'ADMIN' && r.status === 'RECEIVED' ? (
+                      <select 
+                        className="input-field"
+                        style={{ minHeight: '36px', padding: '0 10px', fontSize: '0.85rem', marginBottom: 0, width: '200px', background: '#fff' }}
+                        onChange={(e) => handleAssignTester(r.id, e.target.value)}
+                        value={r.tests?.[0]?.testerId || ''}
+                      >
+                        <option value="" disabled>시험원 선택</option>
+                        {users.filter(u => u.role !== 'ADMIN').map(u => (
+                          <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                        ))}
+                      </select>
+                    ) : r.tests?.[0]?.tester?.name ? (
+                      <span style={{ fontWeight: 700, color: '#047857', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></span>
+                        {r.tests[0].tester.name} 시험원 담당
+                      </span>
+                    ) : <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>미배정</span>}
+                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
