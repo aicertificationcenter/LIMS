@@ -157,10 +157,28 @@ export const AdminAuth = () => {
                 </td>
                 <td>
                    <select 
-                    className="input-field" 
+                    className="input-field role-select" 
                     value={u.role} 
                     onChange={e => handleRoleChange(u.id, e.target.value)}
-                    style={{ minHeight: '36px', padding: '0 10px', fontSize: '0.9rem', width: '150px', marginBottom: 0, background: '#f8fafc' }}
+                    style={{ 
+                      minHeight: '38px', 
+                      padding: '0 36px 0 14px', 
+                      fontSize: '0.85rem', 
+                      width: '160px', 
+                      marginBottom: 0, 
+                      background: 'white', 
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      fontWeight: 700,
+                      color: 'var(--kaic-navy)',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      appearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 12px center',
+                      backgroundSize: '14px'
+                    }}
                     disabled={u.id === user?.id}
                   >
                     <option value="TESTER">시험원</option>
