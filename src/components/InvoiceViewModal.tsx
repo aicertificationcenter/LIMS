@@ -10,6 +10,14 @@ interface InvoiceViewModalProps {
 export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, onClose }) => {
   if (!invoice) return null;
 
+  // Defensive data preparation
+  const safeItems = invoice.items || [];
+  const safeSubtotal = invoice.subtotal || 0;
+  const safeVat = invoice.vat || 0;
+  const safeTotal = invoice.total || 0;
+  const safeDiscountAmt = invoice.discountAmt || 0;
+  const safeDiscountRate = invoice.discountRate || 0;
+
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem', backdropFilter: 'blur(4px)' }}>
       <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto', padding: 0, boxShadow: '0 25px 50px -12px rgba(0,0, 0, 0.25)', border: 'none' }}>
@@ -43,7 +51,7 @@ export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, onC
                 </tr>
               </thead>
               <tbody>
-                {invoice.items?.map((item: any) => (
+                {safeItems.map((item: any) => (
                   <tr key={item.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
                     <td style={{ padding: '12px 0', fontWeight: 600 }}>{item.title}</td>
                     <td style={{ padding: '12px 0', textAlign: 'right' }}>₩{(item.unitCost || 0).toLocaleString()}</td>
@@ -58,19 +66,19 @@ export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, onC
           <div style={{ marginLeft: 'auto', width: '300px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                <span style={{ color: '#64748b' }}>공급가액</span>
-                <span style={{ fontWeight: 600 }}>₩{(invoice.subtotal || 0).toLocaleString()}</span>
+               <span style={{ fontWeight: 600 }}>₩{safeSubtotal.toLocaleString()}</span>
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#ef4444' }}>
-               <span>할인액 ({invoice.discountRate || 0}%)</span>
-               <span>-₩{(invoice.discountAmt || 0).toLocaleString()}</span>
+               <span>할인액 ({safeDiscountRate}%)</span>
+               <span>-₩{safeDiscountAmt.toLocaleString()}</span>
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                <span style={{ color: '#64748b' }}>부가세 (VAT)</span>
-               <span style={{ fontWeight: 600 }}>₩{(invoice.vat || 0).toLocaleString()}</span>
+               <span style={{ fontWeight: 600 }}>₩{safeVat.toLocaleString()}</span>
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 800, color: 'var(--kaic-navy)', borderTop: '2px solid #e2e8f0', paddingTop: '10px', marginTop: '5px' }}>
                <span>최종 합계</span>
-               <span>₩{(invoice.total || 0).toLocaleString()}</span>
+               <span>₩{safeTotal.toLocaleString()}</span>
              </div>
           </div>
 
