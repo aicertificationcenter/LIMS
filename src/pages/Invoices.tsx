@@ -142,15 +142,54 @@ export const Invoices = () => {
       <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto', paddingRight: '10px' }}>
         
         {selectedSample && (
-          <div className="card" style={{ background: 'var(--kaic-navy)', color: 'white' }}>
-            <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FileText size={20} /> 시험 대상 정보: <span style={{ color: '#fbbf24' }}>{selectedSample.target || '정보 없음'}</span>
-            </h3>
-            <div style={{ display: 'flex', gap: '2rem', marginTop: '10px', fontSize: '0.9rem', opacity: 0.9 }}>
-               <span><strong>의뢰처:</strong> {selectedSample.clientId}</span>
-               <span><strong>담당자:</strong> {selectedSample.clientName}</span>
-               <span><strong>연락처:</strong> {selectedSample.phone}</span>
-               <span><strong>접수일:</strong> {new Date(selectedSample.receivedAt).toLocaleDateString()}</span>
+          <div className="card" style={{ background: 'var(--kaic-navy)', color: 'white', padding: '1.25rem 1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: 0 }}>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                  <FileText size={20} style={{ flexShrink: 0 }} /> 
+                  <span style={{ whiteSpace: 'nowrap' }}>시험 대상 정보:</span>
+                  <span 
+                    style={{ 
+                      color: '#fbbf24', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis', 
+                      whiteSpace: 'nowrap',
+                      fontWeight: 800
+                    }} 
+                    title={selectedSample.target || '정보 없음'}
+                  >
+                    {selectedSample.target || '정보 없음'}
+                  </span>
+                </h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.85rem', opacity: 0.85 }}>
+                   <span><strong>의뢰처:</strong> {selectedSample.clientId}</span>
+                   <span><strong>담당자:</strong> {selectedSample.clientName}</span>
+                   <span><strong>연락처:</strong> {selectedSample.phone || '-'}</span>
+                   <span><strong>접수일:</strong> {new Date(selectedSample.receivedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => window.open(`/reception?search=${selectedSample.barcode}`, '_blank')}
+                style={{ 
+                  background: 'rgba(255,255,255,0.15)', 
+                  border: '1px solid rgba(255,255,255,0.3)', 
+                  color: 'white', 
+                  padding: '8px 16px', 
+                  borderRadius: '8px', 
+                  fontSize: '0.85rem', 
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+              >
+                접수 상세 내역 보기 <Search size={14} />
+              </button>
             </div>
           </div>
         )}

@@ -16,6 +16,12 @@ export const Reception = () => {
 
   useEffect(() => {
     fetchData();
+    // Check for search query param
+    const params = new URLSearchParams(window.location.search);
+    const searchVal = params.get('search');
+    if (searchVal) {
+      setSearchQuery(searchVal);
+    }
   }, []);
 
   const fetchData = async () => {
