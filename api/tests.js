@@ -35,7 +35,12 @@ export default async function handler(req, res) {
         content: t.sample.content,
         consultation: t.sample.consultation,
         consultations: t.sample.consultations,
-        evidences: t.sample.evidences
+        evidences: t.sample.evidences,
+        testStartDate: t.sample.testStartDate,
+        testEndDate: t.sample.testEndDate,
+        testLocation: t.sample.testLocation,
+        testType: t.sample.testType,
+        testAddress: t.sample.testAddress
       }));
 
       return res.status(200).json(result);
