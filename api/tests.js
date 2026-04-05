@@ -26,6 +26,7 @@ export default async function handler(req, res) {
       const result = tests.map(t => ({
         id: t.sample.id,
         testId: t.sample.barcode,
+        testerBarcode: t.sample.testerBarcode,
         status: t.sample.status,
         client: t.sample.clientId,
         clientName: t.sample.clientName,

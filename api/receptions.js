@@ -55,11 +55,33 @@ export default async function handler(req, res) {
       try {
         const { id, testerId, status } = req.body;
         
-        // Update sample status
+        // Update sample status and generate testerBarcode if needed
+        const sample = await prisma.sample.findUnique({ where: { id } });
+        let testerBarcode = sample.testerBarcode;
+
+        if (testerId && !testerBarcode) {
+          const user = await prisma.user.findUnique({ where: { id: testerId } });
+          const now = new Date();
+          const yy = String(now.getFullYear()).slice(2);
+          const mm = String(now.getMonth() + 1).padStart(2, '0');
+          const dd = String(now.getDate()).padStart(2, '0');
+          const hh = String(now.getHours()).padStart(2, '0');
+          const min = String(now.getMinutes()).padStart(2, '0');
+          const timePrefix = `${yy}${mm}${dd}${hh}${min}`;
+          
+          const baseId = `${user.id}_${timePrefix}`;
+          const count = await prisma.sample.count({
+            where: { testerBarcode: { startsWith: baseId } }
+          });
+          const seq = String(count + 1).padStart(3, '0');
+          testerBarcode = `${baseId}_${seq}`;
+        }
+
         const updatedSample = await prisma.sample.update({
           where: { id },
           data: { 
-             status: 'IN_PROGRESS' 
+             status: status || 'IN_PROGRESS',
+             testerBarcode
           }
         });
 

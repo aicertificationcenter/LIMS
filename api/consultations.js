@@ -28,5 +28,30 @@ export default async function handler(req, res) {
     }
   }
 
+  if (method === 'PATCH') {
+    const { id, message, authorId } = req.body;
+    try {
+      const oldConsult = await prisma.consultation.findUnique({ where: { id } });
+      const currentHistory = Array.isArray(oldConsult.history) ? oldConsult.history : [];
+      
+      const newHistoryEntry = {
+        message: oldConsult.message,
+        updatedAt: new Date().toISOString(),
+        authorId: oldConsult.authorId
+      };
+
+      const updatedConsult = await prisma.consultation.update({
+        where: { id },
+        data: { 
+          message,
+          history: [...currentHistory, newHistoryEntry]
+        }
+      });
+      return res.status(200).json(updatedConsult);
+    } catch (error) {
+      return res.status(500).json({ message: '수정 중 오류 발생', error: error.message });
+    }
+  }
+
   return res.status(405).json({ message: 'Method Not Allowed' });
 }

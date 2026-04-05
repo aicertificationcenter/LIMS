@@ -53,6 +53,7 @@ model Sample {
   consultation String?
   status       SampleStatus @default(RECEIVED)
   location     String?
+  testerBarcode String?
   receivedAt   DateTime @default(now())
   tests        Test[]
   consultations Consultation[]
@@ -132,6 +133,7 @@ model Consultation {
   sampleId  String
   authorId  String
   message   String
+  history   Json?    // Array of { message, updatedAt, authorId }
   createdAt DateTime @default(now())
   sample    Sample   @relation(fields: [sampleId], references: [id])
 }

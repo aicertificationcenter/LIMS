@@ -58,6 +58,11 @@ export const apiClient = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    update: (id: string, data: { message: string; authorId: string }) =>
+      apiClient.fetch('/consultations', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, ...data }),
+      }),
   },
 
   evidences: {

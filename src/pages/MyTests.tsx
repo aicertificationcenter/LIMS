@@ -33,6 +33,9 @@ export const MyTests = () => {
 
   // States for the detail view
   const [newConsultText, setNewConsultText] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [showHistoryId, setShowHistoryId] = useState<string | null>(null);
 
   const handleOpenDetail = (id: string) => {
     setSelectedId(id);
@@ -48,6 +51,21 @@ export const MyTests = () => {
       });
       setNewConsultText('');
       fetchMyTasks(); // Refresh to show new consultation
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleUpdateConsult = async (id: string) => {
+    if (!editText.trim() || !user) return;
+    try {
+      await apiClient.consultations.update(id, {
+        message: editText,
+        authorId: user.id
+      });
+      setEditingId(null);
+      setEditText('');
+      fetchMyTasks();
     } catch (err: any) {
       alert(err.message);
     }
@@ -150,7 +168,10 @@ export const MyTests = () => {
               시험접수 상세 정보
               <span style={{ fontSize: '0.85rem', background: selectedTest.status === 'COMPLETED' ? '#10b981' : '#3b82f6', padding: '4px 10px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {selectedTest.status === 'COMPLETED' ? <CheckCircle size={14}/> : null}
-                번호: {selectedTest.testId}
+                번호: {selectedTest.barcode || selectedTest.testId}
+              </span>
+              <span style={{ marginLeft: '12px', fontSize: '0.85rem', background: '#ffffff33', padding: '4px 10px', borderRadius: '12px', opacity: 0.9 }}>
+                시험원번호: {selectedTest.testerBarcode || '미발급'}
               </span>
             </h2>
           </div>
@@ -169,11 +190,60 @@ export const MyTests = () => {
             <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem' }}>시험원 상담/협의 기록</h3>
             <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', marginBottom: '1rem' }}>
               {selectedTest.consultations?.map((c: any) => (
-                <div key={c.id} style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#64748b' }}>
-                    <span>작성자: {c.authorId} | 일시: {new Date(c.createdAt).toLocaleString()}</span>
+                <div key={c.id} style={{ background: 'white', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>작성자: {c.authorId} | 일시: {new Date(c.createdAt).toLocaleString()}</span>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      {c.history && c.history.length > 0 && (
+                        <button 
+                          onClick={() => setShowHistoryId(showHistoryId === c.id ? null : c.id)}
+                          style={{ background: 'none', border: 'none', color: 'var(--kaic-blue)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                        >
+                          {showHistoryId === c.id ? '이력 닫기' : `이력보기 (${c.history.length})`}
+                        </button>
+                      )}
+                      {selectedTest.status !== 'COMPLETED' && (c.authorId === user?.id || user?.role === 'ADMIN') && (
+                        <button 
+                          onClick={() => { setEditingId(c.id); setEditText(c.message); }}
+                          style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                        >
+                          수정
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ whiteSpace: 'pre-wrap', color: '#1e293b' }}>{c.message}</div>
+
+                  {editingId === c.id ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <textarea 
+                        className="input-field" 
+                        value={editText} 
+                        onChange={e => setEditText(e.target.value)} 
+                        rows={3} 
+                        style={{ background: '#fff', fontSize: '0.95rem' }} 
+                      />
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <button className="btn btn-secondary" onClick={() => setEditingId(null)} style={{ minHeight: '32px', padding: '0 12px', fontSize: '0.8rem' }}>취소</button>
+                        <button className="btn btn-primary" onClick={() => handleUpdateConsult(c.id)} style={{ minHeight: '32px', padding: '0 12px', fontSize: '0.8rem' }}>저장</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '1rem', lineHeight: 1.6 }}>{c.message}</div>
+                  )}
+
+                  {showHistoryId === c.id && c.history && (
+                    <div style={{ marginTop: '1.25rem', padding: '1rem', background: '#f1f5f9', borderRadius: '6px', borderLeft: '4px solid #cbd5e1' }}>
+                      <h4 style={{ margin: '0 0 10px 0', fontSize: '0.8rem', color: '#475569', textTransform: 'uppercase' }}>수정 이력 (Timeline)</h4>
+                      {c.history.map((h: any, idx: number) => (
+                        <div key={idx} style={{ marginBottom: idx === c.history.length -1 ? 0 : '12px', paddingBottom: idx === c.history.length -1 ? 0 : '12px', borderBottom: idx === c.history.length -1 ? 'none' : '1px dashed #cbd5e1' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>
+                            {new Date(h.updatedAt).toLocaleString()} | 원본 메시지
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#475569', whiteSpace: 'pre-wrap' }}>{h.message}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               {(!selectedTest.consultations || selectedTest.consultations.length === 0) && (
