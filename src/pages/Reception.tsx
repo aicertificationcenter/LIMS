@@ -1,6 +1,5 @@
-
 import { useEffect, useState, useMemo } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Search, Filter, ClipboardCheck, AlertCircle } from 'lucide-react';
@@ -8,6 +7,7 @@ import { InvoiceViewModal } from '../components/InvoiceViewModal';
 
 export const Reception = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [receptions, setReceptions] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -233,7 +233,7 @@ export const Reception = () => {
                 ) : (
                   <button 
                     className="btn" 
-                    onClick={() => window.location.href = `/invoices?id=${r.id}`}
+                    onClick={() => navigate(`/invoices?id=${r.id}`)}
                     style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#fff7ed', color: '#9a3412', border: '1px solid #ffedd5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}
                   >
                      <AlertCircle size={18} /> 견적발행 필요
