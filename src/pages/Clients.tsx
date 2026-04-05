@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Users, Search, FileText, Download, Mail, Send, X } from 'lucide-react';
+import { Users, Search, FileText, Download, Mail, Send } from 'lucide-react';
 
 export const Clients = () => {
   const { user } = useAuth();
