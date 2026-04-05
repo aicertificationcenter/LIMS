@@ -123,10 +123,10 @@ export const Invoices = () => {
              total
            });
            
-           // Update local state instantly so the "Saved" banner appears
-           setSelectedSample({ ...selectedSample, invoice: savedInvoice });
+           // Update local state instantly so the "Saved" banner and QUOTED status appear
+           setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
            
-           alert('견적서가 이메일로 성공적으로 발송되었습니다. (서버에도 내역이 저장되었습니다)');
+           alert('견적서 메일 발송 및 서버 저장이 완료되었습니다.');
            fetchData(); // Refresh sidebar list
         } else alert('발송 실패');
       };

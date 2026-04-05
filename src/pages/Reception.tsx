@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
@@ -188,7 +188,6 @@ export const Reception = () => {
                       <h3 style={{ margin: 0, color: 'var(--kaic-navy)', fontSize: '1.4rem', fontWeight: 900 }}>
                         {r.clientId} 
                       </h3>
-                      <span className={`badge badge-${r.status.toLowerCase()}`} style={{ fontSize: '0.75rem', padding: '4px 10px' }}>{r.status}</span>
                    </div>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#64748b' }}>
                       <span style={{ fontWeight: 800, background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', color: 'var(--kaic-blue)' }}>{r.barcode}</span>
@@ -213,10 +212,52 @@ export const Reception = () => {
                         minute: '2-digit' 
                       })}
                    </div>
-                   <div style={{ marginTop: '6px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
-                      전산 자동 접수 완료
-                   </div>
                 </div>
+              </div>
+
+              {/* Workflow Stepper */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                 {[
+                   { id: 'RECEIVED', label: '시험의뢰' },
+                   { id: 'QUOTED', label: '견적발송' },
+                   { id: 'ASSIGNED', label: '시험원배정' },
+                   { id: 'IN_PROGRESS', label: '시험진행' },
+                   { id: 'COMPLETED', label: '완료' }
+                 ].map((step, idx, arr) => {
+                   const statuses = arr.map(s => s.id);
+                   const currentIdx = statuses.indexOf(r.status);
+                   const isCompleted = currentIdx >= idx;
+                   const isCurrent = currentIdx === idx;
+
+                   return (
+                     <React.Fragment key={step.id}>
+                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 1 }}>
+                         <div style={{ 
+                           width: '24px', 
+                           height: '24px', 
+                           borderRadius: '50%', 
+                           background: isCompleted ? 'var(--kaic-blue)' : '#cbd5e1', 
+                           color: 'white', 
+                           display: 'flex', 
+                           alignItems: 'center', 
+                           justifyContent: 'center', 
+                           fontSize: '0.7rem', 
+                           fontWeight: 800,
+                           boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.2)' : 'none',
+                           transition: 'all 0.3s'
+                         }}>
+                           {isCompleted ? '✓' : idx + 1}
+                         </div>
+                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isCompleted ? 'var(--kaic-navy)' : '#94a3b8', whiteSpace: 'nowrap' }}>
+                           {step.label}
+                         </span>
+                       </div>
+                       {idx < arr.length - 1 && (
+                         <div style={{ flex: 1, height: '2px', background: currentIdx > idx ? 'var(--kaic-blue)' : '#e2e8f0', margin: '0 -10px 15px -10px', minWidth: '20px' }}></div>
+                       )}
+                     </React.Fragment>
+                   );
+                 })}
               </div>
 
               {/* Assignment bar */}
@@ -262,10 +303,10 @@ export const Reception = () => {
 
               {/* Invoice Status Buttons */}
               <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
-                {r.invoice ? (
+                {r.invoice || ['QUOTED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'].includes(r.status) ? (
                   <button 
                     className="btn" 
-                    onClick={() => { setSelectedInvoice(r.invoice); setShowInvoiceModal(true); }}
+                    onClick={() => { setSelectedInvoice(r.invoice); setShowInvoiceModal(true); fetchData(); }}
                     style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}
                   >
                      <ClipboardCheck size={18} /> 발행견적 확인하기

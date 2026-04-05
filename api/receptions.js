@@ -86,7 +86,7 @@ export default async function handler(req, res) {
         const updatedSample = await prisma.sample.update({
           where: { id },
           data: { 
-             status: status || 'IN_PROGRESS',
+             status: status || 'ASSIGNED',
              testerBarcode,
              testStartDate,
              testEndDate,
