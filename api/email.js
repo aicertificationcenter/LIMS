@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { subject, content, recipients } = req.body;
+    const { subject, content, recipients, attachments } = req.body;
 
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
       return res.status(400).json({ message: '수신자 목록이 올바르지 않습니다.' });
@@ -18,23 +18,27 @@ export default async function handler(req, res) {
 
     // SMTP Configuration
     const transporter = nodemailer.createTransport({
-      host: 'mail.aicerti.com',
+      host: process.env.SMTP_HOST || 'mail.aicerti.com',
       port: 465,
       secure: true, // Use SSL/TLS
       auth: {
-        user: 'ai@aicerti.com',
-        pass: 'rkdanswjd@1134'
+        user: process.env.SMTP_USER || 'ai@aicerti.com',
+        pass: process.env.SMTP_PASS
       }
     });
 
     // Send Mail (BCC for privacy)
     await transporter.sendMail({
-      from: '"KAIC AI 인증원" <ai@aicerti.com>',
-      to: 'ai@aicerti.com', // Set sender as primary to avoid empty TO field
+      from: `"한국인공지능검증원" <${process.env.SMTP_USER || 'ai@aicerti.com'}>`,
+      to: process.env.SMTP_USER || 'ai@aicerti.com', // Set sender as primary to avoid empty TO field
       bcc: recipients,
       subject: subject,
       text: content,
-      html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${content.replace(/\n/g, '<br>')}</div>`
+      html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${content.replace(/\n/g, '<br>')}</div>`,
+      attachments: attachments ? attachments.map(a => ({
+        filename: a.filename,
+        content: Buffer.from(a.content, 'base64')
+      })) : []
     });
 
     return res.status(200).json({ message: '공지 메일이 성공적으로 발송되었습니다.', count: recipients.length });
