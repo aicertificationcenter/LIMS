@@ -22,7 +22,6 @@ export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, pos
   // Calculate dynamic position (avoid screen overflow)
   const MODAL_WIDTH = 750;
   const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
 
   let leftPos = position ? position.x - MODAL_WIDTH / 2 : viewportWidth / 2 - MODAL_WIDTH / 2;
   let topPos = position ? position.y + 20 : 100;
