@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Users, Search, FileText, Download, Mail, Send } from 'lucide-react';
+import { Users, Search, FileText, Download, Mail, Send, CheckSquare, Square } from 'lucide-react';
 
 export const Clients = () => {
   const { user } = useAuth();
@@ -15,6 +15,7 @@ export const Clients = () => {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchData();
@@ -40,10 +41,35 @@ export const Clients = () => {
     );
   }, [receptions, searchTerm]);
 
-  const uniqueClientEmails = useMemo(() => {
-    const emails = receptions.map(r => r.email).filter(e => e && e.includes('@'));
-    return Array.from(new Set(emails));
+  const uniqueClientInfo = useMemo(() => {
+    const clientsMap: Record<string, any> = {};
+    receptions.forEach(r => {
+      if (r.email && r.email.includes('@')) {
+        clientsMap[r.email] = {
+          email: r.email,
+          clientId: r.clientId,
+          clientName: r.clientName
+        };
+      }
+    });
+    return Object.values(clientsMap);
   }, [receptions]);
+
+  useEffect(() => {
+    if (showEmailModal) {
+      setSelectedEmails(new Set(uniqueClientInfo.map(c => c.email)));
+    }
+  }, [showEmailModal, uniqueClientInfo]);
+
+  const toggleEmail = (email: string) => {
+    const newSet = new Set(selectedEmails);
+    if (newSet.has(email)) newSet.delete(email);
+    else newSet.add(email);
+    setSelectedEmails(newSet);
+  };
+
+  const selectAll = () => setSelectedEmails(new Set(uniqueClientInfo.map(c => c.email)));
+  const selectNone = () => setSelectedEmails(new Set());
 
   const handleExportCSV = () => {
     if (receptions.length === 0) return;
@@ -82,8 +108,8 @@ export const Clients = () => {
       alert('제목과 내용을 모두 입력해 주세요.');
       return;
     }
-    if (uniqueClientEmails.length === 0) {
-       alert('발송 가능한 이메일 주소가 없습니다.');
+    if (selectedEmails.size === 0) {
+       alert('발송할 수신자를 선택해 주세요.');
        return;
     }
 
@@ -95,11 +121,11 @@ export const Clients = () => {
         body: JSON.stringify({
           subject: emailSubject,
           content: emailBody,
-          recipients: uniqueClientEmails
+          recipients: Array.from(selectedEmails)
         })
       });
       if (res.ok) {
-        alert(`${uniqueClientEmails.length}명의 의뢰처에 공지 메일을 발송했습니다.`);
+        alert(`${selectedEmails.size}명의 의뢰처에 공지 메일을 발송했습니다.`);
         setShowEmailModal(false);
         setEmailSubject('');
         setEmailBody('');
@@ -153,7 +179,7 @@ export const Clients = () => {
                <Download size={18} /> CSV 내보내기
             </button>
             <button className="btn btn-primary" onClick={() => setShowEmailModal(true)} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <Mail size={18} /> 단체 안내 메일
+               <Mail size={18} /> 메일보내기
             </button>
           </div>
         </div>
@@ -262,53 +288,83 @@ export const Clients = () => {
         </div>
       )}
 
-      {/* Email Announcement Modal */}
+      {/* Email Announcement Modal (New 2-Column Selection Layout) */}
       {showEmailModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem', backdropFilter: 'blur(4px)' }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '700px', padding: 0, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <div style={{ padding: '1.5rem 2rem', background: 'var(--kaic-blue)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Mail size={20} /> 의뢰처 전체 안내 메일 발송
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '1100px', maxHeight: '90vh', padding: 0, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '1rem 2rem', background: 'var(--kaic-blue)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Mail size={18} /> 의뢰처 전체 안내 메일 발송 (수신 대상 선택)
               </h2>
               <button style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }} onClick={() => setShowEmailModal(false)}>&times;</button>
             </div>
-            <div style={{ padding: '2rem' }}>
-              <p style={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: '#64748b' }}>
-                전체 고객사 이메일 중 유효한 <strong>{uniqueClientEmails.length}개</strong>의 주소로 메일을 발송합니다. (개인정보 보호를 위해 숨은 참조발송)
-              </p>
-              
-              <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label className="form-label">메일 제목</label>
-                <input 
-                  className="input-field" 
-                  value={emailSubject} 
-                  onChange={e => setEmailSubject(e.target.value)} 
-                  placeholder="예) [KAIC] 품질 시험 업무 관련 안내 말씀"
-                />
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', flex: 1, overflow: 'hidden' }}>
+              {/* Left Column: Editor */}
+              <div style={{ padding: '2rem', borderRight: '1px solid #e2e8f0', overflowY: 'auto' }}>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>메일 제목</label>
+                  <input 
+                    className="input-field" 
+                    value={emailSubject} 
+                    onChange={e => setEmailSubject(e.target.value)} 
+                    placeholder="공지 사항의 제목을 입력하세요."
+                    style={{ background: 'white', color: '#0f172a', border: '2px solid #cbd5e1', padding: '12px', fontSize: '1rem', height: 'auto', fontWeight: 600 }}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>메일 내용</label>
+                  <textarea 
+                    className="input-field" 
+                    rows={15} 
+                    value={emailBody} 
+                    onChange={e => setEmailBody(e.target.value)}
+                    placeholder="여기에 공지 사항의 상세 내용을 입력하세요. (개별 메일 본문으로 전송됩니다)"
+                    style={{ background: 'white', color: '#0f172a', border: '2px solid #cbd5e1', padding: '15px', fontSize: '1.1rem', minHeight: '400px', lineHeight: 1.6 }}
+                  />
+                </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">메일 내용</label>
-                <textarea 
-                  className="input-field" 
-                  rows={10} 
-                  value={emailBody} 
-                  onChange={e => setEmailBody(e.target.value)}
-                  placeholder="공지 사항의 상세 내용을 입력하세요."
-                  style={{ minHeight: '250px' }}
-                />
-              </div>
+              {/* Right Column: Recipient Selection */}
+              <div style={{ padding: '1.5rem', background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>발송 대상 목록 ({selectedEmails.size} / {uniqueClientInfo.length})</span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={selectAll} style={{ background: 'none', border: 'none', color: 'var(--kaic-blue)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>전체 선택</button>
+                    <button onClick={selectNone} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>전체 해제</button>
+                  </div>
+                </div>
 
-              <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
-                 <button 
-                  className="btn btn-primary" 
-                  style={{ flex: 1, margin: 0, minHeight: '50px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                  disabled={isSending}
-                  onClick={handleSendEmail}
-                 >
-                   {isSending ? '발송 중...' : <><Send size={18} /> 안내 메일 발송하기</>}
-                 </button>
-                 <button className="btn btn-secondary" style={{ width: '100px', margin: 0 }} onClick={() => setShowEmailModal(false)}>취소</button>
+                <div style={{ flex: 1, overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.5rem' }}>
+                   {uniqueClientInfo.map(c => (
+                     <div 
+                        key={c.email} 
+                        onClick={() => toggleEmail(c.email)}
+                        style={{ padding: '8px 12px', borderRadius: '8px', marginBottom: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', background: selectedEmails.has(c.email) ? '#eff6ff' : 'transparent', border: `1px solid ${selectedEmails.has(c.email) ? '#bfdbfe' : 'transparent'}` }}
+                     >
+                        {selectedEmails.has(c.email) ? <CheckSquare size={18} color="var(--kaic-blue)" /> : <Square size={18} color="#cbd5e1" />}
+                        <div style={{ overflow: 'hidden' }}>
+                           <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{c.clientId}</div>
+                           <div style={{ fontSize: '0.75rem', color: '#64748b', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>{c.email}</div>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+
+                <div style={{ marginTop: '1.5rem' }}>
+                   <div style={{ background: '#334155', color: 'white', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', fontSize: '0.8rem' }}>
+                      <strong>숨은 참조(BCC) 안내:</strong> 공지를 받는 모든 업체는 서로의 이메일 주소를 볼 수 없습니다. 안심하고 발송하세요.
+                   </div>
+                   <button 
+                      className="btn btn-primary" 
+                      style={{ width: '100%', margin: 0, minHeight: '50px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                      disabled={isSending || selectedEmails.size === 0}
+                      onClick={handleSendEmail}
+                   >
+                     {isSending ? '공지 발송 중...' : <><Send size={18} /> 메일보내기</>}
+                   </button>
+                </div>
               </div>
             </div>
           </div>
