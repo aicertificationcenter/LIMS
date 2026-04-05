@@ -42,6 +42,18 @@ export const MyTests = () => {
   const [testEndDate, setTestEndDate] = useState('');
   const [testLocation, setTestLocation] = useState('');
   const [testType, setTestType] = useState('');
+  const [testAddress, setTestAddress] = useState('');
+
+  // Sync state with selected test data when it changes
+  useEffect(() => {
+    if (selectedTest) {
+      setTestStartDate(selectedTest.testStartDate || '');
+      setTestEndDate(selectedTest.testEndDate || '');
+      setTestLocation(selectedTest.testLocation || '');
+      setTestType(selectedTest.testType || '');
+      setTestAddress(selectedTest.testAddress || '');
+    }
+  }, [selectedTest?.id, selectedTest?.testStartDate, selectedTest?.testEndDate, selectedTest?.testLocation, selectedTest?.testType, selectedTest?.testAddress]);
 
   const handleOpenDetail = async (id: string) => {
     setSelectedId(id);
@@ -106,10 +118,11 @@ export const MyTests = () => {
           testStartDate,
           testEndDate,
           testLocation,
-          testType
+          testType,
+          testAddress
         })
       });
-      alert('시험이 시작되었습니다. 상태가 [진행중(IN_PROGRESS)]으로 변경되었습니다.');
+      alert(selectedTest.status === 'RECEIVED' ? '시험이 시작되었습니다.' : '시험 정보가 업데이트되었습니다.');
       fetchMyTasks();
     } catch (err: any) {
       alert(err.message);
@@ -234,11 +247,11 @@ export const MyTests = () => {
               )}
             </div>
             
-            {/* New Workflow Fields: only show if not completed and not already started (or allow update if in progress) */}
-            {selectedTest.status === 'RECEIVED' && (
+            {/* New Workflow Fields: only show if not completed */}
+            {selectedTest.status !== 'COMPLETED' && (
               <div style={{ background: '#eff6ff', padding: '1.5rem', borderRadius: '8px', marginBottom: '2.5rem', border: '1px solid #bfdbfe' }}>
                 <h3 style={{ fontSize: '1.1rem', color: '#1e40af', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🕒 시험 일정 및 구분 등록
+                  🕒 시험 일정 및 장소 정보 {selectedTest.status === 'IN_PROGRESS' ? '수정' : '등록'}
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                   <div className="form-group">
@@ -266,18 +279,34 @@ export const MyTests = () => {
                       <option value="KOLAS 시험">KOLAS 시험</option>
                     </select>
                   </div>
+                  {testLocation && testLocation !== '고정시험실' && (
+                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                      <label className="label">현장 시험 장소 (상세 주소)</label>
+                      <input 
+                        type="text" 
+                        className="input-field" 
+                        placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
+                        value={testAddress} 
+                        onChange={e => setTestAddress(e.target.value)} 
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
             
-            {selectedTest.status !== 'RECEIVED' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>시작일</span> <strong>{selectedTest.testStartDate || '-'}</strong></div>
-                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>종료일</span> <strong>{selectedTest.testEndDate || '-'}</strong></div>
-                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>장소</span> <strong>{selectedTest.testLocation || '-'}</strong></div>
-                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>구분</span> <strong>{selectedTest.testType || '-'}</strong></div>
-              </div>
-            )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>시작일</span> <strong>{selectedTest.testStartDate || '-'}</strong></div>
+              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>종료일</span> <strong>{selectedTest.testEndDate || '-'}</strong></div>
+              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>장소</span> <strong>{selectedTest.testLocation || '-'}</strong></div>
+              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>구분</span> <strong>{selectedTest.testType || '-'}</strong></div>
+              {selectedTest.testAddress && (
+                <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>현장 주소</span> 
+                  <strong>{selectedTest.testAddress}</strong>
+                </div>
+              )}
+            </div>
 
 
             <div style={{ marginTop: '3rem', padding: '0 2rem' }}>
@@ -286,14 +315,14 @@ export const MyTests = () => {
                   ← 목록으로 돌아가기
                 </button>
                 
-                {selectedTest.status === 'RECEIVED' ? (
+                {selectedTest.status !== 'COMPLETED' ? (
                   <button 
                     className="btn btn-primary" 
                     onClick={handleStartTest} 
                     disabled={!testStartDate || !testEndDate || !testLocation || !testType}
-                    style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: (!testStartDate || !testEndDate || !testLocation || !testType) ? '#94a3b8' : '#10b981', display: 'inline-flex', alignItems: 'center', gap: '10px', margin: 0, border: 'none' }}
+                    style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: (!testStartDate || !testEndDate || !testLocation || !testType) ? '#94a3b8' : (selectedTest.status === 'RECEIVED' ? '#10b981' : '#3b82f6'), display: 'inline-flex', alignItems: 'center', gap: '10px', margin: 0, border: 'none' }}
                   >
-                    🚀 시험 시작 (Start Test)
+                    {selectedTest.status === 'RECEIVED' ? '🚀 시험 시작 (Start Test)' : '💾 정보 업데이트 (Update)'}
                   </button>
                 ) : (
                   <div style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: '#e2e8f0', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>

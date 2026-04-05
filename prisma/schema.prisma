@@ -56,6 +56,7 @@ model Sample {
   testEndDate   String?
   testLocation  String?
   testType      String?
+  testAddress   String?
   reportPdfUrl  String?
   testerBarcode String?
   receivedAt   DateTime @default(now())
