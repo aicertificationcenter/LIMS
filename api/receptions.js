@@ -53,7 +53,7 @@ export default async function handler(req, res) {
 
     case 'PATCH':
       try {
-        const { id, testerId, status } = req.body;
+        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, reportPdfUrl } = req.body;
         
         // Update sample status and generate testerBarcode if needed
         const sample = await prisma.sample.findUnique({ where: { id } });
@@ -85,7 +85,12 @@ export default async function handler(req, res) {
           where: { id },
           data: { 
              status: status || 'IN_PROGRESS',
-             testerBarcode
+             testerBarcode,
+             testStartDate,
+             testEndDate,
+             testLocation,
+             testType,
+             reportPdfUrl
           }
         });
 

@@ -53,6 +53,11 @@ model Sample {
   consultation String?
   status       SampleStatus @default(RECEIVED)
   location     String?
+  testStartDate String?
+  testEndDate   String?
+  testLocation  String?
+  testType      String?
+  reportPdfUrl  String?
   testerBarcode String?
   receivedAt   DateTime @default(now())
   tests        Test[]

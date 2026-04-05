@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Download, FileText, Archive, CheckCircle, PackageCheck, Trash2 } from 'lucide-react';
+import { CheckCircle, PackageCheck } from 'lucide-react';
 
 export const MyTests = () => {
   const { user } = useAuth();
@@ -36,6 +36,12 @@ export const MyTests = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [showHistoryId, setShowHistoryId] = useState<string | null>(null);
+  
+  // New workflow fields
+  const [testStartDate, setTestStartDate] = useState('');
+  const [testEndDate, setTestEndDate] = useState('');
+  const [testLocation, setTestLocation] = useState('');
+  const [testType, setTestType] = useState('');
 
   const handleOpenDetail = async (id: string) => {
     setSelectedId(id);
@@ -82,58 +88,27 @@ export const MyTests = () => {
     }
   };
 
-  const handleAddEvidence = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !selectedId || !user) return;
-    
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      try {
-        await apiClient.evidences.create({
-          sampleId: selectedId,
-          uploaderId: user.id,
-          fileName: file.name,
-          fileType: file.type,
-          dataUrl
-        });
-        alert(`${file.name} 증적이 업로드되었습니다.`);
-        fetchMyTasks();
-      } catch (err: any) {
-        alert(err.message);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleDownloadEvidence = (ev: any) => {
-    if (!ev.dataUrl) {
-      alert('다운로드할 수 있는 데이터가 없습니다.');
-      return;
-    }
-    const link = document.createElement('a');
-    link.href = ev.dataUrl;
-    link.download = ev.fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleRemoveEvidence = async (evidenceId: string) => {
-    if (confirm('정말로 이 증적 자료를 삭제하시겠습니까?')) {
-      try {
-        await apiClient.evidences.delete(evidenceId);
-        fetchMyTasks();
-      } catch (err: any) {
-        alert(err.message);
-      }
-    }
-  };
 
   const handleStartTest = async () => {
     if (!selectedId) return;
+    if (!testStartDate || !testEndDate || !testLocation || !testType) {
+      alert('시험 시작 전 모든 시험 정보를 입력해주세요.');
+      return;
+    }
     try {
-      await apiClient.receptions.assign(selectedId, user!.id); // This will update status to IN_PROGRESS
+      await fetch('/api/receptions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: selectedId, 
+          testerId: user!.id,
+          status: 'IN_PROGRESS',
+          testStartDate,
+          testEndDate,
+          testLocation,
+          testType
+        })
+      });
       alert('시험이 시작되었습니다. 상태가 [진행중(IN_PROGRESS)]으로 변경되었습니다.');
       fetchMyTasks();
     } catch (err: any) {
@@ -141,30 +116,6 @@ export const MyTests = () => {
     }
   };
 
-  const handleCompleteTest = async () => {
-    if (!selectedId) return;
-    if (confirm('시험을 완료하시겠습니까? 완료 후에는 더 이상 수정할 수 없습니다.')) {
-      try {
-        // We can update status to COMPLETED via the assign endpoint (reused as a general patch)
-        // Wait, my assign endpoint defaults to IN_PROGRESS. Let's make sure it handles status.
-        // Actually, for simplicity now, I'll just reuse PATCH /receptions
-        const res = await fetch('/api/receptions', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: selectedId, status: 'COMPLETED' })
-        });
-        if (res.ok) {
-           alert('시험이 완료되었습니다.');
-           fetchMyTasks();
-        } else {
-           const err = await res.json();
-           alert('상세 처리 중 오류: ' + err.message);
-        }
-      } catch (err: any) {
-        alert(err.message);
-      }
-    }
-  };
 
   if (loading) {
     return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>데이터를 불러오는 중...</div>;
@@ -282,54 +233,52 @@ export const MyTests = () => {
                 </div>
               )}
             </div>
-
-            <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2.5rem' }}>증적 모음 (Evidence Collection)</h3>
-            <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', marginBottom: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                {selectedTest.evidences?.map((ev: any) => (
-                  <div key={ev.id} style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{new Date(ev.createdAt).toLocaleDateString()}</div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => handleDownloadEvidence(ev)} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="다운로드">
-                           <Download size={16} />
-                        </button>
-                        {selectedTest.status !== 'COMPLETED' && (
-                          <button onClick={() => handleRemoveEvidence(ev.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="삭제">
-                             <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div style={{ height: '100px', background: '#f8fafc', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      {ev.fileType.startsWith('image/') ? (
-                        <img src={ev.dataUrl} alt={ev.fileName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'cover' }} />
-                      ) : ev.fileType.includes('zip') || ev.fileType.includes('rar') || ev.fileType.includes('7z') ? (
-                        <Archive size={40} color="#94a3b8" />
-                      ) : (
-                        <FileText size={40} color="#94a3b8" />
-                      )}
-                    </div>
-
-                    <div style={{ fontWeight: 600, color: '#1e293b', wordBreak: 'break-all', fontSize: '0.9rem', marginTop: '0.5rem' }}>{ev.fileName}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>업로더: {ev.uploaderId}</div>
+            
+            {/* New Workflow Fields: only show if not completed and not already started (or allow update if in progress) */}
+            {selectedTest.status === 'RECEIVED' && (
+              <div style={{ background: '#eff6ff', padding: '1.5rem', borderRadius: '8px', marginBottom: '2.5rem', border: '1px solid #bfdbfe' }}>
+                <h3 style={{ fontSize: '1.1rem', color: '#1e40af', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🕒 시험 일정 및 구분 등록
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  <div className="form-group">
+                    <label className="label">시험 시작 일자</label>
+                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} />
                   </div>
-                ))}
-                {(!selectedTest.evidences || selectedTest.evidences.length === 0) && (
-                  <div style={{ gridColumn: '1 / -1', color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', padding: '1rem 0' }}>등록된 증적 자료가 없습니다.</div>
-                )}
-              </div>
-              
-              {selectedTest.status !== 'COMPLETED' && (
-                <div style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '1rem' }}>
-                  <label className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
-                    <input type="file" style={{ display: 'none' }} onChange={handleAddEvidence} />
-                    <span>📁 증적 업로드 (사진, 문서 등)</span>
-                  </label>
+                  <div className="form-group">
+                    <label className="label">시험 종료 일자</label>
+                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">시험 예정 장소</label>
+                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)}>
+                      <option value="">장소 선택</option>
+                      <option value="고정시험실">고정시험실</option>
+                      <option value="현장시험">현장시험</option>
+                      <option value="고정+현장시험">고정+현장시험</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">시험 구분</label>
+                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)}>
+                      <option value="">구분 선택</option>
+                      <option value="일반시험">일반시험</option>
+                      <option value="KOLAS 시험">KOLAS 시험</option>
+                    </select>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+            
+            {selectedTest.status !== 'RECEIVED' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>시작일</span> <strong>{selectedTest.testStartDate || '-'}</strong></div>
+                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>종료일</span> <strong>{selectedTest.testEndDate || '-'}</strong></div>
+                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>장소</span> <strong>{selectedTest.testLocation || '-'}</strong></div>
+                <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>구분</span> <strong>{selectedTest.testType || '-'}</strong></div>
+              </div>
+            )}
+
 
             <div style={{ marginTop: '3rem', padding: '0 2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
@@ -338,12 +287,13 @@ export const MyTests = () => {
                 </button>
                 
                 {selectedTest.status === 'RECEIVED' ? (
-                  <button className="btn btn-primary" onClick={handleStartTest} style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '10px', margin: 0, border: 'none' }}>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={handleStartTest} 
+                    disabled={!testStartDate || !testEndDate || !testLocation || !testType}
+                    style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: (!testStartDate || !testEndDate || !testLocation || !testType) ? '#94a3b8' : '#10b981', display: 'inline-flex', alignItems: 'center', gap: '10px', margin: 0, border: 'none' }}
+                  >
                     🚀 시험 시작 (Start Test)
-                  </button>
-                ) : selectedTest.status === 'IN_PROGRESS' ? (
-                  <button className="btn btn-primary" onClick={handleCompleteTest} style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: '#f59e0b', display: 'inline-flex', alignItems: 'center', gap: '10px', margin: 0, border: 'none' }}>
-                    📂 시험 완료 (Complete Test)
                   </button>
                 ) : (
                   <div style={{ padding: '0.8rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '30px', background: '#e2e8f0', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
