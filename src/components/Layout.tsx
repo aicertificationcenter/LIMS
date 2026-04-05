@@ -61,13 +61,11 @@ export const Layout = () => {
           <img src="/logo.png" alt="KAIC 한국인공지능검증원 로고" style={{ height: '36px', objectFit: 'contain', background: 'white', padding: '4px 10px', borderRadius: '4px' }} />
         </Link>
         
-        {/* Navigation Menu */}
         <nav style={{ display: 'flex', gap: '2rem' }}>
-          {user.role === 'ADMIN' && (
-            <Link to="/admin" style={{ color: location.pathname==='/admin' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <UserCheck size={18} /> 회원 승인
-            </Link>
-          )}
+          <Link to="/stats" style={{ color: location.pathname==='/stats' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <LayoutDashboard size={18} /> 대시보드
+          </Link>
+          
           {user.role === 'ADMIN' && (
             <Link to="/reception" style={{ color: location.pathname==='/reception' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <PlusCircle size={18} /> 접수하기
@@ -78,6 +76,12 @@ export const Layout = () => {
               <Users size={18} /> 의뢰처 관리
             </Link>
           )}
+          {user.role === 'ADMIN' && (
+            <Link to="/admin" style={{ color: location.pathname==='/admin' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <UserCheck size={18} /> 시험원관리
+            </Link>
+          )}
+
           {user.role !== 'ADMIN' && (
             <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <ClipboardList size={18} /> 나의시험
@@ -88,9 +92,6 @@ export const Layout = () => {
               <FileText size={18} /> 성적서 발행
             </Link>
           )}
-          <Link to="/stats" style={{ color: location.pathname==='/stats' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <LayoutDashboard size={18} /> 대시보드
-          </Link>
         </nav>
 
         <div style={{ position: 'relative' }}>
