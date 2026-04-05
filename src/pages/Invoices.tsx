@@ -2,14 +2,13 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { FileText, Plus, Trash2, Send, Download, Printer, ChevronRight, Search } from 'lucide-react';
+import { Trash2, Send, Download, Search } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 export const Invoices = () => {
   const { user } = useAuth();
   const [receptions, setReceptions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedSample, setSelectedSample] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -24,14 +23,11 @@ export const Invoices = () => {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
       const data = await apiClient.receptions.list();
       setReceptions(data);
     } catch (err) {
       console.error('Fetch data failed:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
