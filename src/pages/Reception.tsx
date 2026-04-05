@@ -20,7 +20,6 @@ export const Reception = () => {
 
   useEffect(() => {
     fetchData();
-    // Check for search query param
     const params = new URLSearchParams(window.location.search);
     const searchVal = params.get('search');
     if (searchVal) {
@@ -57,7 +56,6 @@ export const Reception = () => {
     return <Navigate to="/stats" replace />;
   }
 
-  // Form states
   const [client, setClient] = useState('');
   const [clientName, setClientName] = useState('');
   const [email, setEmail] = useState('');
@@ -65,7 +63,6 @@ export const Reception = () => {
   const [phone, setPhone] = useState('');
   const [target, setTarget] = useState('');
   const [extra, setExtra] = useState('');
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,9 +73,7 @@ export const Reception = () => {
         client, clientName, email, bizNo, phone, target, extra 
       });
       alert(`신규 시험 접수가 완료되었습니다.\n접수번호: ${newRec.barcode}`);
-      fetchData(); // Refresh list
-      
-      // Clear forms
+      fetchData();
       setClient(''); setClientName(''); setEmail(''); setBizNo(''); setPhone(''); setTarget(''); setExtra('');
     } catch (err: any) {
       alert(err.message);
@@ -105,12 +100,9 @@ export const Reception = () => {
 
   return (
     <main className="dashboard-grid animate-fade-in">
-      
-      {/* 1. 신규 접수 폼 */}
       <section className="card" style={{ gridColumn: 'span 4', padding: '2rem' }}>
         <h2 className="card-title" style={{ marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>신규 시험 접수하기</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰처 (회사기관)</label>
             <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={client} onChange={e=>setClient(e.target.value)} required />
@@ -139,37 +131,23 @@ export const Reception = () => {
             <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 700, color: '#475569' }}>기타</label>
             <textarea className="input-field" maxLength={2000} rows={4} value={extra} onChange={e=>setExtra(e.target.value)} style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
           </div>
-
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '1rem', fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }} disabled={isSubmitting}>
              접수 서류 시스템 등록 (이후 수정 불가) 
           </button>
         </form>
       </section>
 
-      {/* 2. 기등록된 접수 현황 */}
       <section className="card" style={{ gridColumn: 'span 8', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
           <h2 className="card-title" style={{ margin: 0, border: 'none' }}>최근 등록된 접수 목록 (통합 조회)</h2>
           <div style={{ display: 'flex', gap: '10px' }}>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder="기업명 혹은 담당자 검색" 
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }}
-              />
+              <input type="text" className="input-field" placeholder="기업명 혹은 담당자 검색" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }} />
             </div>
             <div style={{ position: 'relative' }}>
               <Filter size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <select 
-                className="input-field" 
-                value={filterTesterId}
-                onChange={e => setFilterTesterId(e.target.value)}
-                style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}
-              >
+              <select className="input-field" value={filterTesterId} onChange={e => setFilterTesterId(e.target.value)} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
                 <option value="">모든 시험원 (전체)</option>
                 {users.map(u => (
                    <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
@@ -185,9 +163,7 @@ export const Reception = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-                      <h3 style={{ margin: 0, color: 'var(--kaic-navy)', fontSize: '1.4rem', fontWeight: 900 }}>
-                        {r.clientId} 
-                      </h3>
+                      <h3 style={{ margin: 0, color: 'var(--kaic-navy)', fontSize: '1.4rem', fontWeight: 900 }}>{r.clientId}</h3>
                    </div>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#64748b' }}>
                       <span style={{ fontWeight: 800, background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', color: 'var(--kaic-blue)' }}>{r.barcode}</span>
@@ -196,21 +172,8 @@ export const Reception = () => {
                    </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                   <div style={{ 
-                     background: 'rgba(56, 189, 248, 0.1)', 
-                     color: '#0369a1', 
-                     padding: '8px 16px', 
-                     borderRadius: '12px', 
-                     fontWeight: 800, 
-                     fontSize: '0.95rem',
-                     border: '1px solid rgba(56, 189, 248, 0.2)'
-                   }}>
-                      🕒 {new Date(r.receivedAt).toLocaleString('ko-KR', { 
-                        month: 'long', 
-                        day: 'numeric', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                   <div style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#0369a1', padding: '8px 16px', borderRadius: '12px', fontWeight: 800, fontSize: '0.95rem', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                      🕒 {new Date(r.receivedAt).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                    </div>
                 </div>
               </div>
@@ -218,59 +181,35 @@ export const Reception = () => {
               {/* Workflow Stepper */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                  {[
-                   { id: 'RECEIVED', label: '시험의뢰' },
-                   { id: 'QUOTED', label: '견적발송' },
-                   { id: 'ASSIGNED', label: '시험원배정' },
-                   { id: 'IN_PROGRESS', label: '시험진행' },
-                   { id: 'COMPLETED', label: '완료' }
+                   { id: 'RECEIVED', label: '시험의뢰', isDone: true },
+                   { id: 'QUOTED', label: '견적발송', isDone: !!r.invoice },
+                   { id: 'ASSIGNED', label: '시험원배정', isDone: !!r.tests?.[0]?.testerId },
+                   { id: 'IN_PROGRESS', label: '시험진행', isDone: !!(r.testStartDate && r.testLocation) },
+                   { id: 'COMPLETED', label: '완료', isDone: r.status === 'COMPLETED' || !!r.reportPdfUrl }
                  ].map((step, idx, arr) => {
-                   const statuses = arr.map(s => s.id);
-                   const currentIdx = statuses.indexOf(r.status);
-                   const isCompleted = currentIdx >= idx;
-                   const isCurrent = currentIdx === idx;
-
+                   const isCompleted = step.isDone;
+                   const isCurrent = r.status === step.id;
                    return (
                      <React.Fragment key={step.id}>
                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 1 }}>
-                         <div style={{ 
-                           width: '24px', 
-                           height: '24px', 
-                           borderRadius: '50%', 
-                           background: isCompleted ? 'var(--kaic-blue)' : '#cbd5e1', 
-                           color: 'white', 
-                           display: 'flex', 
-                           alignItems: 'center', 
-                           justifyContent: 'center', 
-                           fontSize: '0.7rem', 
-                           fontWeight: 800,
-                           boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.2)' : 'none',
-                           transition: 'all 0.3s'
-                         }}>
+                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isCompleted ? 'var(--kaic-blue)' : '#cbd5e1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800, boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.2)' : 'none', transition: 'all 0.3s' }}>
                            {isCompleted ? '✓' : idx + 1}
                          </div>
-                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isCompleted ? 'var(--kaic-navy)' : '#94a3b8', whiteSpace: 'nowrap' }}>
-                           {step.label}
-                         </span>
+                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isCompleted ? 'var(--kaic-navy)' : '#94a3b8', whiteSpace: 'nowrap' }}>{step.label}</span>
                        </div>
                        {idx < arr.length - 1 && (
-                         <div style={{ flex: 1, height: '2px', background: currentIdx > idx ? 'var(--kaic-blue)' : '#e2e8f0', margin: '0 -10px 15px -10px', minWidth: '20px' }}></div>
+                         <div style={{ flex: 1, height: '2px', background: (arr[idx+1].isDone) ? 'var(--kaic-blue)' : '#e2e8f0', margin: '0 -10px 15px -10px', minWidth: '20px', transition: 'background 0.3s' }}></div>
                        )}
                      </React.Fragment>
                    );
                  })}
               </div>
 
-              {/* Assignment bar */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>현장 시험원 배정:</span>
                     {user?.role === 'ADMIN' && r.status === 'RECEIVED' ? (
-                      <select 
-                        className="input-field"
-                        style={{ minHeight: '36px', padding: '0 10px', fontSize: '0.85rem', marginBottom: 0, width: '200px', background: '#fff' }}
-                        onChange={(e) => handleAssignTester(r.id, e.target.value)}
-                        value={r.tests?.[0]?.testerId || ''}
-                      >
+                      <select className="input-field" style={{ minHeight: '36px', padding: '0 10px', fontSize: '0.85rem', marginBottom: 0, width: '200px', background: '#fff' }} onChange={(e) => handleAssignTester(r.id, e.target.value)} value={r.tests?.[0]?.testerId || ''}>
                         <option value="" disabled>시험원 선택</option>
                         {users.filter(u => u.role !== 'ADMIN').map(u => (
                           <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
@@ -301,22 +240,13 @@ export const Reception = () => {
                 ※ 등록이 완료된 서류입니다. (수정 불가 모드 - Read Only)
               </div>
 
-              {/* Invoice Status Buttons */}
               <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
-                {r.invoice || ['QUOTED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'].includes(r.status) ? (
-                  <button 
-                    className="btn" 
-                    onClick={() => { setSelectedInvoice(r.invoice); setShowInvoiceModal(true); fetchData(); }}
-                    style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}
-                  >
+                {!!r.invoice ? (
+                  <button className="btn" onClick={() => { setSelectedInvoice(r.invoice); setShowInvoiceModal(true); fetchData(); }} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
                      <ClipboardCheck size={18} /> 발행견적 확인하기
                   </button>
                 ) : (
-                  <button 
-                    className="btn" 
-                    onClick={() => navigate(`/invoices?id=${r.id}`)}
-                    style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#fff7ed', color: '#9a3412', border: '1px solid #ffedd5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}
-                  >
+                  <button className="btn" onClick={() => navigate(`/invoices?id=${r.id}`)} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#fff7ed', color: '#9a3412', border: '1px solid #ffedd5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
                      <AlertCircle size={18} /> 견적발행 필요
                   </button>
                 )}
@@ -328,10 +258,7 @@ export const Reception = () => {
       </section>
 
       {showInvoiceModal && selectedInvoice && (
-        <InvoiceViewModal 
-          invoice={selectedInvoice} 
-          onClose={() => { setShowInvoiceModal(false); setSelectedInvoice(null); }} 
-        />
+        <InvoiceViewModal invoice={selectedInvoice} onClose={() => { setShowInvoiceModal(false); setSelectedInvoice(null); }} />
       )}
     </main>
   );
