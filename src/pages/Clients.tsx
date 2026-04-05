@@ -199,16 +199,27 @@ export const Clients = () => {
             </h2>
             <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>접수된 모든 시험 의뢰를 의뢰처 중심으로 관리합니다.</p>
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ position: 'relative', width: '250px' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div style={{ position: 'relative', width: '320px' }}>
+              <Search size={22} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.6)', pointerEvents: 'none' }} />
               <input 
                 type="text" 
                 className="input-field" 
                 placeholder="의뢰처, 의뢰인 또는 번호 검색" 
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                style={{ paddingLeft: '40px', margin: 0, background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}
+                style={{ 
+                  padding: '12px 16px 12px 52px', 
+                  margin: 0, 
+                  height: '48px',
+                  background: 'rgba(255,255,255,0.12)', 
+                  color: 'white', 
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '24px',
+                  fontSize: '1rem',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  width: '100%'
+                }}
               />
             </div>
             <button className="btn btn-secondary" onClick={handleExportCSV} style={{ margin: 0, background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
