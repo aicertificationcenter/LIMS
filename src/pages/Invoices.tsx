@@ -111,24 +111,33 @@ export const Invoices = () => {
           })
         });
         if (res.ok) {
-           // Save invoice data to database
-           const savedInvoice = await apiClient.invoices.create({
-             sampleId: selectedSample.id,
-             invoiceNo: selectedSample.barcode,
-             items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
-             subtotal,
-             discountRate,
-             discountAmt,
-             vat,
-             total
-           });
-           
-           // Update local state instantly so the "Saved" banner and QUOTED status appear
-           setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
-           
-           alert('견적서 메일 발송 및 서버 저장이 완료되었습니다.');
-           fetchData(); // Refresh sidebar list
-        } else alert('발송 실패');
+           console.log('[Invoice] Email sent successfully, now saving to DB...');
+           try {
+             // Save invoice data to database
+             const savedInvoice = await apiClient.invoices.create({
+               sampleId: selectedSample.id,
+               invoiceNo: selectedSample.barcode,
+               items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
+               subtotal,
+               discountRate,
+               discountAmt,
+               vat,
+               total
+             });
+             
+             // Update local state instantly
+             setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
+             
+             alert('✅ 견적서 발송 및 서버 저장이 모두 완료되었습니다.');
+             fetchData(); // Refresh sidebar list
+           } catch (dbErr: any) {
+             console.error('[Invoice] DB Error:', dbErr);
+             alert('⚠️ 메일은 발송되었으나, 서버 저장에는 실패했습니다: ' + dbErr.message);
+           }
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          alert('❌ 메일 발송 실패: ' + (errData.message || '서버 오류'));
+        }
       };
     } catch (err: any) {
       alert('오류: ' + err.message);

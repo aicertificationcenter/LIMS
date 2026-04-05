@@ -72,6 +72,8 @@ model Sample {
 
 enum SampleStatus {
   RECEIVED
+  QUOTED
+  ASSIGNED
   IN_PROGRESS
   COMPLETED
   DISPOSED
