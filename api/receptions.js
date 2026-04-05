@@ -61,20 +61,24 @@ export default async function handler(req, res) {
 
         if (testerId && !testerBarcode) {
           const user = await prisma.user.findUnique({ where: { id: testerId } });
-          const now = new Date();
-          const yy = String(now.getFullYear()).slice(2);
-          const mm = String(now.getMonth() + 1).padStart(2, '0');
-          const dd = String(now.getDate()).padStart(2, '0');
-          const hh = String(now.getHours()).padStart(2, '0');
-          const min = String(now.getMinutes()).padStart(2, '0');
-          const timePrefix = `${yy}${mm}${dd}${hh}${min}`;
-          
-          const baseId = `${user.id}_${timePrefix}`;
-          const count = await prisma.sample.count({
-            where: { testerBarcode: { startsWith: baseId } }
-          });
-          const seq = String(count + 1).padStart(3, '0');
-          testerBarcode = `${baseId}_${seq}`;
+          if (user) {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const timePrefix = `${yy}${mm}${dd}${hh}${min}`;
+            
+            const baseId = `${user.id}_${timePrefix}`;
+            const count = await prisma.sample.count({
+              where: { testerBarcode: { startsWith: baseId } }
+            });
+            const seq = String(count + 1).padStart(3, '0');
+            testerBarcode = `${baseId}_${seq}`;
+          } else {
+            console.error(`[API Error] User not found during testerBarcode generation: ${testerId}`);
+          }
         }
 
         const updatedSample = await prisma.sample.update({

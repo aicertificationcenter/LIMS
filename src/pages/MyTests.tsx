@@ -40,12 +40,14 @@ export const MyTests = () => {
   const handleOpenDetail = async (id: string) => {
     setSelectedId(id);
     const test = myTests.find((t: any) => t.id === id);
-    if (test && test.status === 'RECEIVED' && !test.testerBarcode && user) {
+    // Trigger generation if tester is assigned but barcode is missing
+    if (test && !test.testerBarcode && user) {
       try {
         await apiClient.receptions.assign(id, user.id);
-        fetchMyTasks(); // Refresh to show generated ID and updated status
+        fetchMyTasks();
       } catch (err: any) {
-        console.error('Auto-start test failed:', err);
+        console.error('ID generation failed:', err);
+        alert('시험번호 자동 생성에 실패했습니다. (서버 오류)');
       }
     }
   };
@@ -180,7 +182,14 @@ export const MyTests = () => {
                 번호: {selectedTest.barcode || selectedTest.testId}
               </span>
               <span style={{ marginLeft: '12px', fontSize: '0.85rem', background: '#ffffff33', padding: '4px 10px', borderRadius: '12px', opacity: 0.9 }}>
-                시험번호: {selectedTest.testerBarcode || '미발급'}
+                시험번호: {selectedTest.testerBarcode || (
+                  <button 
+                    onClick={() => handleOpenDetail(selectedTest.id)} 
+                    style={{ background: '#ef4444', color: 'white', border: 'none', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
+                  >
+                    번호 생성하기
+                  </button>
+                )}
               </span>
             </h2>
           </div>
