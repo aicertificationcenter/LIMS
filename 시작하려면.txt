@@ -61,6 +61,10 @@ git push origin main
 # ====================================================== #
 # 1. 수정된 설정 추가
 git add .
-git commit -m "04051018"
+
+# 2. 커밋 메시지 작성
+git commit -m "04051126"
+
+# 3. 깃허브로 업로드
 git push origin main
 

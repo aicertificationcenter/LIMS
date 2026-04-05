@@ -37,8 +37,17 @@ export const MyTests = () => {
   const [editText, setEditText] = useState('');
   const [showHistoryId, setShowHistoryId] = useState<string | null>(null);
 
-  const handleOpenDetail = (id: string) => {
+  const handleOpenDetail = async (id: string) => {
     setSelectedId(id);
+    const test = myTests.find((t: any) => t.id === id);
+    if (test && test.status === 'RECEIVED' && !test.testerBarcode && user) {
+      try {
+        await apiClient.receptions.assign(id, user.id);
+        fetchMyTasks(); // Refresh to show generated ID and updated status
+      } catch (err: any) {
+        console.error('Auto-start test failed:', err);
+      }
+    }
   };
 
   const handleAddConsult = async () => {
@@ -171,7 +180,7 @@ export const MyTests = () => {
                 번호: {selectedTest.barcode || selectedTest.testId}
               </span>
               <span style={{ marginLeft: '12px', fontSize: '0.85rem', background: '#ffffff33', padding: '4px 10px', borderRadius: '12px', opacity: 0.9 }}>
-                시험원번호: {selectedTest.testerBarcode || '미발급'}
+                시험번호: {selectedTest.testerBarcode || '미발급'}
               </span>
             </h2>
           </div>
@@ -220,7 +229,7 @@ export const MyTests = () => {
                         value={editText} 
                         onChange={e => setEditText(e.target.value)} 
                         rows={3} 
-                        style={{ background: '#fff', fontSize: '0.95rem' }} 
+                        style={{ background: '#fff', fontSize: '0.95rem', color: '#1e293b' }} 
                       />
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                         <button className="btn btn-secondary" onClick={() => setEditingId(null)} style={{ minHeight: '32px', padding: '0 12px', fontSize: '0.8rem' }}>취소</button>
@@ -251,9 +260,16 @@ export const MyTests = () => {
               )}
               
               {selectedTest.status !== 'COMPLETED' && (
-                <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <textarea className="input-field" value={newConsultText} onChange={e=>setNewConsultText(e.target.value)} placeholder="새로운 상담 내역을 입력하세요..." rows={3} style={{ flex: 1, backgroundColor: 'white', color: 'black', fontSize: '1.05rem', border: '1px solid #cbd5e1' }} />
-                  <button className="btn btn-primary" onClick={handleAddConsult} style={{ height: 'auto', alignSelf: 'stretch', width: '100px' }}>기록</button>
+                <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  <textarea 
+                    className="input-field" 
+                    value={newConsultText} 
+                    onChange={e=>setNewConsultText(e.target.value)} 
+                    placeholder="새로운 상담 내역을 입력하세요..." 
+                    rows={3} 
+                    style={{ flex: 1, backgroundColor: 'white', color: '#1e293b', fontSize: '1.05rem', border: '1px solid #cbd5e1' }} 
+                  />
+                  <button className="btn btn-primary" onClick={handleAddConsult} style={{ height: 'auto', alignSelf: 'stretch', width: '100px', margin: 0 }}>기록</button>
                 </div>
               )}
             </div>
@@ -363,15 +379,9 @@ export const MyTests = () => {
                     {new Date(t.id.substring(0, 8)).toLocaleDateString() || '연동중'}
                   </td>
                   <td>
-                    {t.status === 'RECEIVED' ? (
-                      <button className="btn btn-primary" onClick={() => handleOpenDetail(t.id)} style={{ width: 'auto', minHeight: '36px', padding: '0 15px', marginBottom: 0 }}>
-                        시험접수
-                      </button>
-                    ) : (
-                      <button className="btn btn-secondary" onClick={() => handleOpenDetail(t.id)} style={{ width: 'auto', minHeight: '36px', padding: '0 15px', marginBottom: 0 }}>
-                        상세 보기
-                      </button>
-                    )}
+                    <button className="btn btn-primary" onClick={() => handleOpenDetail(t.id)} style={{ width: 'auto', minHeight: '36px', padding: '0 15px', marginBottom: 0 }}>
+                      접수하기
+                    </button>
                   </td>
                 </tr>
               ))}
