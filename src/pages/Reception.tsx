@@ -17,6 +17,7 @@ export const Reception = () => {
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [modalPosition, setModalPosition] = useState<{ x: number, y: number } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -242,7 +243,7 @@ export const Reception = () => {
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
                 {!!r.invoice ? (
-                  <button className="btn" onClick={() => { setSelectedInvoice(r.invoice); setShowInvoiceModal(true); }} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
+                  <button className="btn" onClick={(e) => { setSelectedInvoice(r.invoice); setModalPosition({ x: e.clientX, y: e.clientY }); setShowInvoiceModal(true); }} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
                      <ClipboardCheck size={18} /> 발행견적 확인하기
                   </button>
                 ) : (
@@ -258,7 +259,11 @@ export const Reception = () => {
       </section>
 
       {showInvoiceModal && selectedInvoice && (
-        <InvoiceViewModal invoice={selectedInvoice} onClose={() => { setShowInvoiceModal(false); setSelectedInvoice(null); }} />
+        <InvoiceViewModal 
+          invoice={selectedInvoice} 
+          position={modalPosition}
+          onClose={() => { setShowInvoiceModal(false); setSelectedInvoice(null); setModalPosition(null); }} 
+        />
       )}
     </main>
   );

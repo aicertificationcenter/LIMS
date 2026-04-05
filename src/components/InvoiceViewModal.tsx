@@ -4,10 +4,11 @@ import { FileText, X, CheckCircle } from 'lucide-react';
 
 interface InvoiceViewModalProps {
   invoice: any;
+  position?: { x: number, y: number } | null;
   onClose: () => void;
 }
 
-export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, onClose }) => {
+export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, position, onClose }) => {
   if (!invoice) return null;
 
   // Defensive data preparation
@@ -18,9 +19,41 @@ export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, onC
   const safeDiscountAmt = invoice.discountAmt || 0;
   const safeDiscountRate = invoice.discountRate || 0;
 
+  // Calculate dynamic position (avoid screen overflow)
+  const MODAL_WIDTH = 750;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  let leftPos = position ? position.x - MODAL_WIDTH / 2 : viewportWidth / 2 - MODAL_WIDTH / 2;
+  let topPos = position ? position.y + 20 : 100;
+
+  // Horizontal boundary check
+  if (leftPos < 20) leftPos = 20;
+  if (leftPos + MODAL_WIDTH > viewportWidth - 20) leftPos = viewportWidth - MODAL_WIDTH - 20;
+
+  // Vertical boundary check (very basic)
+  if (topPos < 20) topPos = 20;
+
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.25)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: '4rem 2rem', overflowY: 'auto' }}>
-      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '750px', marginBottom: '2rem', padding: 0, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', border: '1px solid #e2e8f0', background: 'white' }}>
+    <div 
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'transparent', zIndex: 1000 }} 
+      onClick={onClose}
+    >
+      <div 
+        className="card animate-fade-in" 
+        onClick={(e) => e.stopPropagation()}
+        style={{ 
+          position: 'absolute',
+          top: `${topPos}px`,
+          left: `${leftPos}px`,
+          width: '100%', 
+          maxWidth: `${MODAL_WIDTH}px`, 
+          padding: 0, 
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.2)', 
+          border: '1px solid #e2e8f0', 
+          background: 'white' 
+        }}
+      >
         <div style={{ padding: '1rem 1.5rem', background: 'var(--kaic-navy)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 700 }}>
             <FileText size={18} /> 발행된 견적서 상세 내역
