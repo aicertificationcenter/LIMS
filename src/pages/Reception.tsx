@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
+
+import { useEffect, useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
+import { Search, Filter } from 'lucide-react';
 
 export const Reception = () => {
   const { user } = useAuth();
   const [receptions, setReceptions] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTesterId, setFilterTesterId] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -28,6 +33,15 @@ export const Reception = () => {
       setLoading(false);
     }
   };
+
+  const filteredReceptions = useMemo(() => {
+    return receptions.filter(r => {
+      const companyMatch = r.clientId?.toLowerCase().includes(searchQuery.toLowerCase());
+      const personMatch = r.clientName?.toLowerCase().includes(searchQuery.toLowerCase());
+      const testerIdMatch = !filterTesterId || r.tests?.[0]?.testerId === filterTesterId;
+      return (companyMatch || personMatch) && testerIdMatch;
+    });
+  }, [receptions, searchQuery, filterTesterId]);
 
   if (user?.role !== 'ADMIN') {
     return <Navigate to="/stats" replace />;
@@ -117,9 +131,39 @@ export const Reception = () => {
 
       {/* 2. 기등록된 접수 현황 */}
       <section className="card" style={{ gridColumn: 'span 8', overflowY: 'auto' }}>
-        <h2 className="card-title">최근 등록된 접수 목록 (통합 조회)</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
+          <h2 className="card-title" style={{ margin: 0, border: 'none' }}>최근 등록된 접수 목록 (통합 조회)</h2>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="기업명 혹은 담당자 검색" 
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Filter size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <select 
+                className="input-field" 
+                value={filterTesterId}
+                onChange={e => setFilterTesterId(e.target.value)}
+                style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}
+              >
+                <option value="">모든 시험원 (전체)</option>
+                {users.map(u => (
+                   <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {receptions.map(r => (
+          {filteredReceptions.map(r => (
             <div key={r.id} style={{ padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: 'white' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div>
@@ -159,7 +203,7 @@ export const Reception = () => {
               </div>
             </div>
           ))}
-          {receptions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center' }}>접수된 서류가 없습니다.</p>}
+          {filteredReceptions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', padding: '4rem' }}>검색 결과가 없습니다.</p>}
         </div>
       </section>
 
