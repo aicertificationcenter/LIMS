@@ -40,7 +40,8 @@ export default async function handler(req, res) {
         testEndDate: t.sample.testEndDate,
         testLocation: t.sample.testLocation,
         testType: t.sample.testType,
-        testAddress: t.sample.testAddress
+        testAddress: t.sample.testAddress,
+        reportPdfUrl: t.sample.reportPdfUrl
       }));
 
       return res.status(200).json(result);
