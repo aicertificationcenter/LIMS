@@ -351,10 +351,22 @@ export const Invoices = () => {
                   <div style={{ marginTop: '10px' }}>* 첨부: 시험신청서 1부</div>
                 </div>
 
-                <div style={{ position: 'absolute', bottom: '20mm', right: '15mm', textAlign: 'right' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '5px' }}>한국인공지능검증원장</div>
+                <div style={{ position: 'absolute', bottom: '22mm', right: '15mm', textAlign: 'right' }}>
                   <div style={{ position: 'relative', display: 'inline-block' }}>
-                    <img src="/stamp.png" alt="Company Stamp" style={{ height: '60px', opacity: 0.8 }} />
+                    <div style={{ fontSize: '19px', fontWeight: 900, position: 'relative', zIndex: 1, letterSpacing: '1px' }}>한국인공지능검증원장</div>
+                    <img 
+                      src="/stamp.png" 
+                      alt="Company Stamp" 
+                      style={{ 
+                        position: 'absolute',
+                        right: '-8mm',
+                        top: '-5mm',
+                        height: '64px', 
+                        opacity: 0.85,
+                        zIndex: 2,
+                        pointerEvents: 'none'
+                      }} 
+                    />
                   </div>
                 </div>
                 
