@@ -19,8 +19,8 @@ export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, onC
   const safeDiscountRate = invoice.discountRate || 0;
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
-      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto', padding: 0, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', border: '1px solid #e2e8f0', background: 'white' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.25)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: '4rem 2rem', overflowY: 'auto' }}>
+      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '750px', marginBottom: '2rem', padding: 0, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', border: '1px solid #e2e8f0', background: 'white' }}>
         <div style={{ padding: '1rem 1.5rem', background: 'var(--kaic-navy)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 700 }}>
             <FileText size={18} /> 발행된 견적서 상세 내역
