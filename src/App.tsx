@@ -9,6 +9,7 @@ import { Reception } from './pages/Reception';
 import { MyTests } from './pages/MyTests';
 import { Stats } from './pages/Stats';
 import { Reports } from './pages/Reports';
+import { Clients } from './pages/Clients';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path="my-tests" element={<MyTests />} />
             <Route path="stats" element={<Stats />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="clients" element={<Clients />} />
             
             {/* Catch All */}
             <Route path="*" element={<Navigate to="/login" />} />

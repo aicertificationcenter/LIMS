@@ -7,6 +7,7 @@ export const Register = () => {
   const [pw, setPw] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -14,7 +15,7 @@ export const Register = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await apiClient.auth.register({ id, pw, email, phone });
+      await apiClient.auth.register({ id, pw, email, phone, name });
       alert('회원가입이 요청되었습니다. 관리자 승인을 기다려주세요.');
       navigate('/login');
     } catch (err: unknown) {
@@ -49,6 +50,10 @@ export const Register = () => {
           <div className="form-group">
             <label className="form-label">전화번호</label>
             <input className="input-field" type="tel" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="010-0000-0000" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">성함(이름)</label>
+            <input className="input-field" type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="홍길동" />
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
             {loading ? '등록 중...' : '계정 생성 요청'}

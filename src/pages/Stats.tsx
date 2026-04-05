@@ -1,7 +1,8 @@
+
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { BarChart3, ClipboardCheck, Timer } from 'lucide-react';
+import { BarChart3, ClipboardCheck, Timer, FileText, Users } from 'lucide-react';
 
 const StatusBadge = ({ status, label }: { status: string, label: string }) => {
   const roleMap: Record<string, string> = {
@@ -19,7 +20,6 @@ export const Stats = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all');
   const [viewingTest, setViewingTest] = useState<any>(null);
   
-  // Set current month as default (e.g. "2024-11")
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
 
@@ -50,6 +50,25 @@ export const Stats = () => {
     });
   }, [receptions, selectedMonth, targetYear, targetMonthNum]);
 
+  const testerStats = useMemo(() => {
+    const stats: Record<string, any> = {};
+    filteredByMonth.forEach(r => {
+      const tester = r.tests?.[0]?.tester;
+      if (!tester) return;
+      
+      const name = tester.name || tester.id;
+      if (!stats[name]) {
+        stats[name] = { name, assigned: 0, received: 0, progress: 0, completed: 0 };
+      }
+      
+      stats[name].assigned += 1;
+      if (r.status === 'RECEIVED') stats[name].received += 1;
+      if (r.status === 'IN_PROGRESS') stats[name].progress += 1;
+      if (r.status === 'COMPLETED') stats[name].completed += 1;
+    });
+    return Object.values(stats);
+  }, [filteredByMonth]);
+
   const displayTests = useMemo(() => {
     return filteredByMonth.filter(test => {
       if (activeTab === 'all') return true;
@@ -78,11 +97,10 @@ export const Stats = () => {
 
   return (
     <main className="dashboard-grid animate-fade-in">
-      {/* Welcome & Month Filter */}
       <header className="card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2563eb 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', border: 'none' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>안녕하세요, {user?.id}님! 👋</h1>
-          <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9, fontSize: '1rem' }}>{targetYear}년 {targetMonthNum}월 ({user?.id}) 시험현황</p>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>안녕하세요, {user?.name || user?.id}님! 👋</h1>
+          <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9, fontSize: '1rem' }}>{targetYear}년 {targetMonthNum}월 시험현황 ({user?.name || user?.id})</p>
         </div>
         <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <span style={{ fontSize: '0.75rem', opacity: 0.8, fontWeight: 600 }}>조회 월 선택</span>
@@ -96,7 +114,6 @@ export const Stats = () => {
         </div>
       </header>
 
-      {/* KPI Cards */}
       <div className="kpi-card" style={{ gridColumn: 'span 4' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -106,10 +123,6 @@ export const Stats = () => {
           <div style={{ padding: '1rem', background: 'var(--kaic-light-blue)', borderRadius: '16px', color: 'var(--kaic-blue)' }}>
             <ClipboardCheck size={28} />
           </div>
-        </div>
-        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--neutral-100)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>+12%</span>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>전월 대비 포인트</span>
         </div>
       </div>
 
@@ -123,10 +136,6 @@ export const Stats = () => {
             <Timer size={28} />
           </div>
         </div>
-        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--neutral-100)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '0.8rem', color: '#3b82f6', fontWeight: 700 }}>{((inProgress/total)*100 || 0).toFixed(0)}%</span>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>전체 대비 점유율</span>
-        </div>
       </div>
 
       <div className="kpi-card" style={{ gridColumn: 'span 4' }}>
@@ -139,13 +148,8 @@ export const Stats = () => {
             <BarChart3 size={28} />
           </div>
         </div>
-        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--neutral-100)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '0.8rem', color: '#1e40af', fontWeight: 700 }}>{completed} 건</span>
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>리포트 생성 완료</span>
-        </div>
       </div>
 
-      {/* Process Distribution */}
       <section className="card" style={{ gridColumn: 'span 4' }}>
         <h2 className="card-title" style={{ fontSize: '1rem' }}>프로세스 분포</h2>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
@@ -162,36 +166,12 @@ export const Stats = () => {
             </svg>
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
               <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--kaic-navy)' }}>{total}</div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>Total</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#93c5fd' }}></div>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>접수 대기</span>
-              </div>
-              <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{receivedCount}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}></div>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>진행 중</span>
-              </div>
-              <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{inProgress}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1d4ed8' }}></div>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>발행 완료</span>
-              </div>
-              <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{completed}</span>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Total</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Recent List */}
       <section className="card" style={{ gridColumn: 'span 8' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="card-title" style={{ margin: 0, border: 'none', fontSize: '1.2rem' }}>실시간 시험 목록</h2>
@@ -242,6 +222,49 @@ export const Stats = () => {
         </div>
       </section>
 
+      {/* Tester Stats Section */}
+      <section className="card" style={{ gridColumn: '1 / -1' }}>
+        <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Users size={20} /> 시험원별 수행 현황 (Tester Metrics)
+        </h2>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>시험원 이름</th>
+                <th>총 배정</th>
+                <th>접수 대기</th>
+                <th>시험 중</th>
+                <th>시험 완료</th>
+                <th>완료율</th>
+              </tr>
+            </thead>
+            <tbody>
+              {testerStats.map((s: any) => (
+                <tr key={s.name}>
+                  <td style={{ fontWeight: 600 }}>{s.name}</td>
+                  <td>{s.assigned} 건</td>
+                  <td>{s.received} 건</td>
+                  <td>{s.progress} 건</td>
+                  <td style={{ color: 'var(--kaic-blue)', fontWeight: 700 }}>{s.completed} 건</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '150px' }}>
+                      <div style={{ flex: 1, height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', background: 'var(--kaic-blue)', width: `${(s.completed/s.assigned)*100}%` }}></div>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', minWidth: '40px' }}>{((s.completed/s.assigned)*100).toFixed(0)}%</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {testerStats.length === 0 && (
+                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* Detail Modal */}
       {viewingTest && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
@@ -260,7 +283,20 @@ export const Stats = () => {
               <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>의뢰 내용</h3>
               <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{viewingTest.content}</div>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>상담 내역</h3>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap' }}>{viewingTest.consultation}</div>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{viewingTest.consultation}</div>
+              
+              {viewingTest.status === 'COMPLETED' && viewingTest.reportPdfUrl && (
+                <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd', textAlign: 'center' }}>
+                  <h4 style={{ margin: '0 0 1rem 0', color: '#0369a1' }}>최종 결과 리포트</h4>
+                  <button 
+                    onClick={() => { const win = window.open(); win?.document.write(`<html><body style="margin:0"><iframe src="${viewingTest.reportPdfUrl}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe></body></html>`); }} 
+                    className="btn btn-primary" 
+                    style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <FileText size={18} /> 발행 성적서 (PDF) 확인하기
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle } from 'lucide-react';
+import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users } from 'lucide-react';
 
 export const Layout = () => {
   const { user, logout } = useAuth();
@@ -73,6 +73,11 @@ export const Layout = () => {
               <PlusCircle size={18} /> 접수하기
             </Link>
           )}
+          {user.role === 'ADMIN' && (
+            <Link to="/clients" style={{ color: location.pathname==='/clients' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={18} /> 의뢰처 관리
+            </Link>
+          )}
           <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <ClipboardList size={18} /> 나의시험
           </Link>
@@ -102,7 +107,7 @@ export const Layout = () => {
             </div>
           )}
 
-          <span style={{ marginRight: '1rem', fontWeight: 600 }}>{user.id} ({user.role})</span>
+          <span style={{ marginRight: '1rem', fontWeight: 600 }}>{user.name || user.id} ({user.role})</span>
           <button onClick={handleLogout} className="btn btn-secondary" style={{ width: 'auto', minHeight: '40px', padding: '0 1rem', marginBottom: 0 }}>로그아웃</button>
         </div>
       </header>
