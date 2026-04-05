@@ -24,6 +24,18 @@ export const Invoices = () => {
     fetchData();
   }, []);
 
+  // Post-fetch effect to handle auto-selection from URL
+  useEffect(() => {
+    if (receptions.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const targetId = params.get('id');
+      if (targetId) {
+        const found = receptions.find(r => r.id === targetId);
+        if (found) setSelectedSample(found);
+      }
+    }
+  }, [receptions]);
+
   const fetchData = async () => {
     try {
       const data = await apiClient.receptions.list();
@@ -48,7 +60,7 @@ export const Invoices = () => {
     const newItems = [...items];
     newItems[index][field] = value;
     if (field === 'unitCost' || field === 'qty') {
-        newItems[index].price = newItems[index].unitCost * newItems[index].qty;
+        newItems[index].price = (newItems[index].unitCost || 0) * (newItems[index].qty || 0);
     }
     setItems(newItems);
   };
@@ -98,8 +110,21 @@ export const Invoices = () => {
             attachments: [{ filename: `견적서_${selectedSample.barcode}.pdf`, content: base64data }]
           })
         });
-        if (res.ok) alert('견적서가 이메일로 성공적으로 발송되었습니다.');
-        else alert('발송 실패');
+        if (res.ok) {
+           alert('견적서가 이메일로 성공적으로 발송되었습니다. (서버에도 내역이 저장됩니다)');
+           // Also save invoice data to database
+           await apiClient.invoices.create({
+             sampleId: selectedSample.id,
+             invoiceNo: selectedSample.barcode,
+             items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
+             subtotal,
+             discountRate,
+             discountAmt,
+             vat,
+             total
+           });
+           fetchData(); // Refresh to reflect invoice existence
+        } else alert('발송 실패');
       };
     } catch (err: any) {
       alert('오류: ' + err.message);

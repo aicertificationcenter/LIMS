@@ -9,6 +9,7 @@ export default async function handler(req, res) {
         const samples = await prisma.sample.findMany({
           orderBy: { receivedAt: 'desc' },
           include: {
+            invoice: true,
             tests: {
               include: {
                 tester: true

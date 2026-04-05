@@ -91,5 +91,14 @@ export const apiClient = {
         method: 'PATCH',
         body: JSON.stringify({ id, testerId }),
       }),
+  },
+
+  invoices: {
+    list: () => apiClient.fetch('/invoices'),
+    create: (data: any) => 
+      apiClient.fetch('/invoices', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   }
 };

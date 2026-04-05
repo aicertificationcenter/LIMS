@@ -3,7 +3,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, ClipboardCheck, AlertCircle } from 'lucide-react';
+import { InvoiceViewModal } from '../components/InvoiceViewModal';
 
 export const Reception = () => {
   const { user } = useAuth();
@@ -13,6 +14,9 @@ export const Reception = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTesterId, setFilterTesterId] = useState('');
+
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   useEffect(() => {
     fetchData();
@@ -215,12 +219,39 @@ export const Reception = () => {
               <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#ef4444' }}>
                 ※ 등록이 완료된 서류입니다. (수정 불가 모드 - Read Only)
               </div>
+
+              {/* Invoice Status Buttons */}
+              <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
+                {r.invoice ? (
+                  <button 
+                    className="btn" 
+                    onClick={() => { setSelectedInvoice(r.invoice); setShowInvoiceModal(true); }}
+                    style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                     <ClipboardCheck size={18} /> 발행견적 확인하기
+                  </button>
+                ) : (
+                  <button 
+                    className="btn" 
+                    onClick={() => window.location.href = `/invoices?id=${r.id}`}
+                    style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#fff7ed', color: '#9a3412', border: '1px solid #ffedd5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                     <AlertCircle size={18} /> 견적발행 필요
+                  </button>
+                )}
+              </div>
             </div>
           ))}
           {filteredReceptions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', padding: '4rem' }}>검색 결과가 없습니다.</p>}
         </div>
       </section>
 
+      {showInvoiceModal && selectedInvoice && (
+        <InvoiceViewModal 
+          invoice={selectedInvoice} 
+          onClose={() => { setShowInvoiceModal(false); setSelectedInvoice(null); }} 
+        />
+      )}
     </main>
   );
 };
