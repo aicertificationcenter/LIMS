@@ -278,12 +278,19 @@ export const Stats = () => {
                 <div><strong style={{ color: '#64748b' }}>번호:</strong> {viewingTest.barcode}</div>
                 <div><strong style={{ color: '#64748b' }}>의뢰기관:</strong> {viewingTest.clientId}</div>
                 <div><strong style={{ color: '#64748b' }}>의뢰자:</strong> {viewingTest.clientName}</div>
-                <div><strong style={{ color: '#64748b' }}>상태:</strong> {viewingTest.status}</div>
+                <div><strong style={{ color: '#64748b' }}>사업자번호:</strong> {viewingTest.bizNo || 'N/A'}</div>
+                <div><strong style={{ color: '#64748b' }}>이메일:</strong> {viewingTest.email || 'N/A'}</div>
+                <div><strong style={{ color: '#64748b' }}>연락처:</strong> {viewingTest.phone || 'N/A'}</div>
+                <div style={{ gridColumn: 'span 2' }}><strong style={{ color: '#64748b' }}>진행상태:</strong> <span className={`badge badge-${viewingTest.status.toLowerCase()}`}>{getStatusLabel(viewingTest.status)}</span></div>
               </div>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>의뢰 내용</h3>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{viewingTest.content}</div>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>상담 내역</h3>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{viewingTest.consultation}</div>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '8px' }}>시험 대상</h3>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px' }}>
+                {viewingTest.target || viewingTest.content || 'N/A'}
+              </div>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '8px' }}>기타 및 상담 사항</h3>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px' }}>
+                {viewingTest.extra || viewingTest.consultation || 'N/A'}
+              </div>
               
               {viewingTest.status === 'COMPLETED' && viewingTest.reportPdfUrl && (
                 <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd', textAlign: 'center' }}>

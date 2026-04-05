@@ -58,6 +58,9 @@ model Sample {
   testType      String?
   testAddress   String?
   reportPdfUrl  String?
+  bizNo         String?
+  target        String?
+  extra         String?
   testerBarcode String?
   receivedAt   DateTime @default(now())
   tests        Test[]

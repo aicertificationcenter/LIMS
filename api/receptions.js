@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     case 'POST':
       try {
-        const { client, clientName, phone, email, content, consultation } = req.body;
+        const { client, clientName, phone, email, bizNo, target, extra } = req.body;
         
         // barcode 생성 logic (YYYYMMDD-seq)
         const today = new Date();
@@ -41,8 +41,9 @@ export default async function handler(req, res) {
             clientName,
             phone,
             email,
-            content,
-            consultation,
+            bizNo,
+            target,
+            extra,
             status: 'RECEIVED'
           }
         });

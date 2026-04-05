@@ -50,10 +50,11 @@ export const Reception = () => {
   // Form states
   const [client, setClient] = useState('');
   const [clientName, setClientName] = useState('');
-  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [content, setContent] = useState('');
-  const [consultation, setConsultation] = useState('');
+  const [bizNo, setBizNo] = useState('');
+  const [phone, setPhone] = useState('');
+  const [target, setTarget] = useState('');
+  const [extra, setExtra] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,12 +62,14 @@ export const Reception = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const newRec = await apiClient.receptions.create({ client, clientName, phone, email, content, consultation });
+      const newRec = await apiClient.receptions.create({ 
+        client, clientName, email, bizNo, phone, target, extra 
+      });
       alert(`신규 시험 접수가 완료되었습니다.\n접수번호: ${newRec.barcode}`);
       fetchData(); // Refresh list
       
       // Clear forms
-      setClient(''); setClientName(''); setPhone(''); setEmail(''); setContent(''); setConsultation('');
+      setClient(''); setClientName(''); setEmail(''); setBizNo(''); setPhone(''); setTarget(''); setExtra('');
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -96,31 +99,35 @@ export const Reception = () => {
       {/* 1. 신규 접수 폼 */}
       <section className="card" style={{ gridColumn: 'span 4', padding: '2rem' }}>
         <h2 className="card-title" style={{ marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>신규 시험 접수하기</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
-            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>의뢰처 (회사기관)</label>
+            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰처 (회사기관)</label>
             <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={client} onChange={e=>setClient(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
-            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>의뢰인 (담당자명)</label>
+            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰인 (담당자명)</label>
             <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={clientName} onChange={e=>setClientName(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
-            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>연락처 (전화)</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={phone} onChange={e=>setPhone(e.target.value)} required />
-          </div>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
-            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>이메일</label>
+            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>이메일</label>
             <input className="input-field" type="email" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={email} onChange={e=>setEmail(e.target.value)} required />
           </div>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start' }}>
-            <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 600, color: '#475569' }}>의뢰 내용</label>
-            <textarea className="input-field" maxLength={2000} rows={5} value={content} onChange={e=>setContent(e.target.value)} required style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
+            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>사업자등록번호</label>
+            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={bizNo} onChange={e=>setBizNo(e.target.value)} placeholder="000-00-00000" />
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
+            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>연락처 (전화)</label>
+            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={phone} onChange={e=>setPhone(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start' }}>
-            <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 600, color: '#475569' }}>상담 내역</label>
-            <textarea className="input-field" maxLength={2000} rows={5} value={consultation} onChange={e=>setConsultation(e.target.value)} required style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
+            <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 700, color: '#475569' }}>시험대상</label>
+            <textarea className="input-field" maxLength={2000} rows={4} value={target} onChange={e=>setTarget(e.target.value)} required style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 700, color: '#475569' }}>기타</label>
+            <textarea className="input-field" maxLength={2000} rows={4} value={extra} onChange={e=>setExtra(e.target.value)} style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '1rem', fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }} disabled={isSubmitting}>
@@ -190,11 +197,12 @@ export const Reception = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
                   <strong>의뢰 기관:</strong> {r.clientId} ({r.clientName} 담당) <br/>
-                  <strong>연락처 정보:</strong> {r.phone} | {r.email}
+                  <strong>연락처 정보:</strong> {r.phone || 'N/A'} | {r.email || 'N/A'} <br/>
+                  <strong>사업자 번호:</strong> {r.bizNo || 'N/A'}
                 </div>
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
-                  <strong>의뢰/상담 내용:</strong> <br/>
-                  {r.content?.substring(0, 50)}...
+                  <strong>시험 대상:</strong> <br/>
+                  {r.target?.substring(0, 100) || r.content?.substring(0, 100) || 'N/A'}...
                 </div>
               </div>
 
