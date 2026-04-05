@@ -1,6 +1,5 @@
 
 import { useEffect, useState, useMemo } from 'react';
-import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { BarChart3, ClipboardCheck, Timer, FileText, Users, Activity } from 'lucide-react';
 
@@ -38,7 +37,6 @@ const ReceptionCard = ({ data, onStatusChange }: { data: any, onStatusChange: (i
 );
 
 export const Stats = () => {
-  const { user } = useAuth();
   const [receptions, setReceptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all');
