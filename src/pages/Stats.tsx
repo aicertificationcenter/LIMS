@@ -79,151 +79,167 @@ export const Stats = () => {
   return (
     <main className="dashboard-grid animate-fade-in">
       {/* Welcome & Month Filter */}
-      <header className="card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #1e293b 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2rem' }}>
+      <header className="card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2563eb 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', border: 'none' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800 }}>안녕하세요, {user?.name}님! 👋</h1>
-          <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8, fontSize: '1.1rem' }}>{targetMonthNum}월 시험 현황을 실시간으로 확인하세요.</p>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>안녕하세요, {user?.name}님! 👋</h1>
+          <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9, fontSize: '1rem' }}>{targetMonthNum}월의 스마트 시험 현황입니다.</p>
         </div>
-        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>조회 월 선택</span>
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ fontSize: '0.75rem', opacity: 0.8, fontWeight: 600 }}>조회 월 선택</span>
           <input 
             type="month" 
             className="input-field" 
             value={selectedMonth} 
             onChange={e => setSelectedMonth(e.target.value)}
-            style={{ fontWeight: 600, padding: '0.5rem 1rem', width: '180px', background: 'white', color: 'black' }}
+            style={{ fontWeight: 700, padding: '0.4rem 0.8rem', width: '160px', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px' }}
           />
         </div>
       </header>
 
       {/* KPI Cards */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="kpi-card" style={{ gridColumn: 'span 4' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 600 }}>총 접수 건수</span>
-            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '0.5rem 0', color: 'var(--kaic-navy)' }}>{total}</div>
+            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>총 접수 건수</span>
+            <div className="kpi-value" style={{ marginTop: '0.5rem' }}>{total}</div>
           </div>
-          <div style={{ padding: '0.75rem', background: 'rgba(0, 102, 179, 0.1)', borderRadius: '12px', color: 'var(--kaic-blue)' }}>
-            <ClipboardCheck size={24} />
+          <div style={{ padding: '1rem', background: 'var(--kaic-light-blue)', borderRadius: '16px', color: 'var(--kaic-blue)' }}>
+            <ClipboardCheck size={28} />
           </div>
+        </div>
+        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--neutral-100)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>+12%</span>
+          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>전월 대비 포인트</span>
         </div>
       </div>
 
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="kpi-card" style={{ gridColumn: 'span 4' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 600 }}>시험 진행 중</span>
-            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '0.5rem 0', color: '#f59e0b' }}>{inProgress}</div>
+            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>시험 진행 중</span>
+            <div className="kpi-value" style={{ marginTop: '0.5rem', color: '#3b82f6' }}>{inProgress}</div>
           </div>
-          <div style={{ padding: '0.75rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '12px', color: '#f59e0b' }}>
-            <Timer size={24} />
+          <div style={{ padding: '1rem', background: '#eff6ff', borderRadius: '16px', color: '#3b82f6' }}>
+            <Timer size={28} />
           </div>
+        </div>
+        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--neutral-100)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '0.8rem', color: '#3b82f6', fontWeight: 700 }}>{((inProgress/total)*100 || 0).toFixed(0)}%</span>
+          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>전체 대비 점유율</span>
         </div>
       </div>
 
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="kpi-card" style={{ gridColumn: 'span 4' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 600 }}>발행 완료</span>
-            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '0.5rem 0', color: '#10b981' }}>{completed}</div>
+            <span style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>발행 완료</span>
+            <div className="kpi-value" style={{ marginTop: '0.5rem', color: '#1e40af' }}>{completed}</div>
           </div>
-          <div style={{ padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
-            <BarChart3 size={24} />
+          <div style={{ padding: '1rem', background: '#dbeafe', borderRadius: '16px', color: '#1e40af' }}>
+            <BarChart3 size={28} />
           </div>
+        </div>
+        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--neutral-100)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '0.8rem', color: '#1e40af', fontWeight: 700 }}>{completed} 건</span>
+          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>리포트 생성 완료</span>
         </div>
       </div>
 
       {/* Process Distribution */}
-      <section className="card" style={{ gridColumn: 'span 2' }}>
-        <h2 className="card-title">시험 프로세스 분포</h2>
-        <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem' }}>
-          <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+      <section className="card" style={{ gridColumn: 'span 4' }}>
+        <h2 className="card-title" style={{ fontSize: '1rem' }}>프로세스 분포</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ position: 'relative', width: '140px', height: '140px' }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#e2e8f0" strokeWidth="3.8"></circle>
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#f1f5f9" strokeWidth="4"></circle>
               {total > 0 && (
                 <>
-                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#10b981" strokeWidth="3.8" strokeDasharray={`${(completed/total)*100} 100`} strokeDashoffset="0"></circle>
-                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#f59e0b" strokeWidth="3.8" strokeDasharray={`${(inProgress/total)*100} 100`} strokeDashoffset={`-${(completed/total)*100}`}></circle>
-                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#3b82f6" strokeWidth="3.8" strokeDasharray={`${(receivedCount/total)*100} 100`} strokeDashoffset={`-${((completed+inProgress)/total)*100}`}></circle>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#1d4ed8" strokeWidth="4" strokeDasharray={`${(completed/total)*100} 100`} strokeDashoffset="0"></circle>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#3b82f6" strokeWidth="4" strokeDasharray={`${(inProgress/total)*100} 100`} strokeDashoffset={`-${(completed/total)*100}`}></circle>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#93c5fd" strokeWidth="4" strokeDasharray={`${(receivedCount/total)*100} 100`} strokeDashoffset={`-${((completed+inProgress)/total)*100}`}></circle>
                 </>
               )}
             </svg>
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--kaic-navy)' }}>{total}</div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Total</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--kaic-navy)' }}>{total}</div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>Total</div>
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#3b82f6' }}></div>
-              <span style={{ fontSize: '0.875rem', color: '#475569', minWidth: '80px' }}>접수 대기</span>
-              <span style={{ fontWeight: 700 }}>{receivedCount}건</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#93c5fd' }}></div>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>접수 대기</span>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{receivedCount}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#f59e0b' }}></div>
-              <span style={{ fontSize: '0.875rem', color: '#475569', minWidth: '80px' }}>진행 중</span>
-              <span style={{ fontWeight: 700 }}>{inProgress}건</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }}></div>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>진행 중</span>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{inProgress}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#10b981' }}></div>
-              <span style={{ fontSize: '0.875rem', color: '#475569', minWidth: '80px' }}>발행 완료</span>
-              <span style={{ fontWeight: 700 }}>{completed}건</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1d4ed8' }}></div>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>발행 완료</span>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{completed}</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Recent List */}
-      <section className="card" style={{ gridColumn: 'span 3' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 className="card-title" style={{ margin: 0, border: 'none' }}>{targetMonthNum}월 상세 목록</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
+      <section className="card" style={{ gridColumn: 'span 8' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 className="card-title" style={{ margin: 0, border: 'none', fontSize: '1.2rem' }}>실시간 시험 목록</h2>
+          <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
             {(['all', 'progress', 'completed'] as const).map(tab => (
               <button 
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 style={{
-                  padding: '8px 16px', borderRadius: '20px', fontWeight: 600, border: '1px solid #cbd5e1',
-                  background: activeTab === tab ? 'var(--kaic-navy)' : 'white',
-                  color: activeTab === tab ? 'white' : 'var(--neutral-800)',
-                  cursor: 'pointer'
+                  padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700,
+                  background: activeTab === tab ? 'white' : 'transparent',
+                  color: activeTab === tab ? 'var(--kaic-navy)' : '#64748b',
+                  boxShadow: activeTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                {tab === 'all' ? '전체' : tab === 'progress' ? '진행/대기' : '완료'}
+                {tab === 'all' ? '전체' : tab === 'progress' ? '진행' : '완료'}
               </button>
             ))}
           </div>
         </div>
 
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>번호</th>
-              <th>의뢰 기관</th>
-              <th>의뢰자</th>
-              <th>상태</th>
-              <th>접수 일시</th>
-              <th>상세</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayTests.map(r => (
-              <tr key={r.id}>
-                <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{r.barcode}</td>
-                <td style={{ fontWeight: 600 }}>{r.clientId}</td>
-                <td>{r.clientName}</td>
-                <td><StatusBadge status={r.status} label={getStatusLabel(r.status)} /></td>
-                <td style={{ fontSize: '0.85rem', color: '#64748b' }}>{new Date(r.receivedAt).toLocaleString()}</td>
-                <td>
-                  <button className="btn btn-secondary" style={{ padding: '4px 12px', minHeight: 'auto', fontSize: '0.8rem', marginBottom: 0 }} onClick={() => setViewingTest(r)}>조회</button>
-                </td>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table" style={{ fontSize: '0.9rem' }}>
+            <thead>
+              <tr>
+                <th>번호</th>
+                <th>의뢰 기관</th>
+                <th>상태</th>
+                <th>상세</th>
               </tr>
-            ))}
-            {displayTests.length === 0 && (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {displayTests.map(r => (
+                <tr key={r.id}>
+                  <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{r.barcode}</td>
+                  <td style={{ fontWeight: 600 }}>{r.clientId}</td>
+                  <td><StatusBadge status={r.status} label={getStatusLabel(r.status)} /></td>
+                  <td>
+                    <button className="btn btn-secondary" style={{ padding: '4px 10px', minHeight: '32px', fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => setViewingTest(r)}>조회</button>
+                  </td>
+                </tr>
+              ))}
+              {displayTests.length === 0 && (
+                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       {/* Detail Modal */}

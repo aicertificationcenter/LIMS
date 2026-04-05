@@ -144,7 +144,7 @@ export const MyTests = () => {
   if (selectedTest) {
     return (
       <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
-        <section className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <section className="card" style={{ gridColumn: '1 / -1', padding: 0, overflow: 'hidden' }}>
           <div style={{ background: 'var(--kaic-navy)', padding: '1.5rem', color: 'white' }}>
             <h2 style={{ margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
               시험접수 상세 정보
@@ -266,7 +266,7 @@ export const MyTests = () => {
 
   return (
     <main className="dashboard-grid animate-fade-in">
-      <section className="card">
+      <section className="card" style={{ gridColumn: '1 / -1' }}>
         <h2 className="card-title">나의 할당 업무 (My Tasks)</h2>
         <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>관리자로부터 명시적으로 배정받은 시험 건들만 모아서 확인할 수 있습니다.</p>
         

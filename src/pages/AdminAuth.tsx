@@ -135,10 +135,10 @@ export const AdminAuth = () => {
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}>데이터를 불러오는 중...</div>;
 
   return (
-    <main className="dashboard-grid animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+    <main className="dashboard-grid animate-fade-in">
       
       {/* 1. Account Management */}
-      <section className="card">
+      <section className="card" style={{ gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
            <UserCheck size={24} color="var(--kaic-navy)" />
            <h2 className="card-title" style={{ margin: 0, border: 'none' }}>사용자 계정 승인 및 관리 (Live)</h2>
@@ -209,7 +209,7 @@ export const AdminAuth = () => {
       </section>
 
       {/* 2. Kanban Board */}
-      <section className="card">
+      <section className="card" style={{ gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
            <Activity size={24} color="var(--kaic-navy)" />
            <h2 className="card-title" style={{ margin: 0, border: 'none' }}>시험 프로세스 칸반 보드 (Workflow)</h2>

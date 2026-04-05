@@ -7,22 +7,28 @@
 }
 
 .kpi-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
+  background: white;
   border-radius: var(--radius-xl);
-  padding: 2rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--neutral-100);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: var(--kaic-navy);
 }
 
 .kpi-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
 }
 
 .kpi-title {
@@ -33,10 +39,10 @@
 }
 
 .kpi-value {
-  color: var(--kaic-blue);
-  font-size: 3rem;
+  color: var(--kaic-navy);
+  font-size: 2.5rem;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .kpi-trend {
@@ -84,22 +90,42 @@
 
 /* Dashboard Grid */
 .dashboard-grid {
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 /* Cards */
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: var(--radius-xl);
-  padding: 2rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
   box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  margin-bottom: 2rem;
+  border: 1px solid var(--neutral-100);
+  margin-bottom: 0; /* Handled by grid gap */
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .card-title {

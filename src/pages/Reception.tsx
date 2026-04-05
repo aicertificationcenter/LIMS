@@ -77,10 +77,10 @@ export const Reception = () => {
   }
 
   return (
-    <main className="dashboard-grid animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem' }}>
+    <main className="dashboard-grid animate-fade-in">
       
       {/* 1. 신규 접수 폼 */}
-      <section className="card" style={{ padding: '2rem' }}>
+      <section className="card" style={{ gridColumn: 'span 4', padding: '2rem' }}>
         <h2 className="card-title" style={{ marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>신규 시험 접수하기</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
@@ -116,7 +116,7 @@ export const Reception = () => {
       </section>
 
       {/* 2. 기등록된 접수 현황 */}
-      <section className="card" style={{ overflowY: 'auto' }}>
+      <section className="card" style={{ gridColumn: 'span 8', overflowY: 'auto' }}>
         <h2 className="card-title">최근 등록된 접수 목록 (통합 조회)</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {receptions.map(r => (

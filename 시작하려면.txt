@@ -58,5 +58,9 @@ git commit -m "fix: revert to absolute standard prisma config for vercel"
 
 # 4. 깃허브 업로드
 git push origin main
-
+# ====================================================== #
+# 1. 수정된 설정 추가
+git add .
+git commit -m "04051018"
+git push origin main
 
