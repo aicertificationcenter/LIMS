@@ -408,10 +408,17 @@ export const Invoices = () => {
                       <div style={{ marginTop: '10px', fontWeight: 700 }}>의뢰자: {selectedSample?.clientName || '성함'} 귀하</div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '8px', fontSize: '13px', alignItems: 'center' }}>
-                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>일련번호</div>
+                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>접수번호</div>
                       <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>{selectedSample?.barcode || '-'}</div>
-                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>견적일자</div>
-                      <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>{new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                      <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>견적번호</div>
+                      <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px', fontWeight: 800, color: 'var(--kaic-navy)' }}>
+                        {selectedSample?.invoice?.invoiceNo || '발행 예정'}
+                        {selectedSample?.invoice?.previousNos && (
+                          <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 400, marginTop: '2px' }}>
+                            (이전: {selectedSample.invoice.previousNos})
+                          </div>
+                        )}
+                      </div>
                       <div style={{ background: '#f1f5f9', padding: '6px 12px', fontWeight: 700 }}>유효기한</div>
                       <div style={{ borderBottom: '1px solid #e2e8f0', padding: '6px' }}>견적일로부터 60일</div>
                   </div>

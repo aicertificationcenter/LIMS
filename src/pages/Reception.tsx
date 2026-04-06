@@ -163,13 +163,26 @@ export const Reception = () => {
             <div key={r.id} style={{ padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: 'white' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
                       <h3 style={{ margin: 0, color: 'var(--kaic-navy)', fontSize: '1.4rem', fontWeight: 900 }}>{r.clientId}</h3>
+                      <span style={{ background: '#047857', color: 'white', padding: '2px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
+                        담당: {r.tests?.[0]?.tester?.name || '미배정'}
+                      </span>
                    </div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#64748b' }}>
-                      <span style={{ fontWeight: 800, background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', color: 'var(--kaic-blue)' }}>{r.barcode}</span>
-                      <span style={{ opacity: 0.6 }}>|</span>
-                      <span style={{ fontWeight: 600 }}>담당: {r.clientName}</span>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#64748b' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontWeight: 700, color: '#475569' }}>접수:</span>
+                        <span style={{ fontWeight: 800, background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', color: 'var(--kaic-blue)' }}>{r.barcode}</span>
+                      </div>
+                      <span style={{ opacity: 0.4 }}>|</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontWeight: 700, color: '#475569' }}>견적:</span>
+                        {r.invoice ? (
+                          <span style={{ fontWeight: 800, background: '#eff6ff', padding: '2px 8px', borderRadius: '4px', color: '#1e40af' }}>{r.invoice.invoiceNo}</span>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>미발행</span>
+                        )}
+                      </div>
                    </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>

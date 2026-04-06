@@ -14,21 +14,40 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const { sampleId, invoiceNo, items, subtotal, discountRate, discountAmt, vat, total } = req.body;
-    console.log(`[API] Creating invoice for sampleId: ${sampleId}, invoiceNo: ${invoiceNo}`);
+    console.log(`[API] Creating/Updating invoice for sampleId: ${sampleId}`);
     
     try {
       const result = await prisma.$transaction(async (tx) => {
-        // 1. Create or Update Invoice
+        // 1. Generate new Invoice Number (견적_YYYYMMDD_seq)
+        const today = new Date();
+        const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+        const count = await tx.invoice.count({
+          where: { invoiceNo: { startsWith: `견적_${dateStr}` } }
+        });
+        const seq = String(count + 1).padStart(3, '0');
+        const generatedInvoiceNo = `견적_${dateStr}_${seq}`;
+
+        // 2. Get existing invoice to manage previousNos history
+        const existingInvoice = await tx.invoice.findUnique({ where: { sampleId } });
+        let updatedPreviousNos = existingInvoice?.previousNos || "";
+        if (existingInvoice?.invoiceNo) {
+          updatedPreviousNos = updatedPreviousNos 
+            ? `${updatedPreviousNos}, ${existingInvoice.invoiceNo}`
+            : existingInvoice.invoiceNo;
+        }
+
+        // 3. Create or Update Invoice
         const inv = await tx.invoice.upsert({
           where: { sampleId },
           create: {
             sampleId,
-            invoiceNo,
+            invoiceNo: generatedInvoiceNo,
             subtotal,
             discountRate,
             discountAmt,
             vat,
             total,
+            previousNos: "",
             items: {
               create: items.map(i => ({
                 title: i.title,
@@ -39,12 +58,13 @@ export default async function handler(req, res) {
             }
           },
           update: {
-            invoiceNo,
+            invoiceNo: generatedInvoiceNo,
             subtotal,
             discountRate,
             discountAmt,
             vat,
             total,
+            previousNos: updatedPreviousNos,
             items: {
               deleteMany: {},
               create: items.map(i => ({
@@ -58,13 +78,13 @@ export default async function handler(req, res) {
           include: { items: true }
         });
         
-        // 2. Explicitly update Sample status to QUOTED
+        // 4. Update Sample status to QUOTED
         await tx.sample.update({
           where: { id: sampleId },
           data: { status: 'QUOTED' }
         });
         
-        console.log(`[API] Successfully updated sample ${sampleId} to QUOTED status.`);
+        console.log(`[API] Successfully updated sample ${sampleId} to QUOTED status with ID ${generatedInvoiceNo}`);
         return inv;
       }, {
         timeout: 10000 // 10s timeout for safety

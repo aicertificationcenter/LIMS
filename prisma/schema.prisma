@@ -173,6 +173,7 @@ model Invoice {
   vat          Float         @default(0)
   total        Float         @default(0)
   status       String        @default("DRAFT") // DRAFT, SENT, PAID
+  previousNos  String?
   items        InvoiceItem[]
   sample       Sample        @relation(fields: [sampleId], references: [id])
 }
