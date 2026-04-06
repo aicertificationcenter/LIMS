@@ -152,7 +152,7 @@ export const Invoices = () => {
            fetchData(); // Refresh sidebar list
         } else {
            const errData = await res.json().catch(() => ({}));
-           alert('❌ 견적서는 저장되었으나 메일 발송에 실패했습니다: ' + (errData.message || '서버 오류'));
+           alert(`❌ 견적서는 저장되었으나 메일 발송에 실패했습니다.\n\n사유: ${errData.error || '서버 오류'}\n코드: ${errData.code || 'N/A'}`);
         }
       };
     } catch (err: any) {
