@@ -3,12 +3,17 @@ import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '../api/client';
 import { BarChart3, ClipboardCheck, Timer, FileText, Users } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
+import { Pagination } from '../components/Pagination';
 
 export const Stats = () => {
   const [receptions, setReceptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all');
   const [viewingTest, setViewingTest] = useState<any>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
@@ -66,6 +71,11 @@ export const Stats = () => {
       return test.status === 'COMPLETED';
     });
   }, [filteredByMonth, activeTab]);
+
+  const paginatedTests = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return displayTests.slice(start, start + itemsPerPage);
+  }, [displayTests, currentPage, itemsPerPage]);
 
   const total = filteredByMonth.length;
   const inProgress = filteredByMonth.filter(r => !['COMPLETED', 'DISPOSED'].includes(r.status)).length;
@@ -210,7 +220,7 @@ export const Stats = () => {
               </tr>
             </thead>
             <tbody>
-              {displayTests.map(r => (
+              {paginatedTests.map(r => (
                 <tr key={r.id}>
                   <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{r.barcode}</td>
                   <td style={{ fontWeight: 600 }}>{r.clientId}</td>
@@ -221,12 +231,20 @@ export const Stats = () => {
                   </td>
                 </tr>
               ))}
-              {displayTests.length === 0 && (
+              {paginatedTests.length === 0 && (
                 <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
               )}
             </tbody>
           </table>
         </div>
+
+        <Pagination 
+          totalItems={displayTests.length} 
+          itemsPerPage={itemsPerPage} 
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </section>
 
       {/* Detail Modal */}

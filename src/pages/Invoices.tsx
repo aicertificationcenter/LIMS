@@ -6,6 +6,7 @@ import { Trash2, Send, Download, Search, Plus, Printer, FileText } from 'lucide-
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
+import { Pagination } from '../components/Pagination';
 
 export const Invoices = () => {
   const { user } = useAuth();
@@ -16,6 +17,11 @@ export const Invoices = () => {
   // Invoice State
   const [items, setItems] = useState<any[]>([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
   const [discountRate, setDiscountRate] = useState(0);
+  
+  // Pagination State (Sidebar)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [isSending, setIsSending] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -70,6 +76,11 @@ export const Invoices = () => {
     });
   }, [receptions, searchTerm]);
 
+  const paginatedReceptions = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredReceptions.slice(start, start + itemsPerPage);
+  }, [filteredReceptions, currentPage, itemsPerPage]);
+
   const handleAddItem = () => {
     setItems([...items, { title: '', unitCost: 0, qty: 1, price: 0 }]);
   };
@@ -95,7 +106,6 @@ export const Invoices = () => {
 
   const generatePDFBlob = async () => {
     if (!invoiceRef.current) return null;
-    // Lowered scale to 1.5 and using JPEG compression to stay within Vercel's 4.5MB limit
     const canvas = await html2canvas(invoiceRef.current, { scale: 1.5, useCORS: true });
     const imgData = canvas.toDataURL('image/jpeg', 0.8);
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -112,25 +122,20 @@ export const Invoices = () => {
     }
     setIsSending(true);
     try {
-      // 1. Save invoice to database FIRST to generate the real Invoice Number
       const savedInvoice = await apiClient.invoices.create({
         sampleId: selectedSample.id,
-        invoiceNo: selectedSample.barcode, // This is ignored by backend now
+        invoiceNo: selectedSample.barcode, 
         items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
         subtotal,
-        discountRate,
+        discountRate: discountRate,
         discountAmt,
         vat,
         total
       });
 
-      // 2. Update local state instantly so the UI reflects the real Number
       setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
-      
-      // 3. Briefly wait for React to re-render the DOM with the real Number
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // 4. Now generate the PDF from the updated DOM (will have correct ID)
       const blob = await generatePDFBlob();
       if (!blob) throw new Error('PDF 생성 실패');
       
@@ -150,25 +155,9 @@ export const Invoices = () => {
         });
         if (res.ok) {
            alert('✅ 견적서 저장 및 메일 발송이 모두 완료되었습니다.');
-           fetchData(); // Refresh sidebar list
+           fetchData(); 
         } else {
-           // Improved error diagnostics for Vercel/Server limit errors (413 Payload, 504 Timeout)
-           let errorDetail = '서버 응답 오류';
-           let errorCode = res.status.toString();
-
-           try {
-             const clonedRes = res.clone();
-             const json = await clonedRes.json();
-             errorDetail = json.error || json.message || '서버 내부 오류';
-             errorCode = json.code || res.status.toString();
-           } catch {
-             const text = await res.text();
-             if (text.includes('Payload Too Large')) errorDetail = '파일 용량 초과 (Vercel 4.5MB 한도)';
-             else if (text.includes('Gateway Timeout')) errorDetail = '처리 시간 초과 (Vercel Timeout)';
-             else errorDetail = '알 수 없는 서버 오류';
-           }
-           
-           alert(`❌ 견적서는 저장되었으나 메일 발송에 실패했습니다.\n\n사유: ${errorDetail}\n코드: ${errorCode}`);
+           alert(`❌ 견적서는 저장되었으나 메일 발송에 실패했습니다.`);
         }
       };
     } catch (err: any) {
@@ -192,11 +181,11 @@ export const Invoices = () => {
           className="input-field" 
           placeholder="기관명 또는 번호 검색" 
           value={searchTerm} 
-          onChange={e => setSearchTerm(e.target.value)}
+          onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           style={{ marginBottom: '1rem' }}
         />
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {filteredReceptions.map(r => (
+          {paginatedReceptions.map(r => (
             <div 
               key={r.id} 
               onClick={() => setSelectedSample(r)}
@@ -207,7 +196,16 @@ export const Invoices = () => {
               <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(r.receivedAt).toLocaleDateString()}</div>
             </div>
           ))}
+          {paginatedReceptions.length === 0 && <p style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>대상이 없습니다.</p>}
         </div>
+
+        <Pagination 
+          totalItems={filteredReceptions.length} 
+          itemsPerPage={itemsPerPage} 
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </aside>
 
       {/* Main Content: Vertical Editor & Preview */}
@@ -518,4 +516,3 @@ export const Invoices = () => {
     </main>
   );
 };
-

@@ -4,6 +4,7 @@ import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Search, Filter, ClipboardCheck, AlertCircle, FileText } from 'lucide-react';
 import { InvoiceViewModal } from '../components/InvoiceViewModal';
+import { Pagination } from '../components/Pagination';
 
 export const Reception = () => {
   const { user } = useAuth();
@@ -18,6 +19,10 @@ export const Reception = () => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [modalPosition, setModalPosition] = useState<{ x: number, y: number } | null>(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchData();
@@ -52,6 +57,11 @@ export const Reception = () => {
       return (companyMatch || personMatch) && testerIdMatch;
     });
   }, [receptions, searchQuery, filterTesterId]);
+
+  const paginatedReceptions = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredReceptions.slice(start, start + itemsPerPage);
+  }, [filteredReceptions, currentPage, itemsPerPage]);
 
   if (user?.role !== 'ADMIN') {
     return <Navigate to="/stats" replace />;
@@ -104,6 +114,7 @@ export const Reception = () => {
       <section className="card" style={{ gridColumn: 'span 4', padding: '2rem' }}>
         <h2 className="card-title" style={{ marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>신규 시험 접수하기</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Form Fields [Stays same as before] */}
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰처 (회사기관)</label>
             <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={client} onChange={e=>setClient(e.target.value)} required />
@@ -144,11 +155,11 @@ export const Reception = () => {
           <div style={{ display: 'flex', gap: '10px' }}>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <input type="text" className="input-field" placeholder="기업명 혹은 담당자 검색" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }} />
+              <input type="text" className="input-field" placeholder="기업명 혹은 담당자 검색" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }} />
             </div>
             <div style={{ position: 'relative' }}>
               <Filter size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <select className="input-field" value={filterTesterId} onChange={e => setFilterTesterId(e.target.value)} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
+              <select className="input-field" value={filterTesterId} onChange={e => { setFilterTesterId(e.target.value); setCurrentPage(1); }} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
                 <option value="">모든 시험원 (전체)</option>
                 {users.map(u => (
                    <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
@@ -159,7 +170,7 @@ export const Reception = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {filteredReceptions.map(r => (
+          {paginatedReceptions.map(r => (
             <div key={r.id} style={{ padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: 'white' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -206,7 +217,7 @@ export const Reception = () => {
                    return (
                      <React.Fragment key={step.id}>
                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 1 }}>
-                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isCompleted ? 'var(--kaic-blue)' : '#cbd5e1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800, boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.2)' : 'none', transition: 'all 0.3s' }}>
+                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: isCompleted ? 'var(--kaic-blue)' : '#cbd5e1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.2)' : 'none', transition: 'all 0.3s' }}>
                            {isCompleted ? '✓' : idx + 1}
                          </div>
                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isCompleted ? 'var(--kaic-navy)' : '#94a3b8', whiteSpace: 'nowrap' }}>{step.label}</span>
@@ -272,8 +283,16 @@ export const Reception = () => {
               </div>
             </div>
           ))}
-          {filteredReceptions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', padding: '4rem' }}>검색 결과가 없습니다.</p>}
+          {paginatedReceptions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', padding: '4rem' }}>검색 결과가 없습니다.</p>}
         </div>
+
+        <Pagination 
+          totalItems={filteredReceptions.length} 
+          itemsPerPage={itemsPerPage} 
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </section>
 
       {showInvoiceModal && selectedInvoice && (

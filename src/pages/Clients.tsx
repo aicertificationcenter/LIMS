@@ -5,6 +5,7 @@ import { apiClient } from '../api/client';
 import { Users, Search, Download, Mail, Send, CheckSquare, Square, Paperclip, Trash2, AlertTriangle } from 'lucide-react';
 import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
 import { StatusBadge } from '../components/StatusBadge';
+import { Pagination } from '../components/Pagination';
 
 export const Clients = () => {
   const { user } = useAuth();
@@ -12,6 +13,10 @@ export const Clients = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReception, setSelectedReception] = useState<any>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
@@ -44,6 +49,11 @@ export const Clients = () => {
       r.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [receptions, searchTerm]);
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(start, start + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
 
   const uniqueClientInfo = useMemo(() => {
     const clientsMap: Record<string, any> = {};
@@ -255,7 +265,7 @@ export const Clients = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map(r => (
+                {paginatedData.map(r => (
                   <tr key={r.id}>
                     <td style={{ fontSize: '0.85rem', color: '#64748b' }}>{new Date(r.receivedAt).toLocaleDateString()}</td>
                     <td style={{ fontWeight: 700 }}>
@@ -275,7 +285,7 @@ export const Clients = () => {
                     </td>
                   </tr>
                 ))}
-                {filteredData.length === 0 && (
+                {paginatedData.length === 0 && (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                       검색 결과가 없습니다.
@@ -286,6 +296,14 @@ export const Clients = () => {
             </table>
           </div>
         )}
+
+        <Pagination 
+          totalItems={filteredData.length} 
+          itemsPerPage={itemsPerPage} 
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </section>
 
       {/* Detail Modal */}
