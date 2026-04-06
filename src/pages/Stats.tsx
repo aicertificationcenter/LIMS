@@ -1,44 +1,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '../api/client';
-import { BarChart3, ClipboardCheck, Timer, FileText, Users, Activity } from 'lucide-react';
-
-const StatusBadge = ({ status, label }: { status: string, label?: string }) => {
-  const map: any = {
-    'RECEIVED': { bg: '#3b82f6', label: '시험의뢰' },
-    'QUOTED': { bg: '#6366f1', label: '견적발송' },
-    'ASSIGNED': { bg: '#8b5cf6', label: '시험원배정' },
-    'IN_PROGRESS': { bg: '#f59e0b', label: '시험진행' },
-    'COMPLETED': { bg: '#10b981', label: '발행 완료' }
-  };
-  const info = map[status] || { bg: '#64748b', label: status };
-  return <span style={{ background: info.bg, color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>{label || info.label}</span>;
-};
-
-const ReceptionCard = ({ data, onStatusChange }: { data: any, onStatusChange: (id: string, s: string) => void }) => (
-  <div style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--kaic-navy)', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-      {data.barcode}
-      <StatusBadge status={data.status} />
-    </div>
-    <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '0.25rem' }}><strong>의뢰처:</strong> {data.clientId}</div>
-    <div style={{ fontSize: '0.85rem', marginBottom: '1rem', color: '#047857', fontWeight: 600 }}>
-       담당: {data.tests?.[0]?.tester?.name || '미배정'}
-    </div>
-    <select 
-      className="input-field" 
-      value={data.status} 
-      onChange={e => onStatusChange(data.id, e.target.value)}
-      style={{ minHeight: '36px', padding: '0 8px', fontSize: '0.85rem', width: '100%', marginBottom: 0, borderRadius: '6px' }}
-    >
-      <option value="RECEIVED">시험의뢰</option>
-      <option value="QUOTED">견적발송</option>
-      <option value="ASSIGNED">시험원배정</option>
-      <option value="IN_PROGRESS">시험진행</option>
-      <option value="COMPLETED">발행완료</option>
-    </select>
-  </div>
-);
+import { BarChart3, ClipboardCheck, Timer, FileText, Users } from 'lucide-react';
+import { StatusBadge } from '../components/StatusBadge';
 
 export const Stats = () => {
   const [receptions, setReceptions] = useState<any[]>([]);
@@ -62,24 +26,6 @@ export const Stats = () => {
       console.error('Fetch stats failed:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleStatusChange = async (id: string, newStatus: string) => {
-    try {
-      const res = await fetch('/api/receptions', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: newStatus }),
-      });
-      if (res.ok) {
-        fetchData();
-      } else {
-        const err = await res.json();
-        alert('상태 변경 실패: ' + err.message);
-      }
-    } catch (error: any) {
-      alert('오류: ' + error.message);
     }
   };
 
@@ -125,14 +71,6 @@ export const Stats = () => {
   const inProgress = filteredByMonth.filter(r => !['COMPLETED', 'DISPOSED'].includes(r.status)).length;
   const completed = filteredByMonth.filter(r => r.status === 'COMPLETED').length;
   
-  const boardSections = [
-    { id: 'RECEIVED', label: '시험의뢰', color: '#3b82f6' },
-    { id: 'QUOTED', label: '견적발송', color: '#6366f1' },
-    { id: 'ASSIGNED', label: '시험원배정', color: '#8b5cf6' },
-    { id: 'IN_PROGRESS', label: '시험진행', color: '#f59e0b' },
-    { id: 'COMPLETED', label: '발행완료', color: '#10b981' }
-  ];
-
   if (loading) {
     return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>통계 데이터를 실시간 분석 중...</div>;
   }
@@ -288,38 +226,6 @@ export const Stats = () => {
               )}
             </tbody>
           </table>
-        </div>
-      </section>
-
-      {/* 5. Kanban Board */}
-      <section className="card" style={{ gridColumn: '1 / -1' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
-           <Activity size={24} color="var(--kaic-navy)" />
-           <h2 className="card-title" style={{ margin: 0, border: 'none', fontSize: '1.2rem' }}>시험 프로세스 칸반 보드 (Workflow Control)</h2>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {boardSections.map(sec => {
-            const list = receptions.filter(r => r.status === sec.id);
-            return (
-              <div key={sec.id} style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 0, marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: `3px solid ${sec.color}` }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>{sec.label}</span>
-                  <span style={{ background: sec.color, color: 'white', padding: '2px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700 }}>{list.length}</span>
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {list.map(r => (
-                    <ReceptionCard key={r.id} data={r} onStatusChange={handleStatusChange} />
-                  ))}
-                  {list.length === 0 && (
-                     <div style={{ textAlign: 'center', padding: '2rem 0', color: '#94a3b8', fontSize: '0.9rem', border: '2px dashed #e2e8f0', borderRadius: '8px' }}>
-                        진행 중인 업무가 없습니다.
-                     </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Users, Search, Download, Mail, Send, CheckSquare, Square, Paperclip, Trash2, AlertTriangle } from 'lucide-react';
 import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
+import { StatusBadge } from '../components/StatusBadge';
 
 export const Clients = () => {
   const { user } = useAuth();
@@ -179,9 +180,12 @@ export const Clients = () => {
 
   const getStatusLabel = (status: string) => {
     switch(status) {
-      case 'RECEIVED': return '접수 대기';
-      case 'IN_PROGRESS': return '시험 중';
-      case 'COMPLETED': return '발행 완료';
+      case 'RECEIVED': return '시험의뢰';
+      case 'QUOTED': return '견적발송';
+      case 'ASSIGNED': return '시험원배정';
+      case 'IN_PROGRESS': return '시험진행';
+      case 'COMPLETED': return '발행완료';
+      case 'DISPOSED': return '폐기완료';
       default: return status;
     }
   };
@@ -267,7 +271,7 @@ export const Clients = () => {
                     <td>{r.phone}</td>
                     <td style={{ fontSize: '0.85rem' }}>{r.email}</td>
                     <td>
-                      <span className={`badge badge-${r.status.toLowerCase()}`}>{getStatusLabel(r.status)}</span>
+                      <StatusBadge status={r.status} />
                     </td>
                   </tr>
                 ))}
