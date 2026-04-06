@@ -5,12 +5,14 @@ import { BarChart3, ClipboardCheck, Timer, FileText, Users, Activity } from 'luc
 
 const StatusBadge = ({ status, label }: { status: string, label?: string }) => {
   const map: any = {
-    'RECEIVED': { bg: '#3b82f6', label: '접수 대기' },
-    'IN_PROGRESS': { bg: '#f59e0b', label: '시험 중' },
+    'RECEIVED': { bg: '#3b82f6', label: '시험의뢰' },
+    'QUOTED': { bg: '#6366f1', label: '견적발송' },
+    'ASSIGNED': { bg: '#8b5cf6', label: '시험원배정' },
+    'IN_PROGRESS': { bg: '#f59e0b', label: '시험진행' },
     'COMPLETED': { bg: '#10b981', label: '발행 완료' }
   };
   const info = map[status] || { bg: '#64748b', label: status };
-  return <span style={{ background: info.bg, color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>{label || info.label}</span>;
+  return <span style={{ background: info.bg, color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>{label || info.label}</span>;
 };
 
 const ReceptionCard = ({ data, onStatusChange }: { data: any, onStatusChange: (id: string, s: string) => void }) => (
@@ -29,9 +31,11 @@ const ReceptionCard = ({ data, onStatusChange }: { data: any, onStatusChange: (i
       onChange={e => onStatusChange(data.id, e.target.value)}
       style={{ minHeight: '36px', padding: '0 8px', fontSize: '0.85rem', width: '100%', marginBottom: 0, borderRadius: '6px' }}
     >
-      <option value="RECEIVED">접수 대기</option>
-      <option value="IN_PROGRESS">시험 진행 중</option>
-      <option value="COMPLETED">발행 완료</option>
+      <option value="RECEIVED">시험의뢰</option>
+      <option value="QUOTED">견적발송</option>
+      <option value="ASSIGNED">시험원배정</option>
+      <option value="IN_PROGRESS">시험진행</option>
+      <option value="COMPLETED">발행완료</option>
     </select>
   </div>
 );
@@ -103,7 +107,7 @@ export const Stats = () => {
       
       stats[name].assigned += 1;
       if (r.status === 'RECEIVED') stats[name].received += 1;
-      if (r.status === 'IN_PROGRESS') stats[name].progress += 1;
+      if (['QUOTED', 'ASSIGNED', 'IN_PROGRESS'].includes(r.status)) stats[name].progress += 1;
       if (r.status === 'COMPLETED') stats[name].completed += 1;
     });
     return Object.values(stats);
@@ -112,19 +116,21 @@ export const Stats = () => {
   const displayTests = useMemo(() => {
     return filteredByMonth.filter(test => {
       if (activeTab === 'all') return true;
-      if (activeTab === 'progress') return test.status === 'IN_PROGRESS' || test.status === 'RECEIVED';
+      if (activeTab === 'progress') return !['COMPLETED', 'DISPOSED'].includes(test.status);
       return test.status === 'COMPLETED';
     });
   }, [filteredByMonth, activeTab]);
 
   const total = filteredByMonth.length;
-  const inProgress = filteredByMonth.filter(r => r.status === 'IN_PROGRESS').length;
+  const inProgress = filteredByMonth.filter(r => !['COMPLETED', 'DISPOSED'].includes(r.status)).length;
   const completed = filteredByMonth.filter(r => r.status === 'COMPLETED').length;
   
   const boardSections = [
-    { id: 'RECEIVED', label: '접수 대기', color: '#3b82f6' },
-    { id: 'IN_PROGRESS', label: '시험 및 분석 중', color: '#f59e0b' },
-    { id: 'COMPLETED', label: '성적서 발행 완료', color: '#10b981' }
+    { id: 'RECEIVED', label: '시험의뢰', color: '#3b82f6' },
+    { id: 'QUOTED', label: '견적발송', color: '#6366f1' },
+    { id: 'ASSIGNED', label: '시험원배정', color: '#8b5cf6' },
+    { id: 'IN_PROGRESS', label: '시험진행', color: '#f59e0b' },
+    { id: 'COMPLETED', label: '발행완료', color: '#10b981' }
   ];
 
   if (loading) {
