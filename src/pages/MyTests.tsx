@@ -2,7 +2,24 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { CheckCircle, PackageCheck, MessageSquare, ClipboardList } from 'lucide-react';
+import { 
+  CheckCircle, 
+  PackageCheck, 
+  MessageSquare, 
+  ClipboardList, 
+  Clock, 
+  History, 
+  ChevronLeft, 
+  X, 
+  Upload, 
+  Download, 
+  AlertCircle, 
+  Save, 
+  Package, 
+  Target, 
+  FileText, 
+  Calendar 
+} from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
 
 export const MyTests = () => {
@@ -273,55 +290,89 @@ export const MyTests = () => {
             
             {/* New Workflow Fields: only show if not completed */}
             {selectedTest.status !== 'COMPLETED' && (
-              <div style={{ background: '#eff6ff', padding: '1.5rem', borderRadius: '8px', marginBottom: '2.5rem', border: '1px solid #bfdbfe' }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#1e40af', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🕒 시험 일정 및 장소 정보 {selectedTest.status === 'IN_PROGRESS' ? '수정' : '등록'}
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                  <div className="form-group">
-                    <label className="label">시험대상 품목</label>
+              <div style={{ background: '#ffffff', padding: '2.5rem', borderRadius: '16px', marginBottom: '3rem', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                  <h3 style={{ fontSize: '1.3rem', color: 'var(--kaic-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 800 }}>
+                    <div style={{ backgroundColor: 'var(--kaic-navy)', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}>1</div>
+                    시험 일정 및 장소 정보 수정
+                  </h3>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      className="btn" 
+                      onClick={handleStartTest}
+                      style={{ 
+                        background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2e3b8e 100%)', 
+                        color: 'white', 
+                        padding: '10px 24px', 
+                        borderRadius: '8px', 
+                        fontWeight: 600, 
+                        boxShadow: '0 4px 6px rgba(29, 42, 120, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <Save size={18} /> 정보 업데이트
+                    </button>
+                  </div>
+                </div>
+                
+                {/* 1. Technical Info Section (Full Width Textareas) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem', marginBottom: '2.5rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Package size={16} color="#64748b" /> 시험대상 품목
+                    </label>
                     <textarea 
                       className="input-field" 
                       rows={2} 
                       placeholder="예: CT기반 복막유착 위험 예측 솔루션(v0.9) 중 복막 분할 및 유착 중등도 분류 모델" 
                       value={testProduct} 
                       onChange={e => setTestProduct(e.target.value)} 
+                      style={{ width: '100%', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', minHeight: '90px', transition: 'all 0.2s', outline: 'none', backgroundColor: '#fcfcfc' }}
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="label">시험 목적</label>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Target size={16} color="#64748b" /> 시험 목적
+                    </label>
                     <textarea 
                       className="input-field" 
                       rows={2} 
                       placeholder="예: 『 창업성장기술개발_TIPS 』 결과 제출용" 
                       value={testPurpose} 
                       onChange={e => setTestPurpose(e.target.value)} 
+                      style={{ width: '100%', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', minHeight: '70px', backgroundColor: '#fcfcfc' }}
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="label">시험 방법</label>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FileText size={16} color="#64748b" /> 시험 방법
+                    </label>
                     <textarea 
                       className="input-field" 
-                      rows={3} 
+                      rows={4} 
                       placeholder="예: [AI모델] 복막 분할 모델의 DSC 목표 달성. 유착 중등도 분류 모델의 Accuracy, Sensitivity, Specificify 목표 달성" 
                       value={testMethod} 
                       onChange={e => setTestMethod(e.target.value)} 
+                      style={{ width: '100%', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', minHeight: '120px', backgroundColor: '#fcfcfc' }}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                {/* 2. Schedule & Type Section (Grid) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #eef2f6' }}>
                   <div className="form-group">
-                    <label className="label">시험 시작 일자</label>
-                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} />
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>📅 시험 시작 일자</label>
+                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
                   </div>
                   <div className="form-group">
-                    <label className="label">시험 종료 일자</label>
-                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} />
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🏁 시험 종료 일자</label>
+                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
                   </div>
                   <div className="form-group">
-                    <label className="label">시험 예정 장소</label>
-                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🏢 시험 예정 장소</label>
+                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white' }}>
                       <option value="">장소 선택</option>
                       <option value="고정시험실">고정시험실</option>
                       <option value="현장시험">현장시험</option>
@@ -329,20 +380,20 @@ export const MyTests = () => {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="label">시험 구분</label>
-                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🧪 시험 구분</label>
+                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white' }}>
                       <option value="">구분 선택</option>
                       <option value="일반시험">일반시험</option>
                       <option value="KOLAS 시험">KOLAS 시험</option>
                     </select>
                   </div>
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                    <label className="label">현장 시험 장소 (상세 주소)</label>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>📍 현장 시험 장소 (상세 주소)</label>
                     <input 
                       type="text" 
                       className="input-field" 
                       placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
-                      style={{ width: '100%' }}
+                      style={{ width: '100%', height: '48px', padding: '0 20px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                       value={testAddress} 
                       onChange={e => setTestAddress(e.target.value)} 
                     />
@@ -351,15 +402,32 @@ export const MyTests = () => {
               </div>
             )}
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>시작일</span> <strong>{selectedTest.testStartDate || '-'}</strong></div>
-              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>종료일</span> <strong>{selectedTest.testEndDate || '-'}</strong></div>
-              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>장소</span> <strong>{selectedTest.testLocation || '-'}</strong></div>
-              <div><span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>구분</span> <strong>{selectedTest.testType || '-'}</strong></div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem', background: '#f1f5f9', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
+                <h4 style={{ fontSize: '1rem', color: '#64748b', margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={18} /> 현재 등록된 시험 정보
+                </h4>
+              </div>
+              <div style={{ background: 'white', padding: '16px 24px', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderBottom: '3px solid var(--kaic-navy)' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: 600 }}>시작일</span> 
+                <strong style={{ fontSize: '1.15rem', color: '#0f172a' }}>{selectedTest.testStartDate || '-'}</strong>
+              </div>
+              <div style={{ background: 'white', padding: '16px 24px', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderBottom: '3px solid var(--kaic-navy)' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: 600 }}>종료일</span> 
+                <strong style={{ fontSize: '1.15rem', color: '#0f172a' }}>{selectedTest.testEndDate || '-'}</strong>
+              </div>
+              <div style={{ background: 'white', padding: '16px 24px', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderBottom: '3px solid var(--kaic-blue)' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: 600 }}>장소</span> 
+                <strong style={{ fontSize: '1.15rem', color: '#0f172a' }}>{selectedTest.testLocation || '-'}</strong>
+              </div>
+              <div style={{ background: 'white', padding: '16px 24px', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderBottom: '3px solid var(--kaic-blue)' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: 600 }}>구분</span> 
+                <strong style={{ fontSize: '1.15rem', color: '#0f172a' }}>{selectedTest.testType || '-'}</strong>
+              </div>
               {selectedTest.testAddress && (
-                <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block' }}>현장 주소</span> 
-                  <strong>{selectedTest.testAddress}</strong>
+                <div style={{ gridColumn: '1 / -1', background: 'white', padding: '16px 24px', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderLeft: '5px solid var(--kaic-blue)' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: 600 }}>현장 시험장 상세 주소</span> 
+                  <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>{selectedTest.testAddress}</strong>
                 </div>
               )}
             </div>
