@@ -111,6 +111,25 @@ export const Invoices = () => {
     }
     setIsSending(true);
     try {
+      // 1. Save invoice to database FIRST to generate the real Invoice Number
+      const savedInvoice = await apiClient.invoices.create({
+        sampleId: selectedSample.id,
+        invoiceNo: selectedSample.barcode, // This is ignored by backend now
+        items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
+        subtotal,
+        discountRate,
+        discountAmt,
+        vat,
+        total
+      });
+
+      // 2. Update local state instantly so the UI reflects the real Number
+      setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
+      
+      // 3. Briefly wait for React to re-render the DOM with the real Number
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // 4. Now generate the PDF from the updated DOM (will have correct ID)
       const blob = await generatePDFBlob();
       if (!blob) throw new Error('PDF 생성 실패');
       
@@ -123,38 +142,17 @@ export const Invoices = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             subject: `[견적서] ${selectedSample.clientId} 귀하 - 한국인공지능검증원`,
-            content: `안녕하세요, ${selectedSample.clientName} 담당자님.\n요청하신 시험에 대한 견적서를 첨부하여 보내드립니다.\n확인 부탁드립니다.\n\n감사합니다.\n한국인공지능검증원 드림.`,
+            content: `안녕하세요, ${selectedSample.clientName} 담당자님.\n요청하신 시험에 대한 견적서(${savedInvoice.invoiceNo})를 첨부하여 보내드립니다.\n확인 부탁드립니다.\n\n감사합니다.\n한국인공지능검증원 드림.`,
             recipients: [selectedSample.email],
-            attachments: [{ filename: `견적서_${selectedSample.barcode}.pdf`, content: base64data }]
+            attachments: [{ filename: `견적서_${savedInvoice.invoiceNo}.pdf`, content: base64data }]
           })
         });
         if (res.ok) {
-           console.log('[Invoice] Email sent successfully, now saving to DB...');
-           try {
-             // Save invoice data to database
-             const savedInvoice = await apiClient.invoices.create({
-               sampleId: selectedSample.id,
-               invoiceNo: selectedSample.barcode,
-               items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
-               subtotal,
-               discountRate,
-               discountAmt,
-               vat,
-               total
-             });
-             
-             // Update local state instantly
-             setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
-             
-             alert('✅ 견적서 발송 및 서버 저장이 모두 완료되었습니다.');
-             fetchData(); // Refresh sidebar list
-           } catch (dbErr: any) {
-             console.error('[Invoice] DB Error:', dbErr);
-             alert('⚠️ 메일은 발송되었으나, 서버 저장에는 실패했습니다: ' + dbErr.message);
-           }
+           alert('✅ 견적서 저장 및 메일 발송이 모두 완료되었습니다.');
+           fetchData(); // Refresh sidebar list
         } else {
-          const errData = await res.json().catch(() => ({}));
-          alert('❌ 메일 발송 실패: ' + (errData.message || '서버 오류'));
+           const errData = await res.json().catch(() => ({}));
+           alert('❌ 견적서는 저장되었으나 메일 발송에 실패했습니다: ' + (errData.message || '서버 오류'));
         }
       };
     } catch (err: any) {
@@ -350,20 +348,20 @@ export const Invoices = () => {
            )}
         </div>
 
-        {/* Live Preview (Scaled to 50%) */}
+        {/* Live Preview (100% Scale) */}
         {selectedSample && (
           <div className="card" style={{ background: '#334155', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h3 style={{ color: 'white', marginTop: 0, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Printer size={20} /> 실시간 견적서 미리보기 (50% 축소 화면)
+              <Printer size={20} /> 실시간 견적서 미리보기 (100% 실사 크기)
             </h3>
             
-            {/* The Scaling Wrapper */}
+            {/* The A4 Wrapper */}
             <div style={{ 
-                width: '105mm', // 210mm * 0.5
-                height: '148.5mm', // 297mm * 0.5
-                overflow: 'hidden',
+                width: '210mm',
+                height: 'auto',
+                overflow: 'visible',
                 borderRadius: '4px',
-                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
+                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)',
                 background: 'white'
             }}>
               <div 
@@ -377,7 +375,6 @@ export const Invoices = () => {
                   fontFamily: '"Malgun Gothic", sans-serif',
                   color: '#333',
                   position: 'relative',
-                  transform: 'scale(0.5)',
                   transformOrigin: 'top left',
                 }}
               >
