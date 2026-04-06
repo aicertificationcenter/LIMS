@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Search, Filter, ClipboardCheck, AlertCircle } from 'lucide-react';
+import { Search, Filter, ClipboardCheck, AlertCircle, FileText } from 'lucide-react';
 import { InvoiceViewModal } from '../components/InvoiceViewModal';
 
 export const Reception = () => {
@@ -243,9 +243,14 @@ export const Reception = () => {
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
                 {!!r.invoice ? (
-                  <button className="btn" onClick={(e) => { setSelectedInvoice(r.invoice); setModalPosition({ x: e.clientX, y: e.clientY }); setShowInvoiceModal(true); }} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
-                     <ClipboardCheck size={18} /> 발행견적 확인하기
-                  </button>
+                  <>
+                    <button className="btn" onClick={(e) => { setSelectedInvoice(r.invoice); setModalPosition({ x: e.clientX, y: e.clientY }); setShowInvoiceModal(true); }} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
+                       <ClipboardCheck size={18} /> 발행견적 확인
+                    </button>
+                    <button className="btn" onClick={() => navigate(`/invoices?id=${r.id}`)} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
+                       <FileText size={18} /> 수정발행
+                    </button>
+                  </>
                 ) : (
                   <button className="btn" onClick={() => navigate(`/invoices?id=${r.id}`)} style={{ flex: 1, padding: '10px', fontSize: '0.9rem', background: '#fff7ed', color: '#9a3412', border: '1px solid #ffedd5', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', fontWeight: 700, cursor: 'pointer' }}>
                      <AlertCircle size={18} /> 견적발행 필요

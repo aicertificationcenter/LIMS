@@ -36,6 +36,23 @@ export const Invoices = () => {
     }
   }, [receptions]);
 
+  useEffect(() => {
+    if (selectedSample) {
+      if (selectedSample.invoice?.items?.length > 0) {
+        setItems(selectedSample.invoice.items.map((it: any) => ({
+          title: it.title,
+          unitCost: it.unitCost,
+          qty: it.qty,
+          price: it.price
+        })));
+        setDiscountRate(selectedSample.invoice.discountRate || 0);
+      } else {
+        setItems([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
+        setDiscountRate(0);
+      }
+    }
+  }, [selectedSample]);
+
   const fetchData = async () => {
     try {
       const data = await apiClient.receptions.list();
@@ -46,10 +63,11 @@ export const Invoices = () => {
   };
 
   const filteredReceptions = useMemo(() => {
-    return receptions.filter(r => 
-      r.clientId?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      r.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return receptions.filter(r => {
+      const matchSearch = r.clientId?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          r.barcode?.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchSearch && !r.invoice;
+    });
   }, [receptions, searchTerm]);
 
   const handleAddItem = () => {
