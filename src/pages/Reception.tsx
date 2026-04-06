@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Search, Filter, ClipboardCheck, AlertCircle, FileText } from 'lucide-react';
+import { Search, Filter, ClipboardCheck, AlertCircle, FileText, MessageSquare, CheckCircle2 } from 'lucide-react';
 import { InvoiceViewModal } from '../components/InvoiceViewModal';
 import { Pagination } from '../components/Pagination';
 
@@ -57,6 +57,18 @@ export const Reception = () => {
       return (companyMatch || personMatch) && testerIdMatch;
     });
   }, [receptions, searchQuery, filterTesterId]);
+
+  const handleUpdateConsultation = async (id: string, consultation: string) => {
+    try {
+      await apiClient.patch(`/receptions/${id}`, { consultation });
+      // Refresh to show latest
+      const res = await apiClient.get('/receptions');
+      setReceptions(res.data);
+    } catch (err) {
+      console.error('Failed to update consultation:', err);
+      alert('상담내용 저장에 실패했습니다.');
+    }
+  };
 
   const paginatedReceptions = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -258,6 +270,25 @@ export const Reception = () => {
                 <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
                   <strong>시험 대상:</strong> <br/>
                   {r.target?.substring(0, 100) || r.content?.substring(0, 100) || 'N/A'}...
+                </div>
+              </div>
+
+              <div style={{ marginTop: '1.25rem', background: '#fff', padding: '1rem', borderRadius: '12px', border: '1px dotted var(--kaic-blue)', position: 'relative' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--kaic-navy)', marginBottom: '10px' }}>
+                  <MessageSquare size={16} color="var(--kaic-blue)" /> 관리자 상담내용 (시험원 전달용)
+                </label>
+                <textarea 
+                  placeholder="시험원에게 전달할 특이사항이나 상세 상담 내용을 입력하세요..."
+                  style={{ width: '100%', minHeight: '80px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', resize: 'vertical', lineHeight: '1.5', background: '#fcfcfc' }}
+                  defaultValue={r.consultation || ''}
+                  onBlur={(e) => {
+                    if (e.target.value !== (r.consultation || '')) {
+                      handleUpdateConsultation(r.id, e.target.value);
+                    }
+                  }}
+                />
+                <div style={{ position: 'absolute', right: '1.5rem', bottom: '0.5rem', fontSize: '0.7rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={12} /> 입력 시 자동 저장 (Focus Out)
                 </div>
               </div>
 

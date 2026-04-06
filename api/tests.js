@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       // Map it to the structure frontend expects
       const result = tests.map(t => ({
         id: t.sample.id,
-        testId: t.sample.barcode,
+        barcode: t.sample.barcode, // This is the receipt number
         testerBarcode: t.sample.testerBarcode,
         status: t.sample.status,
         client: t.sample.clientId,
@@ -33,6 +33,8 @@ export default async function handler(req, res) {
         phone: t.sample.phone,
         email: t.sample.email,
         content: t.sample.content,
+        target: t.sample.target,
+        extra: t.sample.extra,
         consultation: t.sample.consultation,
         consultations: t.sample.consultations,
         evidences: t.sample.evidences,
@@ -41,7 +43,8 @@ export default async function handler(req, res) {
         testLocation: t.sample.testLocation,
         testType: t.sample.testType,
         testAddress: t.sample.testAddress,
-        reportPdfUrl: t.sample.reportPdfUrl
+        reportPdfUrl: t.sample.reportPdfUrl,
+        assignedAt: t.startTime
       }));
 
       return res.status(200).json(result);

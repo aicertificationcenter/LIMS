@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { CheckCircle, PackageCheck } from 'lucide-react';
+import { CheckCircle, PackageCheck, MessageSquare, ClipboardList } from 'lucide-react';
+import { StatusBadge } from '../components/StatusBadge';
 
 export const MyTests = () => {
   const { user } = useAuth();
@@ -161,12 +162,26 @@ export const MyTests = () => {
           <div style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem' }}>원본 접수 정보 (Live)</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px' }}>
-              <div><strong style={{ color: '#475569' }}>원 접수아이디:</strong> <span style={{ color: '#0f172a' }}>{selectedTest.id}</span></div>
+              <div><strong style={{ color: '#475569' }}>접수번호:</strong> <span style={{ color: 'var(--kaic-blue)', fontWeight: 800 }}>{selectedTest.barcode}</span></div>
               <div><strong style={{ color: '#475569' }}>연락처:</strong> <span style={{ color: '#0f172a' }}>{selectedTest.phone}</span></div>
               <div><strong style={{ color: '#475569' }}>의뢰처:</strong> <span style={{ color: '#0f172a' }}>{selectedTest.client} ({selectedTest.clientName})</span></div>
               <div><strong style={{ color: '#475569' }}>이메일:</strong> <span style={{ color: '#0f172a' }}>{selectedTest.email}</span></div>
-              <div style={{ gridColumn: 'span 2' }}><strong style={{ color: '#475569' }}>의뢰 내용:</strong> <div style={{ color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: '0.5rem', background: 'white', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}>{selectedTest.content}</div></div>
-              <div style={{ gridColumn: 'span 2' }}><strong style={{ color: '#475569' }}>관리자 상담 내용:</strong> <div style={{ color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: '0.5rem', background: 'white', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}>{selectedTest.consultation}</div></div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <strong style={{ color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ClipboardList size={16} /> 의뢰 내용:
+                </strong> 
+                <div style={{ color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: '0.5rem', background: 'white', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}>
+                  {selectedTest.target || '의뢰내용이 없습니다.'}
+                </div>
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <strong style={{ color: 'var(--kaic-blue)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MessageSquare size={16} /> 관리자 상담 내용:
+                </strong> 
+                <div style={{ color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: '0.5rem', background: '#f0f9ff', padding: '1rem', border: '1px solid #bae6fd', borderRadius: '12px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}>
+                  {selectedTest.consultation || '등록된 상담내용이 없습니다.'}
+                </div>
+              </div>
             </div>
 
             <h3 style={{ fontSize: '1.1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem', marginBottom: '1rem' }}>시험원 상담/협의 기록</h3>
@@ -348,7 +363,7 @@ export const MyTests = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>바코드 (ID)</th>
+                <th>접수번호</th>
                 <th>의뢰 기관</th>
                 <th>상태</th>
                 <th>할당 일시</th>
@@ -358,16 +373,16 @@ export const MyTests = () => {
             <tbody>
               {myTests.map((t: any) => (
                 <tr key={t.id}>
-                  <td style={{ fontWeight: 600, color: 'var(--kaic-navy)' }}>{t.testId}</td>
-                  <td>{t.client}</td>
+                  <td style={{ fontWeight: 800, color: 'var(--kaic-blue)' }}>{t.barcode}</td>
+                  <td style={{ fontWeight: 700 }}>{t.client}</td>
                   <td>
-                    <span className={`badge badge-${t.status.toLowerCase()}`}>{t.status}</span>
+                    <StatusBadge status={t.status} />
                   </td>
-                  <td style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                    {new Date(t.id.substring(0, 8)).toLocaleDateString() || '연동중'}
+                  <td style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                    {t.assignedAt ? new Date(t.assignedAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
                   </td>
                   <td>
-                    <button className="btn btn-primary" onClick={() => handleOpenDetail(t.id)} style={{ width: 'auto', minHeight: '36px', padding: '0 15px', marginBottom: 0 }}>
+                    <button className="btn btn-primary" onClick={() => handleOpenDetail(t.id)} style={{ width: 'auto', minHeight: '36px', padding: '0 20px', marginBottom: 0, borderRadius: '8px', fontWeight: 700 }}>
                       접수하기
                     </button>
                   </td>
