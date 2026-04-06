@@ -60,10 +60,13 @@ export const Reception = () => {
 
   const handleUpdateConsultation = async (id: string, consultation: string) => {
     try {
-      await apiClient.patch(`/receptions/${id}`, { consultation });
+      await apiClient.fetch(`/receptions/${id}`, { 
+        method: 'PATCH',
+        body: JSON.stringify({ consultation })
+      });
       // Refresh to show latest
-      const res = await apiClient.get('/receptions');
-      setReceptions(res.data);
+      const data = await apiClient.receptions.list();
+      setReceptions(data);
     } catch (err) {
       console.error('Failed to update consultation:', err);
       alert('상담내용 저장에 실패했습니다.');
