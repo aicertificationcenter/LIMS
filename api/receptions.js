@@ -136,15 +136,16 @@ export default async function handler(req, res) {
                 status: 'IN_PROGRESS'
               }
             });
-
-            // Create notification for the assigned tester
-            await prisma.notification.create({
-              data: {
-                userId: testerId,
-                message: `새로운 시험 업무가 배정되었습니다. (접수번호: ${updatedSample.barcode})`,
-              }
-            });
           }
+
+          // [Notification Fix] Always create notification for the assigned tester
+          // Include company name (clientId) as requested
+          await prisma.notification.create({
+            data: {
+              userId: testerId,
+              message: `[시험 배정] ${updatedSample.clientId} 기업의 새로운 시험 업무가 배정되었습니다. (접수번호: ${updatedSample.barcode})`,
+            }
+          });
         }
 
         return res.status(200).json(updatedSample);

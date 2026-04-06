@@ -104,16 +104,40 @@ export const Layout = () => {
             🔔 {notifications.length > 0 && <span style={{ background: 'red', borderRadius: '50%', color: 'white', fontSize: '0.7rem', padding: '2px 6px', verticalAlign: 'top' }}>{notifications.length}</span>}
           </button>
           
-          {showNoti && notifications.length > 0 && (
-            <div style={{ position: 'absolute', top: '40px', right: '100px', background: 'white', color: 'black', width: '300px', padding: '1rem', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 1000}}>
-              <h4 style={{ margin: 0, paddingBottom: '0.5rem', borderBottom: '1px solid #ccc' }}>알림</h4>
-              {notifications.map((n, i) => (
-                <div key={i} style={{ padding: '0.5rem 0', fontSize: '0.9rem' }}>
-                  <p style={{ margin: 0 }}>{n.msg}</p>
-                  <small style={{ color: 'gray' }}>{n.time}</small>
+          {showNoti && (
+            <div style={{ position: 'absolute', top: '45px', right: '0', background: 'white', color: 'black', width: '320px', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)', zIndex: 1000, border: '1px solid #edf2f7', overflow: 'hidden' }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1a202c' }}>알림</h4>
+                <span style={{ fontSize: '0.75rem', background: '#ebf8ff', color: '#2b6cb0', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{notifications.length}건</span>
+              </div>
+              
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#a0aec0', fontSize: '0.9rem' }}>
+                    새로운 알림이 없습니다.
+                  </div>
+                ) : (
+                  notifications.map((n, i) => (
+                    <div key={n.id || i} style={{ padding: '1rem', borderBottom: i === notifications.length - 1 ? 'none' : '1px solid #f7fafc', transition: 'background 0.2s', cursor: 'default' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f7fafc'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                      <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#2d3748', lineHeight: '1.5', fontWeight: 500 }}>
+                        {n.message}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <small style={{ color: '#a0aec0', fontSize: '0.75rem' }}>{new Date(n.createdAt).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</small>
+                        <span style={{ width: '6px', height: '6px', background: '#4299e1', borderRadius: '50%' }}></span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {notifications.length > 0 && (
+                <div style={{ padding: '0.75rem', background: '#f8fafc', borderTop: '1px solid #edf2f7' }}>
+                  <button onClick={clearNoti} className="btn btn-secondary" style={{ width: '100%', marginTop: 0, minHeight: '36px', padding: '0', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    모두 읽음표시
+                  </button>
                 </div>
-              ))}
-              <button onClick={clearNoti} className="btn btn-secondary" style={{ width: '100%', marginTop: '0.5rem', minHeight: '30px', padding: '5px' }}>모두 읽음표시</button>
+              )}
             </div>
           )}
 
