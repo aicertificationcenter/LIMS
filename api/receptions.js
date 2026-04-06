@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
     case 'PATCH':
       try {
-        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation } = req.body;
+        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation, testProduct, testPurpose, testMethod } = req.body;
         
         // Update sample status and generate testerBarcode if needed
         const sample = await prisma.sample.findUnique({ where: { id } });
@@ -70,11 +70,9 @@ export default async function handler(req, res) {
             const yy = String(now.getFullYear()).slice(2);
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const timePrefix = `${yy}${mm}${dd}${hh}${min}`;
+            const datePrefix = `${yy}${mm}${dd}`;
             
-            const baseId = `${user.id}_${timePrefix}`;
+            const baseId = `${user.id}_${datePrefix}`;
             const count = await prisma.sample.count({
               where: { testerBarcode: { startsWith: baseId } }
             });
@@ -96,7 +94,10 @@ export default async function handler(req, res) {
              testType,
              testAddress,
              reportPdfUrl,
-             consultation
+             consultation,
+             testProduct,
+             testPurpose,
+             testMethod
           }
         });
 

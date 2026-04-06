@@ -131,7 +131,27 @@ export const Reports = () => {
         <header className="card" style={{ gridColumn: '1 / -1', background: 'var(--kaic-navy)', color: 'white', padding: '1.5rem 2rem' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
              <h2 style={{ margin: 0 }}>성적서 발행 및 증적 관리</h2>
-             <button className="btn btn-secondary" onClick={() => setSelectedId(null)} style={{ border: '1px solid rgba(255,255,255,0.3)', color: 'white' }}>목록으로 이동</button>
+             <button 
+               className="btn" 
+               onClick={() => setSelectedId(null)} 
+               style={{ 
+                 background: 'rgba(255, 255, 255, 0.15)', 
+                 border: '1px solid rgba(255, 255, 255, 0.4)', 
+                 color: 'white',
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '6px',
+                 padding: '8px 16px',
+                 fontSize: '0.9rem',
+                 fontWeight: 600,
+                 borderRadius: '8px',
+                 transition: 'all 0.2s'
+               }}
+               onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
+               onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
+             >
+               ← 목록으로 이동
+             </button>
            </div>
            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>시험번호: {selectedTest.testerBarcode || selectedTest.barcode}</p>
         </header>

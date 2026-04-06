@@ -43,6 +43,9 @@ export default async function handler(req, res) {
         testLocation: t.sample.testLocation,
         testType: t.sample.testType,
         testAddress: t.sample.testAddress,
+        testProduct: t.sample.testProduct,
+        testPurpose: t.sample.testPurpose,
+        testMethod: t.sample.testMethod,
         reportPdfUrl: t.sample.reportPdfUrl,
         assignedAt: t.startTime
       }));

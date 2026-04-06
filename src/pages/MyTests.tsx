@@ -44,6 +44,9 @@ export const MyTests = () => {
   const [testLocation, setTestLocation] = useState('');
   const [testType, setTestType] = useState('');
   const [testAddress, setTestAddress] = useState('');
+  const [testProduct, setTestProduct] = useState('');
+  const [testPurpose, setTestPurpose] = useState('');
+  const [testMethod, setTestMethod] = useState('');
 
   // Sync state with selected test data when it changes
   useEffect(() => {
@@ -53,8 +56,11 @@ export const MyTests = () => {
       setTestLocation(selectedTest.testLocation || '');
       setTestType(selectedTest.testType || '');
       setTestAddress(selectedTest.testAddress || '');
+      setTestProduct(selectedTest.testProduct || '');
+      setTestPurpose(selectedTest.testPurpose || '');
+      setTestMethod(selectedTest.testMethod || '');
     }
-  }, [selectedTest?.id, selectedTest?.testStartDate, selectedTest?.testEndDate, selectedTest?.testLocation, selectedTest?.testType, selectedTest?.testAddress]);
+  }, [selectedTest?.id, selectedTest?.testStartDate, selectedTest?.testEndDate, selectedTest?.testLocation, selectedTest?.testType, selectedTest?.testAddress, selectedTest?.testProduct, selectedTest?.testPurpose, selectedTest?.testMethod]);
 
   const handleOpenDetail = async (id: string) => {
     setSelectedId(id);
@@ -105,7 +111,7 @@ export const MyTests = () => {
   const handleStartTest = async () => {
     if (!selectedId) return;
     if (!testStartDate || !testEndDate || !testLocation || !testType) {
-      alert('시험 시작 전 모든 시험 정보를 입력해주세요.');
+      alert('시험 시작 전 필수 시험 정보를 입력해주세요.');
       return;
     }
     try {
@@ -120,7 +126,10 @@ export const MyTests = () => {
           testEndDate,
           testLocation,
           testType,
-          testAddress
+          testAddress,
+          testProduct,
+          testPurpose,
+          testMethod
         })
       });
       alert(selectedTest.status === 'RECEIVED' ? '시험이 시작되었습니다.' : '시험 정보가 업데이트되었습니다.');
@@ -268,6 +277,39 @@ export const MyTests = () => {
                 <h3 style={{ fontSize: '1.1rem', color: '#1e40af', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   🕒 시험 일정 및 장소 정보 {selectedTest.status === 'IN_PROGRESS' ? '수정' : '등록'}
                 </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                  <div className="form-group">
+                    <label className="label">시험대상 품목</label>
+                    <textarea 
+                      className="input-field" 
+                      rows={2} 
+                      placeholder="예: CT기반 복막유착 위험 예측 솔루션(v0.9) 중 복막 분할 및 유착 중등도 분류 모델" 
+                      value={testProduct} 
+                      onChange={e => setTestProduct(e.target.value)} 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">시험 목적</label>
+                    <textarea 
+                      className="input-field" 
+                      rows={2} 
+                      placeholder="예: 『 창업성장기술개발_TIPS 』 결과 제출용" 
+                      value={testPurpose} 
+                      onChange={e => setTestPurpose(e.target.value)} 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">시험 방법</label>
+                    <textarea 
+                      className="input-field" 
+                      rows={3} 
+                      placeholder="예: [AI모델] 복막 분할 모델의 DSC 목표 달성. 유착 중등도 분류 모델의 Accuracy, Sensitivity, Specificify 목표 달성" 
+                      value={testMethod} 
+                      onChange={e => setTestMethod(e.target.value)} 
+                    />
+                  </div>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                   <div className="form-group">
                     <label className="label">시험 시작 일자</label>
@@ -294,18 +336,17 @@ export const MyTests = () => {
                       <option value="KOLAS 시험">KOLAS 시험</option>
                     </select>
                   </div>
-                  {testLocation && testLocation !== '고정시험실' && (
-                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                      <label className="label">현장 시험 장소 (상세 주소)</label>
-                      <input 
-                        type="text" 
-                        className="input-field" 
-                        placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
-                        value={testAddress} 
-                        onChange={e => setTestAddress(e.target.value)} 
-                      />
-                    </div>
-                  )}
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="label">현장 시험 장소 (상세 주소)</label>
+                    <input 
+                      type="text" 
+                      className="input-field" 
+                      placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
+                      style={{ width: '100%' }}
+                      value={testAddress} 
+                      onChange={e => setTestAddress(e.target.value)} 
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -323,6 +364,183 @@ export const MyTests = () => {
               )}
             </div>
 
+
+            {/* Cover Page Preview Section */}
+            {(selectedTest.testStartDate && selectedTest.testType) && (
+              <div style={{ marginTop: '3rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>시험성적서 (갑)지 미리보기</h3>
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => {
+                      const printContent = document.getElementById('cover-page-content');
+                      const windowUrl = 'about:blank';
+                      const uniqueName = new Date().getTime();
+                      const windowName = 'Print' + uniqueName;
+                      const printWindow = window.open(windowUrl, windowName, 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+                      
+                      if (printWindow && printContent) {
+                        printWindow.document.write(`
+                          <html>
+                            <head>
+                              <title>시험성적서 갑지 - ${selectedTest.barcode}</title>
+                              <style>
+                                body { font-family: "Malgun Gothic", dotum, sans-serif; padding: 40px; line-height: 1.5; color: #333; }
+                                .document { width: 100%; max-width: 700px; margin: 0 auto; border: 1px solid #eee; padding: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+                                .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                                .logo { width: 120px; }
+                                .header-center { text-align: center; font-size: 1.4rem; font-weight: bold; }
+                                .issue-no { font-size: 0.8rem; text-align: right; color: #666; }
+                                .title { text-align: center; font-size: 2rem; font-weight: 900; margin: 40px 0; text-decoration: underline; letter-spacing: 5px; }
+                                .section { margin-bottom: 25px; }
+                                .section-title { font-weight: bold; margin-bottom: 8px; font-size: 1.1rem; }
+                                .data-row { margin-bottom: 6px; display: flex; gap: 10px; }
+                                .label { width: 120px; font-weight: bold; }
+                                .value { flex: 1; }
+                                .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                                .table th, .table td { border: 1px solid #333; padding: 8px; text-align: center; font-size: 0.9rem; }
+                                .footer { margin-top: 50px; text-align: center; }
+                                .footer-stamp { font-size: 1.5rem; font-weight: bold; margin-top: 30px; }
+                                .check-row { display: flex; gap: 20px; margin-top: 5px; }
+                                .checkbox { border: 1px solid #333; width: 14px; height: 14px; display: inline-flex; align-items: center; justifyContent: center; font-size: 10px; }
+                                .checked { background: #333; color: white; }
+                                @media print {
+                                  body { padding: 0; }
+                                  .document { border: none; box-shadow: none; padding: 0; }
+                                  button { display: none; }
+                                }
+                              </style>
+                            </head>
+                            <body>
+                              ${printContent.innerHTML}
+                              <script>
+                                setTimeout(() => {
+                                  window.print();
+                                  window.close();
+                                }, 500);
+                              </script>
+                            </body>
+                          </html>
+                        `);
+                        printWindow.document.close();
+                      }
+                    }}
+                    style={{ background: 'var(--kaic-navy)', color: 'white', border: 'none', padding: '8px 20px' }}
+                  >
+                    📥 갑지 다운받기 (Print PDF)
+                  </button>
+                </div>
+
+                <div id="cover-page-content" style={{ background: 'white', padding: '50px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '4px', color: '#1e293b', fontStyle: 'normal' }}>
+                  {(() => {
+                    const year = selectedTest.testStartDate ? selectedTest.testStartDate.substring(0, 4) : new Date().getFullYear();
+                    const yy = year.toString().substring(2);
+                    const typeChar = selectedTest.testType === '일반시험' ? 'T' : 'K';
+                    const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
+                    const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
+                    const productId = `${yy}-${typeChar}-${seq}-S1`;
+                    
+                    return (
+                      <div className="document">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                            <img src="/kaic-logo.png" alt="KAIC" style={{ width: '80px', height: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                            <div>
+                              <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>한국인공지능검증원</div>
+                              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>서울특별시 성동구 왕십리로 58, 416 (성수동, 서울숲포휴)</div>
+                              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Tel: 02-2135-4264 / Fax: 02-6280-3134</div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>성적서 번호</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{issueNo}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>[ 1 / 16 ]</div>
+                          </div>
+                        </div>
+
+                        <h1 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 900, margin: '60px 0', textDecoration: 'underline', textUnderlineOffset: '15px', letterSpacing: '15px' }}>
+                          시 험 성 적 서
+                        </h1>
+
+                        <div style={{ marginBottom: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>1. 의뢰인</h4>
+                          <div style={{ marginLeft: '20px' }}>
+                            <div style={{ marginBottom: '5px' }}>○ 기 관 명 : {selectedTest.clientName || selectedTest.client}</div>
+                            <div>○ 주 소 : {selectedTest.extra ? JSON.parse(selectedTest.extra).clientAddress || '-' : '-'}</div>
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>2. 시험대상품목 : <span style={{ fontWeight: 400, textDecoration: 'underline' }}>{selectedTest.testProduct || '-'}</span></h4>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                            <tbody>
+                              <tr>
+                                <td style={{ border: '1px solid #333', padding: '8px', background: '#f8fafc', width: '30%', textAlign: 'center' }}>시험대상품목번호</td>
+                                <td style={{ border: '1px solid #333', padding: '8px', textAlign: 'center' }}>{productId}</td>
+                              </tr>
+                              <tr>
+                                <td style={{ border: '1px solid #333', padding: '8px', background: '#f8fafc', textAlign: 'center' }}>접수번호</td>
+                                <td style={{ border: '1px solid #333', padding: '8px', textAlign: 'center' }}>{selectedTest.barcode}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div style={{ marginBottom: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>3. 시험기간 : <span style={{ fontWeight: 400 }}>{selectedTest.testStartDate} ~ {selectedTest.testEndDate}</span></h4>
+                        </div>
+
+                        <div style={{ marginBottom: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>4. 시험목적 : <span style={{ fontWeight: 400 }}>『 {selectedTest.testPurpose || '-'} 』</span></h4>
+                        </div>
+
+                        <div style={{ marginBottom: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>5. 시험방법 : <span style={{ fontWeight: 400, whiteSpace: 'pre-wrap' }}>{selectedTest.testMethod || '-'}</span></h4>
+                        </div>
+
+                        <div style={{ marginBottom: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>6. 시험결과 : (KAIC-F-7.8-03(을)) "시험결과요약", "시험방법" 및 "시험결과" 첨부 참조</h4>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '40px 0' }}>
+                          <table style={{ borderCollapse: 'collapse' }}>
+                            <tbody>
+                              <tr>
+                                <td rowSpan={2} style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '40px', textAlign: 'center' }}>확 인</td>
+                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '150px' }}>작성자 성 명:</td>
+                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '100px', textAlign: 'right' }}>(서 명)</td>
+                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '150px' }}>기술책임자 성 명:</td>
+                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '100px', textAlign: 'right' }}>(서 명)</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div style={{ marginTop: '30px' }}>
+                          <h4 style={{ margin: '0 0 10px 0' }}>○ 시험장소 : 
+                            <span style={{ fontWeight: 400, display: 'inline-flex', gap: '15px', marginLeft: '10px' }}>
+                              <span>{selectedTest.testLocation?.includes('고정') ? '☑' : '☐'} 고정시험실</span>
+                              <span>☐ 외부시험실(위탁)</span>
+                              <span>☐ 외부시험실(일반)</span>
+                              <span>{selectedTest.testLocation?.includes('현장') ? '☑' : '☐'} 기타( {selectedTest.testAddress || '-'} )</span>
+                            </span>
+                          </h4>
+                          <div style={{ fontSize: '0.85rem', marginLeft: '20px' }}>
+                            <div>* 고정시험실 주소 : {selectedTest.testLocation?.includes('고정') ? '서울특별시 성동구 왕십리로 58. 서울숲포휴 416호' : '-'}</div>
+                            <div>* 외부검증 진행지 : {selectedTest.testLocation?.includes('현장') ? selectedTest.testAddress : '-'}</div>
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'center', marginTop: '60px' }}>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}.</div>
+                          <div style={{ fontSize: '1.8rem', fontWeight: 900, marginTop: '20px' }}>한국인공지능검증원장 <span style={{ marginLeft: '20px', fontSize: '1.2rem', border: '1px solid #333', borderRadius: '50%', padding: '10px' }}>(印)</span></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
 
             <div style={{ marginTop: '3rem', padding: '0 2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
