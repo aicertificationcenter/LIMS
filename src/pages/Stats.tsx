@@ -1,11 +1,13 @@
 
 import { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { BarChart3, ClipboardCheck, Timer, FileText, Users } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
 import { Pagination } from '../components/Pagination';
 
 export const Stats = () => {
+  const { user } = useAuth();
   const [receptions, setReceptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all');
@@ -91,7 +93,7 @@ export const Stats = () => {
       {/* 1. Welcome Message */}
       <header className="card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2563eb 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', border: 'none' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>안녕하세요 강문정님! 👋</h1>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>안녕하세요 {user?.name || '관리자'}님! 👋</h1>
           <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9, fontSize: '1rem' }}>{targetYear}년 {targetMonthNum}월 실시간 시험 업무 현황입니다.</p>
         </div>
         <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
