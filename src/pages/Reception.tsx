@@ -24,6 +24,8 @@ export const Reception = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [consultationDrafts, setConsultationDrafts] = useState<Record<string, string>>({});
+
   useEffect(() => {
     fetchData();
     const params = new URLSearchParams(window.location.search);
@@ -58,12 +60,14 @@ export const Reception = () => {
     });
   }, [receptions, searchQuery, filterTesterId]);
 
-  const handleUpdateConsultation = async (id: string, consultation: string) => {
+  const handleUpdateConsultation = async (id: string) => {
+    const consultation = consultationDrafts[id];
     try {
-      await apiClient.fetch(`/receptions/${id}`, { 
+      await apiClient.fetch('/receptions', { 
         method: 'PATCH',
-        body: JSON.stringify({ consultation })
+        body: JSON.stringify({ id, consultation })
       });
+      alert('상담내용이 성공적으로 저장되었습니다.');
       // Refresh to show latest
       const data = await apiClient.receptions.list();
       setReceptions(data);
@@ -282,16 +286,24 @@ export const Reception = () => {
                 </label>
                 <textarea 
                   placeholder="시험원에게 전달할 특이사항이나 상세 상담 내용을 입력하세요..."
-                  style={{ width: '100%', minHeight: '80px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', resize: 'vertical', lineHeight: '1.5', background: '#fcfcfc' }}
-                  defaultValue={r.consultation || ''}
-                  onBlur={(e) => {
-                    if (e.target.value !== (r.consultation || '')) {
-                      handleUpdateConsultation(r.id, e.target.value);
-                    }
-                  }}
+                  style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', resize: 'vertical', lineHeight: '1.5', background: '#fcfcfc', marginBottom: '10px' }}
+                  value={consultationDrafts[r.id] ?? r.consultation ?? ''}
+                  onChange={(e) => setConsultationDrafts(prev => ({ ...prev, [r.id]: e.target.value }))}
                 />
-                <div style={{ position: 'absolute', right: '1.5rem', bottom: '0.5rem', fontSize: '0.7rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <CheckCircle2 size={12} /> 입력 시 자동 저장 (Focus Out)
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertCircle size={12} /> 작성 후 반드시 [상담내용 저장] 버튼을 클릭하세요.
+                  </div>
+                  <button 
+                    onClick={() => handleUpdateConsultation(r.id)}
+                    className="btn btn-primary"
+                    style={{ 
+                      margin: 0, padding: '6px 16px', fontSize: '0.8rem', minHeight: '32px', width: 'auto',
+                      background: (consultationDrafts[r.id] !== undefined && consultationDrafts[r.id] !== (r.consultation || '')) ? 'var(--kaic-blue)' : '#94a3b8'
+                    }}
+                  >
+                    <CheckCircle2 size={14} style={{ marginRight: '4px' }} /> 상담내용 저장
+                  </button>
                 </div>
               </div>
 
