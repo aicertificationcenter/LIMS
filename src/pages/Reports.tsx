@@ -243,7 +243,7 @@ export const Reports = () => {
                     <span className={`badge badge-${t.status.toLowerCase()}`}>{t.status === 'COMPLETED' ? '완료' : '시험 중'}</span>
                   </td>
                   <td>
-                    <button className="btn btn-secondary" onClick={() => setSelectedId(t.id)} style={{ padding: '4px 12px', minHeight: '32px' }}>관리</button>
+                    <button className="btn btn-secondary" onClick={() => setSelectedId(t.id)} style={{ padding: '4px 12px', minHeight: '32px', fontSize: '0.85rem' }}>성적서 작성</button>
                   </td>
                 </tr>
               ))}
