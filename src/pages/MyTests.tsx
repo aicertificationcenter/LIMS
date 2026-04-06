@@ -180,7 +180,7 @@ export const MyTests = () => {
                   <ClipboardList size={16} /> 의뢰 내용:
                 </strong> 
                 <div style={{ color: '#0f172a', whiteSpace: 'pre-wrap', marginTop: '0.5rem', background: 'white', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}>
-                  {selectedTest.target || '의뢰내용이 없습니다.'}
+                  {selectedTest.target || selectedTest.content || '의뢰내용이 없습니다.'}
                 </div>
               </div>
               <div style={{ gridColumn: 'span 2' }}>
@@ -433,110 +433,124 @@ export const MyTests = () => {
 
                 <div id="cover-page-content" style={{ background: 'white', padding: '50px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '4px', color: '#1e293b', fontStyle: 'normal' }}>
                   {(() => {
-                    const year = selectedTest.testStartDate ? selectedTest.testStartDate.substring(0, 4) : new Date().getFullYear();
-                    const yy = year.toString().substring(2);
-                    const typeChar = selectedTest.testType === '일반시험' ? 'T' : 'K';
-                    const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
-                    const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
-                    const productId = `${yy}-${typeChar}-${seq}-S1`;
-                    
-                    return (
-                      <div className="document">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                            <img src="/kaic-logo.png" alt="KAIC" style={{ width: '80px', height: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                            <div>
-                              <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>한국인공지능검증원</div>
-                              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>서울특별시 성동구 왕십리로 58, 416 (성수동, 서울숲포휴)</div>
-                              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Tel: 02-2135-4264 / Fax: 02-6280-3134</div>
+                    try {
+                      const startDateStr = selectedTest.testStartDate ? String(selectedTest.testStartDate) : '';
+                      const year = startDateStr ? startDateStr.substring(0, 4) : new Date().getFullYear().toString();
+                      const yy = year.substring(2);
+                      const typeChar = selectedTest.testType === '일반시험' ? 'T' : 'K';
+                      const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
+                      const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
+                      const productId = `${yy}-${typeChar}-${seq}-S1`;
+                      
+                      return (
+                        <div className="document">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                              <img src="/kaic-logo.png" alt="KAIC" style={{ width: '80px', height: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                              <div>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>한국인공지능검증원</div>
+                                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>서울특별시 성동구 왕십리로 58, 416 (성수동, 서울숲포휴)</div>
+                                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Tel: 02-2135-4264 / Fax: 02-6280-3134</div>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>성적서 번호</div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{issueNo}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>[ 1 / 16 ]</div>
                             </div>
                           </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>성적서 번호</div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{issueNo}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>[ 1 / 16 ]</div>
+
+                          <h1 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 900, margin: '60px 0', textDecoration: 'underline', textUnderlineOffset: '15px', letterSpacing: '15px' }}>
+                            시 험 성 적 서
+                          </h1>
+
+                          <div style={{ marginBottom: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>1. 의뢰인</h4>
+                            <div style={{ marginLeft: '20px' }}>
+                              <div style={{ marginBottom: '5px' }}>○ 기 관 명 : {selectedTest.clientName || selectedTest.client || '-'}</div>
+                              <div>○ 주 소 : {(() => {
+                                try {
+                                  if (!selectedTest.extra) return '-';
+                                  const parsed = JSON.parse(selectedTest.extra);
+                                  return parsed.clientAddress || '-';
+                                } catch (e) {
+                                  return '-';
+                                }
+                              })()}</div>
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>2. 시험대상품목 : <span style={{ fontWeight: 400, textDecoration: 'underline' }}>{selectedTest.testProduct || '-'}</span></h4>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                              <tbody>
+                                <tr>
+                                  <td style={{ border: '1px solid #333', padding: '8px', background: '#f8fafc', width: '30%', textAlign: 'center' }}>시험대상품목번호</td>
+                                  <td style={{ border: '1px solid #333', padding: '8px', textAlign: 'center' }}>{productId}</td>
+                                </tr>
+                                <tr>
+                                  <td style={{ border: '1px solid #333', padding: '8px', background: '#f8fafc', textAlign: 'center' }}>접수번호</td>
+                                  <td style={{ border: '1px solid #333', padding: '8px', textAlign: 'center' }}>{selectedTest.barcode || '-'}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div style={{ marginBottom: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>3. 시험기간 : <span style={{ fontWeight: 400 }}>{selectedTest.testStartDate || '-'} ~ {selectedTest.testEndDate || '-'}</span></h4>
+                          </div>
+
+                          <div style={{ marginBottom: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>4. 시험목적 : <span style={{ fontWeight: 400 }}>『 {selectedTest.testPurpose || '-'} 』</span></h4>
+                          </div>
+
+                          <div style={{ marginBottom: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>5. 시험방법 : <span style={{ fontWeight: 400, whiteSpace: 'pre-wrap' }}>{selectedTest.testMethod || '-'}</span></h4>
+                          </div>
+
+                          <div style={{ marginBottom: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>6. 시험결과 : (KAIC-F-7.8-03(을)) "시험결과요약", "시험방법" 및 "시험결과" 첨부 참조</h4>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '40px 0' }}>
+                            <table style={{ borderCollapse: 'collapse' }}>
+                              <tbody>
+                                <tr>
+                                  <td rowSpan={2} style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '40px', textAlign: 'center' }}>확 인</td>
+                                  <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '150px' }}>작성자 성 명:</td>
+                                  <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '100px', textAlign: 'right' }}>(서 명)</td>
+                                  <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '150px' }}>기술책임자 성 명:</td>
+                                  <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '100px', textAlign: 'right' }}>(서 명)</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div style={{ marginTop: '30px' }}>
+                            <h4 style={{ margin: '0 0 10px 0' }}>○ 시험장소 : 
+                              <span style={{ fontWeight: 400, display: 'inline-flex', gap: '15px', marginLeft: '10px' }}>
+                                <span>{selectedTest.testLocation?.includes('고정') ? '☑' : '☐'} 고정시험실</span>
+                                <span>☐ 외부시험실(위탁)</span>
+                                <span>☐ 외부시험실(일반)</span>
+                                <span>{selectedTest.testLocation?.includes('현장') ? '☑' : '☐'} 기타( {selectedTest.testAddress || '-'} )</span>
+                              </span>
+                            </h4>
+                            <div style={{ fontSize: '0.85rem', marginLeft: '20px' }}>
+                              <div>* 고정시험실 주소 : {selectedTest.testLocation?.includes('고정') ? '서울특별시 성동구 왕십리로 58. 서울숲포휴 416호' : '-'}</div>
+                              <div>* 외부검증 진행지 : {selectedTest.testLocation?.includes('현장') ? (selectedTest.testAddress || '-') : '-'}</div>
+                            </div>
+                          </div>
+
+                          <div style={{ textAlign: 'center', marginTop: '60px' }}>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}.</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 900, marginTop: '20px' }}>한국인공지능검증원장 <span style={{ marginLeft: '20px', fontSize: '1.2rem', border: '1px solid #333', borderRadius: '50%', padding: '10px' }}>(印)</span></div>
                           </div>
                         </div>
-
-                        <h1 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: 900, margin: '60px 0', textDecoration: 'underline', textUnderlineOffset: '15px', letterSpacing: '15px' }}>
-                          시 험 성 적 서
-                        </h1>
-
-                        <div style={{ marginBottom: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>1. 의뢰인</h4>
-                          <div style={{ marginLeft: '20px' }}>
-                            <div style={{ marginBottom: '5px' }}>○ 기 관 명 : {selectedTest.clientName || selectedTest.client}</div>
-                            <div>○ 주 소 : {selectedTest.extra ? JSON.parse(selectedTest.extra).clientAddress || '-' : '-'}</div>
-                          </div>
-                        </div>
-
-                        <div style={{ marginBottom: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>2. 시험대상품목 : <span style={{ fontWeight: 400, textDecoration: 'underline' }}>{selectedTest.testProduct || '-'}</span></h4>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-                            <tbody>
-                              <tr>
-                                <td style={{ border: '1px solid #333', padding: '8px', background: '#f8fafc', width: '30%', textAlign: 'center' }}>시험대상품목번호</td>
-                                <td style={{ border: '1px solid #333', padding: '8px', textAlign: 'center' }}>{productId}</td>
-                              </tr>
-                              <tr>
-                                <td style={{ border: '1px solid #333', padding: '8px', background: '#f8fafc', textAlign: 'center' }}>접수번호</td>
-                                <td style={{ border: '1px solid #333', padding: '8px', textAlign: 'center' }}>{selectedTest.barcode}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-
-                        <div style={{ marginBottom: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>3. 시험기간 : <span style={{ fontWeight: 400 }}>{selectedTest.testStartDate} ~ {selectedTest.testEndDate}</span></h4>
-                        </div>
-
-                        <div style={{ marginBottom: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>4. 시험목적 : <span style={{ fontWeight: 400 }}>『 {selectedTest.testPurpose || '-'} 』</span></h4>
-                        </div>
-
-                        <div style={{ marginBottom: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>5. 시험방법 : <span style={{ fontWeight: 400, whiteSpace: 'pre-wrap' }}>{selectedTest.testMethod || '-'}</span></h4>
-                        </div>
-
-                        <div style={{ marginBottom: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>6. 시험결과 : (KAIC-F-7.8-03(을)) "시험결과요약", "시험방법" 및 "시험결과" 첨부 참조</h4>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '40px 0' }}>
-                          <table style={{ borderCollapse: 'collapse' }}>
-                            <tbody>
-                              <tr>
-                                <td rowSpan={2} style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '40px', textAlign: 'center' }}>확 인</td>
-                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '150px' }}>작성자 성 명:</td>
-                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '100px', textAlign: 'right' }}>(서 명)</td>
-                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '150px' }}>기술책임자 성 명:</td>
-                                <td style={{ border: '1px solid #333', padding: '10px', fontSize: '0.8rem', width: '100px', textAlign: 'right' }}>(서 명)</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-
-                        <div style={{ marginTop: '30px' }}>
-                          <h4 style={{ margin: '0 0 10px 0' }}>○ 시험장소 : 
-                            <span style={{ fontWeight: 400, display: 'inline-flex', gap: '15px', marginLeft: '10px' }}>
-                              <span>{selectedTest.testLocation?.includes('고정') ? '☑' : '☐'} 고정시험실</span>
-                              <span>☐ 외부시험실(위탁)</span>
-                              <span>☐ 외부시험실(일반)</span>
-                              <span>{selectedTest.testLocation?.includes('현장') ? '☑' : '☐'} 기타( {selectedTest.testAddress || '-'} )</span>
-                            </span>
-                          </h4>
-                          <div style={{ fontSize: '0.85rem', marginLeft: '20px' }}>
-                            <div>* 고정시험실 주소 : {selectedTest.testLocation?.includes('고정') ? '서울특별시 성동구 왕십리로 58. 서울숲포휴 416호' : '-'}</div>
-                            <div>* 외부검증 진행지 : {selectedTest.testLocation?.includes('현장') ? selectedTest.testAddress : '-'}</div>
-                          </div>
-                        </div>
-
-                        <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}.</div>
-                          <div style={{ fontSize: '1.8rem', fontWeight: 900, marginTop: '20px' }}>한국인공지능검증원장 <span style={{ marginLeft: '20px', fontSize: '1.2rem', border: '1px solid #333', borderRadius: '50%', padding: '10px' }}>(印)</span></div>
-                        </div>
-                      </div>
-                    );
+                      );
+                    } catch (err) {
+                      console.error('Cover Page Render Error:', err);
+                      return <div style={{ padding: '20px', color: 'red' }}>성적서 미리보기를 불러오는 중 오류가 발생했습니다.</div>;
+                    }
                   })()}
                 </div>
               </div>
