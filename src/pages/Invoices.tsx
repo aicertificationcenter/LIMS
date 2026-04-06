@@ -95,12 +95,13 @@ export const Invoices = () => {
 
   const generatePDFBlob = async () => {
     if (!invoiceRef.current) return null;
-    const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL('image/png');
+    // Lowered scale to 1.5 and using JPEG compression to stay within Vercel's 4.5MB limit
+    const canvas = await html2canvas(invoiceRef.current, { scale: 1.5, useCORS: true });
+    const imgData = canvas.toDataURL('image/jpeg', 0.8);
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgWidth = 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
     return pdf.output('blob');
   };
 
@@ -151,8 +152,23 @@ export const Invoices = () => {
            alert('✅ 견적서 저장 및 메일 발송이 모두 완료되었습니다.');
            fetchData(); // Refresh sidebar list
         } else {
-           const errData = await res.json().catch(() => ({}));
-           alert(`❌ 견적서는 저장되었으나 메일 발송에 실패했습니다.\n\n사유: ${errData.error || '서버 오류'}\n코드: ${errData.code || 'N/A'}`);
+           // Improved error diagnostics for Vercel/Server limit errors (413 Payload, 504 Timeout)
+           let errorDetail = '서버 응답 오류';
+           let errorCode = res.status.toString();
+
+           try {
+             const clonedRes = res.clone();
+             const json = await clonedRes.json();
+             errorDetail = json.error || json.message || '서버 내부 오류';
+             errorCode = json.code || res.status.toString();
+           } catch {
+             const text = await res.text();
+             if (text.includes('Payload Too Large')) errorDetail = '파일 용량 초과 (Vercel 4.5MB 한도)';
+             else if (text.includes('Gateway Timeout')) errorDetail = '처리 시간 초과 (Vercel Timeout)';
+             else errorDetail = '알 수 없는 서버 오류';
+           }
+           
+           alert(`❌ 견적서는 저장되었으나 메일 발송에 실패했습니다.\n\n사유: ${errorDetail}\n코드: ${errorCode}`);
         }
       };
     } catch (err: any) {
