@@ -283,30 +283,11 @@ export const MyTests = () => {
             {/* New Workflow Fields: only show if not completed */}
             {selectedTest.status !== 'COMPLETED' && (
               <div style={{ background: '#ffffff', padding: '2.5rem', borderRadius: '16px', marginBottom: '3rem', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div style={{ marginBottom: '2rem' }}>
                   <h3 style={{ fontSize: '1.3rem', color: 'var(--kaic-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 800 }}>
                     <div style={{ backgroundColor: 'var(--kaic-navy)', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}>1</div>
                     시험 일정 및 장소 정보 수정
                   </h3>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button 
-                      className="btn" 
-                      onClick={handleStartTest}
-                      style={{ 
-                        background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2e3b8e 100%)', 
-                        color: 'white', 
-                        padding: '10px 24px', 
-                        borderRadius: '8px', 
-                        fontWeight: 600, 
-                        boxShadow: '0 4px 6px rgba(29, 42, 120, 0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <Save size={18} /> 정보 업데이트
-                    </button>
-                  </div>
                 </div>
                 
                 {/* 1. Technical Info Section (Full Width Textareas) */}
@@ -381,14 +362,36 @@ export const MyTests = () => {
                   </div>
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>📍 현장 시험 장소 (상세 주소)</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
-                      placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
-                      style={{ height: '48px' }}
-                      value={testAddress} 
-                      onChange={e => setTestAddress(e.target.value)} 
-                    />
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input 
+                        type="text" 
+                        className="input-field" 
+                        placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
+                        style={{ height: '48px', flex: 1 }}
+                        value={testAddress} 
+                        onChange={e => setTestAddress(e.target.value)} 
+                      />
+                      <button 
+                        className="btn" 
+                        onClick={handleStartTest}
+                        style={{ 
+                          background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2e3b8e 100%)', 
+                          color: 'white', 
+                          padding: '0 24px', 
+                          borderRadius: '8px', 
+                          fontWeight: 600, 
+                          boxShadow: '0 4px 6px rgba(29, 42, 120, 0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          whiteSpace: 'nowrap',
+                          height: '48px',
+                          margin: 0
+                        }}
+                      >
+                        <Save size={18} /> 정보 업데이트
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
