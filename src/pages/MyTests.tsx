@@ -460,13 +460,14 @@ export const MyTests = () => {
                                 .data-row { margin-bottom: 6px; display: flex; gap: 10px; }
                                 .label { width: 120px; font-weight: bold; }
                                 .value { flex: 1; }
-                                .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                                .table { width: 80%; border-collapse: collapse; margin: 10px auto; }
                                 .table th, .table td { border: 1px solid #333; padding: 8px; text-align: center; font-size: 0.9rem; }
                                 .footer { margin-top: 50px; text-align: center; }
                                 .footer-stamp { font-size: 1.5rem; font-weight: bold; margin-top: 30px; }
                                 .check-row { display: flex; gap: 20px; margin-top: 5px; }
                                 .checkbox { border: 1px solid #333; width: 14px; height: 14px; display: inline-flex; align-items: center; justifyContent: center; font-size: 10px; }
                                 .checked { background: #333; color: white; }
+                                .footer-disclaimer { font-size: 0.75rem; color: #666; margin-top: 20px; text-align: left; }
                                 @media print {
                                   body { padding: 0; }
                                   .document { border: none; box-shadow: none; padding: 0; }
@@ -509,17 +510,12 @@ export const MyTests = () => {
                         <div className="document">
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                              <img src="/kaic-logo.png" alt="KAIC" style={{ width: '80px', height: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                              <div>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>한국인공지능검증원</div>
-                                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>서울특별시 성동구 왕십리로 58, 416 (성수동, 서울숲포휴)</div>
-                                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Tel: 02-2135-4264 / Fax: 02-6280-3134</div>
-                              </div>
+                              <img src="/kaic-logo.png" alt="KAIC" style={{ height: '40px', width: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <div style={{ fontSize: '0.75rem', color: '#64748b' }}>성적서 번호</div>
                               <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{issueNo}</div>
-                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>[ 1 / 16 ]</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>[ 1 / ## ]</div>
                             </div>
                           </div>
 
@@ -545,18 +541,20 @@ export const MyTests = () => {
 
                           <div style={{ marginBottom: '12px' }}>
                             <h4 style={{ margin: '0 0 5px 0' }}>2. 시험대상품목 : <span style={{ fontWeight: 400, textDecoration: 'underline' }}>{selectedTest.testProduct || '-'}</span></h4>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '5px' }}>
-                              <tbody>
-                                <tr>
-                                  <td style={{ border: '1px solid #333', padding: '6px', background: '#f8fafc', width: '30%', textAlign: 'center', fontSize: '0.85rem' }}>시험대상품목번호</td>
-                                  <td style={{ border: '1px solid #333', padding: '6px', textAlign: 'center', fontSize: '0.85rem' }}>{productId}</td>
-                                </tr>
-                                <tr>
-                                  <td style={{ border: '1px solid #333', padding: '6px', background: '#f8fafc', textAlign: 'center', fontSize: '0.85rem' }}>접수번호</td>
-                                  <td style={{ border: '1px solid #333', padding: '6px', textAlign: 'center', fontSize: '0.85rem' }}>{selectedTest.barcode || '-'}</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ width: '80%', borderCollapse: 'collapse', marginTop: '5px' }}>
+                                <tbody>
+                                  <tr>
+                                    <td style={{ border: '1px solid #333', padding: '6px', background: '#f8fafc', width: '30%', textAlign: 'center', fontSize: '0.85rem' }}>시험대상품목번호</td>
+                                    <td style={{ border: '1px solid #333', padding: '6px', textAlign: 'center', fontSize: '0.85rem' }}>{productId}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style={{ border: '1px solid #333', padding: '6px', background: '#f8fafc', textAlign: 'center', fontSize: '0.85rem' }}>접수번호</td>
+                                    <td style={{ border: '1px solid #333', padding: '6px', textAlign: 'center', fontSize: '0.85rem' }}>{selectedTest.barcode || '-'}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
 
                           <div style={{ marginBottom: '12px' }}>
@@ -611,7 +609,7 @@ export const MyTests = () => {
                           <div style={{ textAlign: 'center', marginTop: '35px' }}>
                             <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}.</div>
                             <div style={{ fontSize: '1.7rem', fontWeight: 900, marginTop: '15px' }}>한국인공지능검증원장 <span style={{ marginLeft: '15px', fontSize: '1.1rem', border: '1px solid #333', borderRadius: '50%', padding: '8px' }}>(印)</span></div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '20px' }}>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '20px', textAlign: 'left' }}>
                               * 이 시험성적서는 시험목적에 의한 시험대상품목의 시험결과 확인 이외의 용도로 사용될 수 없습니다.
                             </div>
                           </div>

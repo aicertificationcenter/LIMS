@@ -93,18 +93,20 @@ export const Reception = () => {
   const [phone, setPhone] = useState('');
   const [target, setTarget] = useState('');
   const [extra, setExtra] = useState('');
+  const [clientAddress, setClientAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const extraData = JSON.stringify({ clientAddress });
       const newRec = await apiClient.receptions.create({ 
-        client, clientName, email, bizNo, phone, target, extra 
+        client, clientName, email, bizNo, phone, target, extra: extraData 
       });
       alert(`신규 시험 접수가 완료되었습니다.\n접수번호: ${newRec.barcode}`);
       fetchData();
-      setClient(''); setClientName(''); setEmail(''); setBizNo(''); setPhone(''); setTarget(''); setExtra('');
+      setClient(''); setClientName(''); setEmail(''); setBizNo(''); setPhone(''); setTarget(''); setExtra(''); setClientAddress('');
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -145,6 +147,10 @@ export const Reception = () => {
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>이메일</label>
             <input className="input-field" type="email" style={{ flex: 1 }} value={email} onChange={e=>setEmail(e.target.value)} required />
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
+            <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰처 주소</label>
+            <input className="input-field" style={{ flex: 1 }} value={clientAddress} onChange={e=>setClientAddress(e.target.value)} placeholder="의뢰 기관의 상세 주소를 입력하세요" />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>사업자등록번호</label>
