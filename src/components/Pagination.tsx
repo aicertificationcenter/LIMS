@@ -41,7 +41,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             onItemsPerPageChange(Number(e.target.value));
             onPageChange(1); // Reset to page 1 on limit change
           }}
-          style={{ width: '80px', margin: 0, padding: '4px 8px', minHeight: '34px', fontSize: '0.85rem', fontWeight: 700, background: '#fff' }}
+          style={{ width: '80px', margin: 0, minHeight: '34px', fontSize: '0.85rem', fontWeight: 700 }}
         >
           {[10, 30, 50, 100].map(val => (
             <option key={val} value={val}>{val}</option>

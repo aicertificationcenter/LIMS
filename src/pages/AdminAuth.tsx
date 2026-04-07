@@ -162,16 +162,13 @@ export const AdminAuth = () => {
                     onChange={e => handleRoleChange(u.id, e.target.value)}
                     style={{ 
                       minHeight: '38px', 
-                      padding: '0 36px 0 14px', 
+                      paddingLeft: '14px',
+                      paddingRight: '36px',
                       fontSize: '0.85rem', 
                       width: '160px', 
                       marginBottom: 0, 
-                      background: 'white', 
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '10px',
                       cursor: 'pointer',
                       fontWeight: 700,
-                      color: 'var(--kaic-navy)',
                       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       appearance: 'none',
                       backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
@@ -243,7 +240,7 @@ export const AdminAuth = () => {
                    className="input-field" 
                    value={editUser.passwordHash} 
                    onChange={e => setEditUser({ ...editUser, passwordHash: e.target.value })} 
-                   style={{ margin: 0, border: '1px solid #f87171' }}
+                   style={{ margin: 0 }}
                 />
                 <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>* 저장 시 해당 비밀번호로 즉시 변경됩니다.</p>
               </div>

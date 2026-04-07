@@ -27,6 +27,10 @@
   
   /* Touch target rule */
   --min-touch-target: 64px; /* Exaggerated for gloves/tablet */
+  /* Input Custom Styles */
+  --kaic-input-bg: #fdfaf5; /* Soft beige/off-white */
+  --kaic-input-text: #0a0a0a; /* Deep charcoal/black */
+  --kaic-input-border: #cbd5e1;
 
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -38,6 +42,31 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--kaic-input-bg);
+  color: var(--kaic-input-text);
+  border: 1px solid var(--kaic-input-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--kaic-blue);
+  box-shadow: 0 0 0 4px rgba(0, 102, 179, 0.1);
+  background-color: #fff;
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 *, *::before, *::after {

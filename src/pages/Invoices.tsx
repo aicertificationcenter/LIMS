@@ -327,7 +327,7 @@ export const Invoices = () => {
                           placeholder="시험 내용 입력" 
                           value={item.title} 
                           onChange={e => handleUpdateItem(idx, 'title', e.target.value)} 
-                          style={{ margin: 0, fontSize: '1rem', background: 'white', color: 'black', fontWeight: 600, border: '1px solid #cbd5e1' }} 
+                          style={{ margin: 0 }} 
                         />
                         <input 
                           className="input-field" 
@@ -335,7 +335,7 @@ export const Invoices = () => {
                           placeholder="0" 
                           value={item.unitCost} 
                           onChange={e => handleUpdateItem(idx, 'unitCost', parseInt(e.target.value)||0)} 
-                          style={{ margin: 0, fontSize: '1rem', background: 'white', color: 'black', fontWeight: 600, border: '1px solid #cbd5e1', textAlign: 'right' }} 
+                          style={{ margin: 0, textAlign: 'right' }} 
                         />
                         <input 
                           className="input-field" 
@@ -343,7 +343,7 @@ export const Invoices = () => {
                           placeholder="1" 
                           value={item.qty} 
                           onChange={e => handleUpdateItem(idx, 'qty', parseInt(e.target.value)||1)} 
-                          style={{ margin: 0, fontSize: '1rem', background: 'white', color: 'black', fontWeight: 600, border: '1px solid #cbd5e1', textAlign: 'center' }} 
+                          style={{ margin: 0, textAlign: 'center' }} 
                         />
                         <div style={{ fontSize: '1.1rem', fontWeight: 900, textAlign: 'right', color: 'var(--kaic-navy)' }}>{(item.price || 0).toLocaleString()}₩</div>
                         <button onClick={() => handleRemoveItem(idx)} style={{ background: '#fee2e2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px', borderRadius: '6px' }}><Trash2 size={20} /></button>
@@ -359,7 +359,7 @@ export const Invoices = () => {
                           className="input-field" 
                           value={discountType} 
                           onChange={(e) => setDiscountType(e.target.value as any)}
-                          style={{ width: '80px', margin: 0, padding: '8px', fontWeight: 700 }}
+                          style={{ width: '80px', margin: 0 }}
                         >
                           <option value="PERCENT">%</option>
                           <option value="AMOUNT">₩</option>
@@ -373,7 +373,7 @@ export const Invoices = () => {
                             if (discountType === 'PERCENT') setDiscountRate(val);
                             else setDiscountAmount(val);
                           }} 
-                          style={{ width: '120px', fontSize: '1.1rem', background: 'white', color: 'black', fontWeight: 800, margin: 0 }} 
+                          style={{ width: '120px', margin: 0 }} 
                         />
                      </div>
                    </div>

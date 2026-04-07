@@ -103,7 +103,7 @@ export const Stats = () => {
             className="input-field" 
             value={selectedMonth} 
             onChange={e => setSelectedMonth(e.target.value)}
-            style={{ fontWeight: 700, padding: '0.4rem 0.8rem', width: '160px', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px' }}
+            style={{ fontWeight: 700, width: '160px' }}
           />
         </div>
       </header>

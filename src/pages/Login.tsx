@@ -43,12 +43,12 @@ export const Login = () => {
           
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.25rem' }}>
             <label className="form-label" style={{ width: '80px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>아이디</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', transition: 'border-color 0.2s, box-shadow 0.2s' }} value={id} onChange={e => setId(e.target.value)} placeholder="아이디를 입력하세요" required autoFocus />
+            <input className="input-field" style={{ flex: 1, transition: 'border-color 0.2s, box-shadow 0.2s' }} value={id} onChange={e => setId(e.target.value)} placeholder="아이디를 입력하세요" required autoFocus />
           </div>
           
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
             <label className="form-label" style={{ width: '80px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>비밀번호</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', transition: 'border-color 0.2s, box-shadow 0.2s' }} type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="비밀번호를 입력하세요" required />
+            <input className="input-field" style={{ flex: 1, transition: 'border-color 0.2s, box-shadow 0.2s' }} type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="비밀번호를 입력하세요" required />
           </div>
           
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.875rem', fontSize: '1rem', fontWeight: 600, borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(30, 58, 138, 0.2)', transition: 'transform 0.1s, background-color 0.2s' }} disabled={loading}>

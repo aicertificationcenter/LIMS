@@ -236,7 +236,6 @@ export const MyTests = () => {
                         value={editText} 
                         onChange={e => setEditText(e.target.value)} 
                         rows={3} 
-                        style={{ background: '#fff', fontSize: '0.95rem', color: '#1e293b' }} 
                       />
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                         <button className="btn btn-secondary" onClick={() => setEditingId(null)} style={{ minHeight: '32px', padding: '0 12px', fontSize: '0.8rem' }}>취소</button>
@@ -274,7 +273,7 @@ export const MyTests = () => {
                     onChange={e=>setNewConsultText(e.target.value)} 
                     placeholder="새로운 상담 내역을 입력하세요..." 
                     rows={3} 
-                    style={{ flex: 1, backgroundColor: 'white', color: '#1e293b', fontSize: '1.05rem', border: '1px solid #cbd5e1' }} 
+                    style={{ flex: 1 }} 
                   />
                   <button className="btn btn-primary" onClick={handleAddConsult} style={{ height: 'auto', alignSelf: 'stretch', width: '100px', margin: 0 }}>기록</button>
                 </div>
@@ -322,7 +321,7 @@ export const MyTests = () => {
                       placeholder="예: CT기반 복막유착 위험 예측 솔루션(v0.9) 중 복막 분할 및 유착 중등도 분류 모델" 
                       value={testProduct} 
                       onChange={e => setTestProduct(e.target.value)} 
-                      style={{ width: '100%', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', minHeight: '90px', transition: 'all 0.2s', outline: 'none', backgroundColor: '#fcfcfc' }}
+                      style={{ minHeight: '90px', resize: 'vertical' }}
                     />
                   </div>
                   <div className="form-group" style={{ margin: 0 }}>
@@ -335,7 +334,7 @@ export const MyTests = () => {
                       placeholder="예: 『 창업성장기술개발_TIPS 』 결과 제출용" 
                       value={testPurpose} 
                       onChange={e => setTestPurpose(e.target.value)} 
-                      style={{ width: '100%', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', minHeight: '70px', backgroundColor: '#fcfcfc' }}
+                      style={{ minHeight: '70px', resize: 'vertical' }}
                     />
                   </div>
                   <div className="form-group" style={{ margin: 0 }}>
@@ -348,7 +347,7 @@ export const MyTests = () => {
                       placeholder="예: [AI모델] 복막 분할 모델의 DSC 목표 달성. 유착 중등도 분류 모델의 Accuracy, Sensitivity, Specificify 목표 달성" 
                       value={testMethod} 
                       onChange={e => setTestMethod(e.target.value)} 
-                      style={{ width: '100%', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', minHeight: '120px', backgroundColor: '#fcfcfc' }}
+                      style={{ minHeight: '120px', resize: 'vertical' }}
                     />
                   </div>
                 </div>
@@ -357,15 +356,15 @@ export const MyTests = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #eef2f6' }}>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>📅 시험 시작 일자</label>
-                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} style={{ width: '100%', height: '48px' }} />
                   </div>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🏁 시험 종료 일자</label>
-                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} style={{ width: '100%', height: '48px' }} />
                   </div>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🏢 시험 예정 장소</label>
-                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white' }}>
+                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)} style={{ width: '100%', height: '48px' }}>
                       <option value="">장소 선택</option>
                       <option value="고정시험실">고정시험실</option>
                       <option value="현장시험">현장시험</option>
@@ -374,7 +373,7 @@ export const MyTests = () => {
                   </div>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🧪 시험 구분</label>
-                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white' }}>
+                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)} style={{ height: '48px' }}>
                       <option value="">구분 선택</option>
                       <option value="일반시험">일반시험</option>
                       <option value="KOLAS 시험">KOLAS 시험</option>
@@ -386,7 +385,7 @@ export const MyTests = () => {
                       type="text" 
                       className="input-field" 
                       placeholder="현장 시험이 진행될 상세 주소를 입력하세요" 
-                      style={{ width: '100%', height: '48px', padding: '0 20px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                      style={{ height: '48px' }}
                       value={testAddress} 
                       onChange={e => setTestAddress(e.target.value)} 
                     />

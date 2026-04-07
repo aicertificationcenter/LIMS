@@ -224,12 +224,9 @@ export const Clients = () => {
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 style={{ 
-                  padding: '12px 16px 12px 52px', 
+                  paddingLeft: '52px', 
                   margin: 0, 
                   height: '48px',
-                  background: 'rgba(255,255,255,0.12)', 
-                  color: 'white', 
-                  border: '1px solid rgba(255,255,255,0.15)',
                   borderRadius: '24px',
                   fontSize: '1rem',
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -337,7 +334,7 @@ export const Clients = () => {
                     value={emailSubject} 
                     onChange={e => setEmailSubject(e.target.value)} 
                     placeholder="공지 사항의 제목을 입력하세요."
-                    style={{ background: 'white', color: '#0f172a', border: '2px solid #e2e8f0', padding: '12px', fontSize: '1rem', width: '100%', margin: 0, borderRadius: '8px' }}
+                    style={{ fontSize: '1rem', width: '100%', margin: 0 }}
                   />
                 </div>
 
@@ -350,7 +347,7 @@ export const Clients = () => {
                     value={emailBody} 
                     onChange={e => setEmailBody(e.target.value)}
                     placeholder="여기에 공지 사항의 상세 내용을 입력하세요."
-                    style={{ background: 'white', color: '#0f172a', border: '2px solid #e2e8f0', padding: '15px', fontSize: '1rem', width: '100%', margin: 0, minHeight: '300px', lineHeight: 1.6, borderRadius: '8px' }}
+                    style={{ fontSize: '1rem', width: '100%', margin: 0, minHeight: '300px', lineHeight: 1.6 }}
                   />
                 </div>
 

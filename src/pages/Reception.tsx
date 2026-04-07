@@ -136,31 +136,31 @@ export const Reception = () => {
           {/* Form Fields [Stays same as before] */}
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰처 (회사기관)</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={client} onChange={e=>setClient(e.target.value)} required />
+            <input className="input-field" style={{ flex: 1 }} value={client} onChange={e=>setClient(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰인 (담당자명)</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={clientName} onChange={e=>setClientName(e.target.value)} required />
+            <input className="input-field" style={{ flex: 1 }} value={clientName} onChange={e=>setClientName(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>이메일</label>
-            <input className="input-field" type="email" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={email} onChange={e=>setEmail(e.target.value)} required />
+            <input className="input-field" type="email" style={{ flex: 1 }} value={email} onChange={e=>setEmail(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>사업자등록번호</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={bizNo} onChange={e=>setBizNo(e.target.value)} placeholder="000-00-00000" />
+            <input className="input-field" style={{ flex: 1 }} value={bizNo} onChange={e=>setBizNo(e.target.value)} placeholder="000-00-00000" />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>연락처 (전화)</label>
-            <input className="input-field" style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a' }} value={phone} onChange={e=>setPhone(e.target.value)} required />
+            <input className="input-field" style={{ flex: 1 }} value={phone} onChange={e=>setPhone(e.target.value)} required />
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start' }}>
             <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 700, color: '#475569' }}>시험대상</label>
-            <textarea className="input-field" maxLength={2000} rows={4} value={target} onChange={e=>setTarget(e.target.value)} required style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
+            <textarea className="input-field" maxLength={2000} rows={4} value={target} onChange={e=>setTarget(e.target.value)} required style={{ flex: 1, resize: 'vertical' }}></textarea>
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start' }}>
             <label className="form-label" style={{ width: '130px', marginTop: '0.75rem', marginBottom: 0, fontWeight: 700, color: '#475569' }}>기타</label>
-            <textarea className="input-field" maxLength={2000} rows={4} value={extra} onChange={e=>setExtra(e.target.value)} style={{ flex: 1, padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', color: '#0f172a', resize: 'vertical' }}></textarea>
+            <textarea className="input-field" maxLength={2000} rows={4} value={extra} onChange={e=>setExtra(e.target.value)} style={{ flex: 1, resize: 'vertical' }}></textarea>
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '1rem', fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }} disabled={isSubmitting}>
              접수 서류 시스템 등록 (이후 수정 불가) 
@@ -174,11 +174,11 @@ export const Reception = () => {
           <div style={{ display: 'flex', gap: '10px' }}>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <input type="text" className="input-field" placeholder="기업명 혹은 담당자 검색" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }} />
+              <input type="text" className="input-field" placeholder="기업명 혹은 담당자 검색" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} style={{ paddingLeft: '35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '200px' }} />
             </div>
             <div style={{ position: 'relative' }}>
               <Filter size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <select className="input-field" value={filterTesterId} onChange={e => { setFilterTesterId(e.target.value); setCurrentPage(1); }} style={{ padding: '4px 10px 4px 35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
+              <select className="input-field" value={filterTesterId} onChange={e => { setFilterTesterId(e.target.value); setCurrentPage(1); }} style={{ paddingLeft: '35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
                 <option value="">모든 시험원 (전체)</option>
                 {users.map(u => (
                    <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
@@ -253,7 +253,7 @@ export const Reception = () => {
                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>현장 시험원 배정:</span>
                     {user?.role === 'ADMIN' && r.status === 'RECEIVED' ? (
-                      <select className="input-field" style={{ minHeight: '36px', padding: '0 10px', fontSize: '0.85rem', marginBottom: 0, width: '200px', background: '#fff' }} onChange={(e) => handleAssignTester(r.id, e.target.value)} value={r.tests?.[0]?.testerId || ''}>
+                      <select className="input-field" style={{ minHeight: '36px', fontSize: '0.85rem', marginBottom: 0, width: '200px' }} onChange={(e) => handleAssignTester(r.id, e.target.value)} value={r.tests?.[0]?.testerId || ''}>
                         <option value="" disabled>시험원 선택</option>
                         {users.filter(u => u.role !== 'ADMIN').map(u => (
                           <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
@@ -285,8 +285,9 @@ export const Reception = () => {
                   <MessageSquare size={16} color="var(--kaic-blue)" /> 관리자 상담내용 (시험원 전달용)
                 </label>
                 <textarea 
+                  className="input-field"
                   placeholder="시험원에게 전달할 특이사항이나 상세 상담 내용을 입력하세요..."
-                  style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', resize: 'vertical', lineHeight: '1.5', background: '#fcfcfc', marginBottom: '10px' }}
+                  style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
                   value={consultationDrafts[r.id] ?? r.consultation ?? ''}
                   onChange={(e) => setConsultationDrafts(prev => ({ ...prev, [r.id]: e.target.value }))}
                 />
