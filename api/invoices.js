@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { sampleId, invoiceNo, items, subtotal, discountRate, discountAmt, vat, total } = req.body;
+    const { sampleId, invoiceNo, items, subtotal, discountRate, discountAmt, discountType, vat, total } = req.body;
     console.log(`[API] Creating/Updating invoice for sampleId: ${sampleId}`);
     
     try {
@@ -45,6 +45,7 @@ export default async function handler(req, res) {
             subtotal,
             discountRate,
             discountAmt,
+            discountType: discountType || "PERCENT",
             vat,
             total,
             previousNos: "",
@@ -62,6 +63,7 @@ export default async function handler(req, res) {
             subtotal,
             discountRate,
             discountAmt,
+            discountType: discountType || "PERCENT",
             vat,
             total,
             previousNos: updatedPreviousNos,

@@ -17,6 +17,8 @@ export const Invoices = () => {
   // Invoice State
   const [items, setItems] = useState<any[]>([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
   const [discountRate, setDiscountRate] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0); 
+  const [discountType, setDiscountType] = useState<'PERCENT' | 'AMOUNT'>('PERCENT');
   
   // Pagination State (Sidebar)
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,9 +54,13 @@ export const Invoices = () => {
           price: it.price
         })));
         setDiscountRate(selectedSample.invoice.discountRate || 0);
+        setDiscountAmount(selectedSample.invoice.discountAmt || 0);
+        setDiscountType(selectedSample.invoice.discountType || 'PERCENT');
       } else {
         setItems([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
         setDiscountRate(0);
+        setDiscountAmount(0);
+        setDiscountType('PERCENT');
       }
     }
   }, [selectedSample]);
@@ -99,7 +105,15 @@ export const Invoices = () => {
   };
 
   const subtotal = useMemo(() => items.reduce((acc, current) => acc + (current.price || 0), 0), [items]);
-  const discountAmt = Math.floor(subtotal * (discountRate / 100));
+  
+  const discountAmt = useMemo(() => {
+    if (discountType === 'PERCENT') {
+        return Math.floor(subtotal * (discountRate / 100));
+    } else {
+        return discountAmount;
+    }
+  }, [subtotal, discountRate, discountAmount, discountType]);
+
   const summary = subtotal - discountAmt;
   const vat = Math.floor(summary * 0.1);
   const total = summary + vat;
@@ -127,8 +141,9 @@ export const Invoices = () => {
         invoiceNo: selectedSample.barcode, 
         items: items.map(it => ({ title: it.title, unitCost: it.unitCost, qty: it.qty, price: it.price })),
         subtotal,
-        discountRate: discountRate,
-        discountAmt,
+        discountRate: discountType === 'PERCENT' ? discountRate : 0,
+        discountAmt: discountAmt,
+        discountType: discountType,
         vat,
         total
       });
@@ -338,14 +353,29 @@ export const Invoices = () => {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', background: '#f1f5f9', padding: '1.5rem', borderRadius: '12px' }}>
                    <div>
-                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 800, marginBottom: '8px', color: '#475569' }}>할인율 설정 (%)</label>
-                     <input 
-                       className="input-field" 
-                       type="number" 
-                       value={discountRate} 
-                       onChange={e => setDiscountRate(parseInt(e.target.value)||0)} 
-                       style={{ width: '120px', fontSize: '1.1rem', background: 'white', color: 'black', fontWeight: 800, margin: 0 }} 
-                     />
+                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 800, marginBottom: '8px', color: '#475569' }}>할인 설정</label>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <select 
+                          className="input-field" 
+                          value={discountType} 
+                          onChange={(e) => setDiscountType(e.target.value as any)}
+                          style={{ width: '80px', margin: 0, padding: '8px', fontWeight: 700 }}
+                        >
+                          <option value="PERCENT">%</option>
+                          <option value="AMOUNT">₩</option>
+                        </select>
+                        <input 
+                          className="input-field" 
+                          type="number" 
+                          value={discountType === 'PERCENT' ? discountRate : discountAmount} 
+                          onChange={e => {
+                            const val = parseInt(e.target.value)||0;
+                            if (discountType === 'PERCENT') setDiscountRate(val);
+                            else setDiscountAmount(val);
+                          }} 
+                          style={{ width: '120px', fontSize: '1.1rem', background: 'white', color: 'black', fontWeight: 800, margin: 0 }} 
+                        />
+                     </div>
                    </div>
                    <div style={{ display: 'flex', gap: '1rem' }}>
                      <button className="btn btn-primary" style={{ margin: 0, minHeight: '52px', padding: '0 2rem', fontSize: '1.1rem', background: 'var(--kaic-navy)' }} onClick={handleMailInvoice} disabled={isSending}>
@@ -464,7 +494,9 @@ export const Invoices = () => {
                       <span style={{ fontWeight: 700 }}>{subtotal.toLocaleString()} ₩</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <span style={{ color: '#64748b' }}>Discount ({discountRate}%)</span>
+                      <span style={{ color: '#64748b' }}>
+                        Discount {discountType === 'PERCENT' ? `(${discountRate}%)` : `(${discountAmount.toLocaleString()} ₩)`}
+                      </span>
                       <span style={{ color: '#ef4444' }}>- {discountAmt.toLocaleString()} ₩</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', borderTop: '1px solid #e2e8f0', paddingTop: '4px', marginTop: '4px' }}>
@@ -483,7 +515,6 @@ export const Invoices = () => {
 
                 <div style={{ marginTop: '60px', fontSize: '13px' }}>
                   위와 같이 견적합니다.
-                  <div style={{ marginTop: '10px' }}>* 첨부: 시험신청서 1부</div>
                 </div>
 
                 <div style={{ position: 'absolute', bottom: '22mm', right: '15mm', textAlign: 'right' }}>

@@ -173,6 +173,7 @@ model Invoice {
   subtotal     Float         @default(0)
   discountRate Float         @default(0)
   discountAmt  Float         @default(0)
+  discountType String        @default("PERCENT") // PERCENT or AMOUNT
   vat          Float         @default(0)
   total        Float         @default(0)
   status       String        @default("DRAFT") // DRAFT, SENT, PAID

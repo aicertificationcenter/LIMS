@@ -101,7 +101,9 @@ export const InvoiceViewModal: React.FC<InvoiceViewModalProps> = ({ invoice, pos
                <span style={{ fontWeight: 600 }}>₩{safeSubtotal.toLocaleString()}</span>
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#ef4444' }}>
-               <span>할인액 ({safeDiscountRate}%)</span>
+               <span>
+                 할인액 {invoice.discountType === 'PERCENT' ? `(${safeDiscountRate}%)` : `(${safeDiscountAmt.toLocaleString()}₩)`}
+               </span>
                <span>-₩{safeDiscountAmt.toLocaleString()}</span>
              </div>
              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
