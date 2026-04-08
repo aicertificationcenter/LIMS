@@ -306,7 +306,7 @@ export const MyTests = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem', marginBottom: '2.5rem' }}>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Package size={16} color="#64748b" /> 시험대상 품목
+                      <Package size={16} color="#64748b" /> 2. 시험대상 품목
                     </label>
                     <textarea 
                       className="input-field" 
@@ -319,7 +319,7 @@ export const MyTests = () => {
                   </div>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Target size={16} color="#64748b" /> 시험 목적
+                      <Target size={16} color="#64748b" /> 4. 시험 목적
                     </label>
                     <textarea 
                       className="input-field" 
@@ -332,7 +332,7 @@ export const MyTests = () => {
                   </div>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <FileText size={16} color="#64748b" /> 시험 방법
+                      <FileText size={16} color="#64748b" /> 5. 시험 방법
                     </label>
                     <textarea 
                       className="input-field" 
@@ -510,10 +510,10 @@ export const MyTests = () => {
                 <div id="cover-page-content" style={{ background: 'white', padding: '50px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '4px', color: '#1e293b', fontStyle: 'normal' }}>
                   {(() => {
                     try {
-                      const startDateStr = selectedTest.testStartDate ? String(selectedTest.testStartDate) : '';
+                      const startDateStr = testStartDate ? String(testStartDate) : '';
                       const year = startDateStr ? startDateStr.substring(0, 4) : new Date().getFullYear().toString();
                       const yy = year.substring(2);
-                      const typeChar = selectedTest.testType === '일반시험' ? 'T' : 'K';
+                      const typeChar = testType === '일반시험' ? 'T' : 'K';
                       const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
                       const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
                       const productId = `${yy}-${typeChar}-${seq}-S1`;
@@ -560,7 +560,7 @@ export const MyTests = () => {
 
                           <div style={{ marginBottom: '12px', display: 'flex', gap: '5px', alignItems: 'flex-start' }}>
                             <h4 style={{ margin: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>2. 시험대상품목 : </h4>
-                            <span style={{ fontWeight: 400, textDecoration: 'underline', lineHeight: 1.4, fontSize: '1rem', wordBreak: 'break-all' }}>{selectedTest.testProduct || '-'}</span>
+                            <span style={{ fontWeight: 400, textDecoration: 'underline', lineHeight: 1.4, fontSize: '1rem', wordBreak: 'break-all' }}>{testProduct || '-'}</span>
                           </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ width: '80%', borderCollapse: 'collapse', marginTop: '5px' }}>
@@ -578,20 +578,20 @@ export const MyTests = () => {
                             </div>
 
                           <div style={{ marginBottom: '12px' }}>
-                            <h4 style={{ margin: '0 0 5px 0' }}>3. 시험기간 : <span style={{ fontWeight: 400 }}>{selectedTest.testStartDate || '-'} ~ {selectedTest.testEndDate || '-'}</span></h4>
+                            <h4 style={{ margin: '0 0 5px 0' }}>3. 시험기간 : <span style={{ fontWeight: 400 }}>{testStartDate || '-'} ~ {testEndDate || '-'}</span></h4>
                           </div>
 
                           <div style={{ marginBottom: '12px' }}>
                             <h4 style={{ margin: '0 0 5px 0' }}>4. 시험목적 : </h4>
                             <div style={{ marginLeft: '20px', fontSize: '1rem', fontWeight: 400, textDecoration: 'underline', textUnderlineOffset: '4px' }}>
-                              {selectedTest.testPurpose || '-'}
+                              {testPurpose || '-'}
                             </div>
                           </div>
 
                           <div style={{ marginBottom: '12px' }}>
                             <h4 style={{ margin: '0 0 5px 0' }}>5. 시험방법 : </h4>
                             <div style={{ marginLeft: '20px', fontSize: '1rem', fontWeight: 400, whiteSpace: 'pre-wrap', textDecoration: 'underline', textUnderlineOffset: '4px', lineHeight: 1.4 }}>
-                              {selectedTest.testMethod || '-'}
+                              {testMethod || '-'}
                             </div>
                           </div>
 
@@ -621,15 +621,15 @@ export const MyTests = () => {
                           <div style={{ marginTop: '15px' }}>
                             <h4 style={{ margin: '0 0 5px 0' }}>○ 시험장소 : 
                               <span style={{ fontWeight: 400, display: 'inline-flex', gap: '15px', marginLeft: '10px' }}>
-                                <span>{selectedTest.testLocation?.includes('고정') ? '☑' : '☐'} 고정시험실</span>
+                                <span>{testLocation?.includes('고정') ? '☑' : '☐'} 고정시험실</span>
                                 <span>☐ 외부시험실(위탁)</span>
                                 <span>☐ 외부시험실(일반)</span>
-                                <span>{selectedTest.testLocation?.includes('현장') ? '☑' : '☐'} 기타( {selectedTest.testAddress || '-'} )</span>
+                                <span>{testLocation?.includes('현장') ? '☑' : '☐'} 기타( {testAddress || '-'} )</span>
                               </span>
                             </h4>
                             <div style={{ fontSize: '0.82rem', marginLeft: '20px', color: '#475569' }}>
-                              <div>* 고정시험실 주소 : {selectedTest.testLocation?.includes('고정') ? '서울특별시 성동구 왕십리로 58. 서울숲포휴 416호' : '-'}</div>
-                              <div>* 외부검증 진행지 : {selectedTest.testLocation?.includes('현장') ? (selectedTest.testAddress || '-') : '-'}</div>
+                              <div>* 고정시험실 주소 : {testLocation?.includes('고정') ? '서울특별시 성동구 왕십리로 58. 서울숲포휴 416호' : '-'}</div>
+                              <div>* 외부검증 진행지 : {testLocation?.includes('현장') ? (testAddress || '-') : '-'}</div>
                             </div>
                           </div>
 
