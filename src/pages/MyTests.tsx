@@ -507,7 +507,7 @@ export const MyTests = () => {
                   </button>
                 </div>
 
-                <div id="cover-page-content" style={{ background: 'white', padding: '50px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '4px', color: '#1e293b', fontStyle: 'normal' }}>
+                <div id="cover-page-content" style={{ background: 'white', padding: '35px 45px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '4px', color: '#1e293b', fontStyle: 'normal', lineHeight: 1.4 }}>
                   {(() => {
                     try {
                       const startDateStr = testStartDate ? String(testStartDate) : '';
@@ -538,12 +538,12 @@ export const MyTests = () => {
                             </div>
                           </div>
 
-                          <h1 style={{ textAlign: 'center', fontSize: '2.2rem', fontWeight: 900, margin: '25px 0', textDecoration: 'underline', textUnderlineOffset: '12px', letterSpacing: '12px' }}>
+                          <h1 style={{ textAlign: 'center', fontSize: '2.4rem', fontWeight: 900, margin: '15px 0', textDecoration: 'underline', textUnderlineOffset: '12px', letterSpacing: '12px' }}>
                             시 험 성 적 서
                           </h1>
 
-                          <div style={{ marginBottom: '12px' }}>
-                            <h4 style={{ margin: '0 0 5px 0' }}>1. 의뢰인</h4>
+                          <div style={{ marginBottom: '8px' }}>
+                            <h4 style={{ margin: '0 0 4px 0' }}>1. 의뢰인</h4>
                             <div style={{ marginLeft: '20px', fontSize: '0.9rem' }}>
                               <div style={{ marginBottom: '3px' }}>○ 기 관 명 : {selectedTest.clientName || selectedTest.client || '-'}</div>
                               <div>○ 주 소 : {(() => {
@@ -558,7 +558,7 @@ export const MyTests = () => {
                             </div>
                           </div>
 
-                          <div style={{ marginBottom: '12px', display: 'flex', gap: '5px', alignItems: 'flex-start' }}>
+                          <div style={{ marginBottom: '8px', display: 'flex', gap: '5px', alignItems: 'flex-start' }}>
                             <h4 style={{ margin: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>2. 시험대상품목 : </h4>
                             <span style={{ fontWeight: 400, textDecoration: 'underline', lineHeight: 1.4, fontSize: '1rem', wordBreak: 'break-all' }}>{testProduct || '-'}</span>
                           </div>
@@ -577,41 +577,49 @@ export const MyTests = () => {
                               </table>
                             </div>
 
-                          <div style={{ marginBottom: '12px' }}>
+                          <div style={{ marginBottom: '8px' }}>
                             <h4 style={{ margin: '0 0 5px 0' }}>3. 시험기간 : <span style={{ fontWeight: 400 }}>{testStartDate || '-'} ~ {testEndDate || '-'}</span></h4>
                           </div>
 
-                          <div style={{ marginBottom: '12px' }}>
-                            <h4 style={{ margin: '0 0 5px 0' }}>4. 시험목적 : </h4>
+                          <div style={{ marginBottom: '8px' }}>
+                            <h4 style={{ margin: '0 0 4px 0' }}>4. 시험목적 : </h4>
                             <div style={{ marginLeft: '20px', fontSize: '1rem', fontWeight: 400, textDecoration: 'underline', textUnderlineOffset: '4px' }}>
                               {testPurpose || '-'}
                             </div>
                           </div>
 
-                          <div style={{ marginBottom: '12px' }}>
-                            <h4 style={{ margin: '0 0 5px 0' }}>5. 시험방법 : </h4>
+                          <div style={{ marginBottom: '8px' }}>
+                            <h4 style={{ margin: '0 0 4px 0' }}>5. 시험방법 : </h4>
                             <div style={{ marginLeft: '20px', fontSize: '1rem', fontWeight: 400, whiteSpace: 'pre-wrap', textDecoration: 'underline', textUnderlineOffset: '4px', lineHeight: 1.4 }}>
                               {testMethod || '-'}
                             </div>
                           </div>
 
-                          <div style={{ marginBottom: '12px' }}>
-                            <h4 style={{ margin: '0 0 5px 0' }}>6. 시험결과 : </h4>
-                            <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+                          <div style={{ marginBottom: '8px' }}>
+                            <h4 style={{ margin: '0 0 8px 0', lineHeight: 1.5 }}>
+                              6. 시험결과 : (KAIC-F-7.8-03(을)) “시험결과요약”, “시험방법” 및 “시험결과” 첨부 참조<br/>
+                              <span style={{ fontWeight: 400, marginLeft: '25px', fontSize: '0.9rem' }}>
+                                시험항목, 한계, 시험결과, 단위 등은 의뢰인과의 협의 시 의뢰인 요구에 의해 선택사항입니다.
+                              </span><br/>
+                              <span style={{ fontWeight: 400, marginLeft: '25px', fontSize: '0.9rem' }}>
+                                이 시험결과는 의뢰인이 제시한 시험대상품목 및 시험대상품목에 한정되며,  * 표시된 시험결과는 시험기관의 인정 범위 밖의 것임을 밝힙니다.
+                              </span>
+                            </h4>
+                            <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
                             <table style={{ borderCollapse: 'collapse' }}>
                               <tbody>
                                 <tr>
-                                  <td rowSpan={2} style={{ border: '1px solid #333', padding: '10px 15px', fontSize: '0.8rem', width: '50px', textAlign: 'center', background: '#f8fafc' }}>확 인</td>
-                                  <td style={{ border: '1px solid #333', padding: '10px 20px', fontSize: '0.85rem', minWidth: '220px', textAlign: 'left' }}>
+                                  <td rowSpan={2} style={{ border: '1px solid #333', padding: '6px 12px', fontSize: '0.8rem', width: '50px', textAlign: 'center', background: '#f8fafc' }}>확 인</td>
+                                  <td style={{ border: '1px solid #333', padding: '6px 15px', fontSize: '0.85rem', minWidth: '200px', textAlign: 'left' }}>
                                     작성자 : <span style={{ fontWeight: 700, marginLeft: '10px' }}>{user?.name || '-'}</span>
                                   </td>
-                                  <td style={{ border: '1px solid #333', padding: '10px 20px', fontSize: '0.85rem', minWidth: '220px', textAlign: 'left' }}>
+                                  <td style={{ border: '1px solid #333', padding: '6px 15px', fontSize: '0.85rem', minWidth: '200px', textAlign: 'left' }}>
                                     기술책임자 : <span style={{ fontWeight: 700, marginLeft: '10px' }}>{techMgr?.name || '-'}</span>
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td style={{ border: '1px solid #333', padding: '10px 20px', fontSize: '0.85rem', textAlign: 'center' }}>(인/서명)</td>
-                                  <td style={{ border: '1px solid #333', padding: '10px 20px', fontSize: '0.85rem', textAlign: 'center' }}>(인/서명)</td>
+                                  <td style={{ border: '1px solid #333', padding: '4px 15px', fontSize: '0.8rem', textAlign: 'center' }}>(인/서명)</td>
+                                  <td style={{ border: '1px solid #333', padding: '4px 15px', fontSize: '0.8rem', textAlign: 'center' }}>(인/서명)</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -633,11 +641,12 @@ export const MyTests = () => {
                             </div>
                           </div>
 
-                          <div style={{ textAlign: 'center', marginTop: '35px' }}>
+                           <div style={{ textAlign: 'center', marginTop: '20px' }}>
                             <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}.</div>
-                            <div style={{ fontSize: '1.7rem', fontWeight: 900, marginTop: '15px' }}>한국인공지능검증원장 <span style={{ marginLeft: '15px', fontSize: '1.1rem', border: '1px solid #333', borderRadius: '50%', padding: '8px' }}>(印)</span></div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '20px', textAlign: 'left' }}>
-                              * 이 시험성적서는 시험목적에 의한 시험대상품목의 시험결과 확인 이외의 용도로 사용될 수 없습니다.
+                            <div style={{ fontSize: '1.7rem', fontWeight: 900, marginTop: '10px' }}>한국인공지능검증원장 <span style={{ marginLeft: '15px', fontSize: '1.1rem', border: '1px solid #333', borderRadius: '50%', padding: '8px' }}>(印)</span></div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                              <div style={{ textAlign: 'left', lineHeight: 1.4 }}>* 이 시험성적서는 시험목적에 의한 시험대상품목의 시험결과 확인 이외의 용도로 사용될 수 없습니다.</div>
+                              <div style={{ fontWeight: 600 }}>(KAIC-F-7.8-03(갑))</div>
                             </div>
                           </div>
                         </div>
