@@ -41,8 +41,8 @@ export const AdminAuth = () => {
         body: JSON.stringify({ id, role: newRole }),
       });
       if (res.ok) fetchData();
-    } catch (error: any) {
-      alert('오류: ' + error.message);
+    } catch (_error: any) {
+      alert('오류: ' + (_error.message || '알 수 없는 오류'));
     }
   };
 
@@ -62,8 +62,8 @@ export const AdminAuth = () => {
         const err = await res.json();
         alert('수정 실패: ' + err.message);
       }
-    } catch (error: any) {
-      alert('오류: ' + error.message);
+    } catch (_error: any) {
+      alert('오류: ' + (_error.message || '알 수 없는 오류'));
     }
   };
 
@@ -82,8 +82,8 @@ export const AdminAuth = () => {
         const err = await res.json();
         alert('삭제 실패: ' + err.message);
       }
-    } catch (error: any) {
-      alert('오류: ' + error.message);
+    } catch (_error: any) {
+      alert('오류: ' + (_error.message || '알 수 없는 오류'));
     }
   };
 
