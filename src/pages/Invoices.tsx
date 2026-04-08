@@ -1,3 +1,8 @@
+/**
+ * @file Invoices.tsx
+ * @description 관리자가 시험 접수 건에 대해 견적서(Invoice)를 작성, 관리 및 발송하는 페이지입니다.
+ * 품목 편집, 자동 금액 계산, PDF 생성 및 이메일 발송 기능을 포함합니다.
+ */
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
@@ -9,30 +14,35 @@ import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
 import { Pagination } from '../components/Pagination';
 
 export const Invoices = () => {
+  // 인증 및 라우팅 상태
   const { user } = useAuth();
-  const [receptions, setReceptions] = useState<any[]>([]);
-  const [selectedSample, setSelectedSample] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   
-  // Invoice State
-  const [items, setItems] = useState<any[]>([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
-  const [discountRate, setDiscountRate] = useState(0);
-  const [discountAmount, setDiscountAmount] = useState(0); 
-  const [discountType, setDiscountType] = useState<'PERCENT' | 'AMOUNT'>('PERCENT');
+  // 데이터 상태 관리
+  const [receptions, setReceptions] = useState<any[]>([]); // 견적 대상 접수 목록
+  const [selectedSample, setSelectedSample] = useState<any>(null); // 현재 선택된 접수 건
+  const [searchTerm, setSearchTerm] = useState(''); // 사이드바 검색어
   
-  // Pagination State (Sidebar)
+  // 견적서(인보이스) 세부 상태
+  const [items, setItems] = useState<any[]>([{ title: '', unitCost: 0, qty: 1, price: 0 }]); // 품목 리스트
+  const [discountRate, setDiscountRate] = useState(0);   // 할인율 (%)
+  const [discountAmount, setDiscountAmount] = useState(0); // 할인액 (₩)
+  const [discountType, setDiscountType] = useState<'PERCENT' | 'AMOUNT'>('PERCENT'); // 할인 방식
+  
+  // 페이지네이션 상태 (사이드바 목록용)
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const [isSending, setIsSending] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const invoiceRef = useRef<HTMLDivElement>(null);
+  // UI 상태 및 Ref
+  const [isSending, setIsSending] = useState(false); // 메일 발송 중 플래그
+  const [showDetailModal, setShowDetailModal] = useState(false); // 접수 상세 모달 표시 여부
+  const invoiceRef = useRef<HTMLDivElement>(null); // PDF 출력을 위한 DOM 참조
 
+  /** 초기 데이터 로드 */
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Post-fetch effect to handle auto-selection from URL
+  /** URL 파라미터를 통한 접수 건 자동 선택 처리 */
   useEffect(() => {
     if (receptions.length > 0) {
       const params = new URLSearchParams(window.location.search);
@@ -44,6 +54,7 @@ export const Invoices = () => {
     }
   }, [receptions]);
 
+  /** 선택된 접수 건에 따라 기존 인보이스 데이터를 양식에 매핑 */
   useEffect(() => {
     if (selectedSample) {
       if (selectedSample.invoice?.items?.length > 0) {
@@ -57,6 +68,7 @@ export const Invoices = () => {
         setDiscountAmount(selectedSample.invoice.discountAmt || 0);
         setDiscountType(selectedSample.invoice.discountType || 'PERCENT');
       } else {
+        // 기존 인보이스가 없는 경우 초기화
         setItems([{ title: '', unitCost: 0, qty: 1, price: 0 }]);
         setDiscountRate(0);
         setDiscountAmount(0);
@@ -65,15 +77,17 @@ export const Invoices = () => {
     }
   }, [selectedSample]);
 
+  /** 전체 접수 내역 조회 */
   const fetchData = async () => {
     try {
       const data = await apiClient.receptions.list();
       setReceptions(data);
     } catch (err) {
-      console.error('Fetch data failed:', err);
+      console.error('데이터 조회 실패:', err);
     }
   };
 
+  /** 필터링된 접수 목록 (이미 견적 발행된 상건 제외) */
   const filteredReceptions = useMemo(() => {
     return receptions.filter(r => {
       const matchSearch = r.clientId?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -82,15 +96,23 @@ export const Invoices = () => {
     });
   }, [receptions, searchTerm]);
 
+  /** 페이지네이션 처리된 목록 추출 */
   const paginatedReceptions = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredReceptions.slice(start, start + itemsPerPage);
   }, [filteredReceptions, currentPage, itemsPerPage]);
 
+  /** 견적 항목 추가 */
   const handleAddItem = () => {
     setItems([...items, { title: '', unitCost: 0, qty: 1, price: 0 }]);
   };
 
+  /** 
+   * 견적 항목의 필드 업데이트 (금액 자동 계산 포함)
+   * @param index 항목 인덱스
+   * @param field 변경할 필드명
+   * @param value 새로운 값
+   */
   const handleUpdateItem = (index: number, field: string, value: any) => {
     const newItems = [...items];
     newItems[index][field] = value;
@@ -100,12 +122,15 @@ export const Invoices = () => {
     setItems(newItems);
   };
 
+  /** 견적 항목 삭제 */
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
   };
 
+  /** 모든 항목의 공급가액 합계 (소계) */
   const subtotal = useMemo(() => items.reduce((acc, current) => acc + (current.price || 0), 0), [items]);
   
+  /** 할인 금액 계산 (정률/정액 대응) */
   const discountAmt = useMemo(() => {
     if (discountType === 'PERCENT') {
         return Math.floor(subtotal * (discountRate / 100));
@@ -114,10 +139,12 @@ export const Invoices = () => {
     }
   }, [subtotal, discountRate, discountAmount, discountType]);
 
+  // 최종 합계 및 세액 계산
   const summary = subtotal - discountAmt;
   const vat = Math.floor(summary * 0.1);
   const total = summary + vat;
 
+  /** HTML 요소를 PDF 블롭으로 변환 */
   const generatePDFBlob = async () => {
     if (!invoiceRef.current) return null;
     const canvas = await html2canvas(invoiceRef.current, { scale: 1.5, useCORS: true });
@@ -129,6 +156,10 @@ export const Invoices = () => {
     return pdf.output('blob');
   };
 
+  /** 
+   * 견적서를 서버에 저장하고 고객에게 이메일로 발송합니다.
+   * 저장 시 현재 입력된 모든 항목과 계산된 금액들이 포함됩니다.
+   */
   const handleMailInvoice = async () => {
     if (!selectedSample?.email) {
         alert('송신할 의뢰처의 이메일 주소가 없습니다.');
@@ -136,6 +167,7 @@ export const Invoices = () => {
     }
     setIsSending(true);
     try {
+      // 1. 견적서 데이터를 서버에 저장
       const savedInvoice = await apiClient.invoices.create({
         sampleId: selectedSample.id,
         invoiceNo: selectedSample.barcode, 
@@ -148,9 +180,11 @@ export const Invoices = () => {
         total
       });
 
+      // UI 상태 즉시 반영 (낙관적 업데이트)
       setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // 2. PDF 생성 및 메일 발송
       const blob = await generatePDFBlob();
       if (!blob) throw new Error('PDF 생성 실패');
       
@@ -226,6 +260,7 @@ export const Invoices = () => {
       {/* Main Content: Vertical Editor & Preview */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto', paddingRight: '10px' }}>
         
+        {/* Selected Reception Header */}
         {selectedSample && (
           <div className="card" style={{ background: 'var(--kaic-navy)', color: 'white', padding: '1.25rem 1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -1,3 +1,8 @@
+/**
+ * @file Reports.tsx
+ * @description 시험원이 담당한 시험 건의 증적 자료를 관리하고 최종 성적서(PDF)를 업로드하여 시험을 완료하는 페이지입니다.
+ * 증적 파일 업로드/삭제, 성적서 등록 및 최종 제출(상태 변경) 기능을 담당합니다.
+ */
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
@@ -5,33 +10,43 @@ import { apiClient } from '../api/client';
 import { Download, FileText, Trash2, UploadCloud, FileType } from 'lucide-react';
 
 export const Reports = () => {
+  // 인증 정보
   const { user } = useAuth();
-  const [myTests, setMyTests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  // 데이터 상태 관리
+  const [myTests, setMyTests] = useState<any[]>([]); // 내가 담당한 시험 목록
+  const [loading, setLoading] = useState(true);     // 데이터 로딩 플래그
+  const [selectedId, setSelectedId] = useState<string | null>(null); // 현재 성적서 작업 중인 시험 ID
 
+  // 사용자 정보 로드 시 시험 목록 가져오기
   useEffect(() => {
     if (user) {
       fetchMyTasks();
     }
   }, [user]);
 
+  /** 본인에게 배정된 시험 업무 목록을 조회합니다. */
   const fetchMyTasks = async () => {
     if (!user) return;
     setLoading(true);
     try {
       const data = await apiClient.tests.listMyTasks(user.id);
-      // Filter for tests that are already started (IN_PROGRESS or COMPLETED)
+      // 이미 시작된 시험(IN_PROGRESS)이나 완료된 시험(COMPLETED)만 표시
       setMyTests(data.filter((t: any) => t.status !== 'RECEIVED'));
     } catch (err) {
-      console.error('Fetch tasks failed:', err);
+      console.error('업무 목록 조회 실패:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  /** 현재 선택된 시험 객체 */
   const selectedTest = myTests.find((t: any) => t.id === selectedId);
 
+  /** 
+   * 단일 파일을 증적 자료로 업로드합니다.
+   * 이미지를 포함한 모든 파일 형식을 지원하며, uploaderId가 포함됩니다.
+   */
   const handleAddEvidence = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedId || !user) return;
@@ -56,6 +71,7 @@ export const Reports = () => {
     reader.readAsDataURL(file);
   };
 
+  /** 증적 자료를 로컬로 다운로드합니다. */
   const handleDownloadEvidence = (ev: any) => {
     if (!ev.dataUrl) return;
     const link = document.createElement('a');
@@ -66,6 +82,7 @@ export const Reports = () => {
     document.body.removeChild(link);
   };
 
+  /** 업로드된 증적 자료를 삭제합니다. (컴플릿 상태 전까지만 가능) */
   const handleRemoveEvidence = async (evidenceId: string) => {
     if (confirm('정말로 이 증적 자료를 삭제하시겠습니까?')) {
       try {
@@ -77,6 +94,7 @@ export const Reports = () => {
     }
   };
 
+  /** 최종 성적서(PDF) 파일을 업로드합니다. */
   const handleReportUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedId) return;
@@ -104,6 +122,7 @@ export const Reports = () => {
     reader.readAsDataURL(file);
   };
 
+  /** 시험을 최종 완료 상태로 변경합니다. (성적서가 등록되어야 가능) */
   const handleCompleteTest = async () => {
     if (!selectedId) return;
     if (confirm('시험을 최종 완료하시겠습니까? 완료 후에는 수정이 제한될 수 있습니다.')) {
@@ -125,6 +144,7 @@ export const Reports = () => {
     return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>데이터를 불러오는 중...</div>;
   }
 
+  // 성적서 편집 상세 모드
   if (selectedTest) {
     return (
       <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
@@ -156,7 +176,7 @@ export const Reports = () => {
            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>시험번호: {selectedTest.testerBarcode || selectedTest.barcode}</p>
         </header>
 
-        {/* Evidence Section */}
+        {/* 1. 증적 자료 관리 섹션 */}
         <section className="card" style={{ gridColumn: 'span 8' }}>
           <h3 className="card-title">증적 자료 관리</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
@@ -171,9 +191,9 @@ export const Reports = () => {
                 </div>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--kaic-navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.fileName}</div>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem' }}>
-                  <button onClick={() => handleDownloadEvidence(ev)} className="btn btn-secondary" style={{ flex: 1, minHeight: '28px', padding: 0 }}><Download size={14} /></button>
+                  <button onClick={() => handleDownloadEvidence(ev)} className="btn btn-secondary" style={{ flex: 1, minHeight: '28px', padding: 0 }} title="다운로드"><Download size={14} /></button>
                   {selectedTest.status !== 'COMPLETED' && (
-                    <button onClick={() => handleRemoveEvidence(ev.id)} className="btn btn-secondary" style={{ flex: 1, minHeight: '28px', padding: 0, color: '#ef4444' }}><Trash2 size={14} /></button>
+                    <button onClick={() => handleRemoveEvidence(ev.id)} className="btn btn-secondary" style={{ flex: 1, minHeight: '28px', padding: 0, color: '#ef4444' }} title="삭제"><Trash2 size={14} /></button>
                   )}
                 </div>
               </div>
@@ -188,7 +208,7 @@ export const Reports = () => {
           )}
         </section>
 
-        {/* Report Section */}
+        {/* 2. 최종 성적서 업로드 및 시험 완료 섹션 */}
         <section className="card" style={{ gridColumn: 'span 4' }}>
           <h3 className="card-title">최종 성적서 업로드</h3>
           <div style={{ textAlign: 'center', padding: '2rem', border: '2px dashed #cbd5e1', borderRadius: '12px', background: '#f1f5f9' }}>

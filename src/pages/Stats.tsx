@@ -1,3 +1,8 @@
+/**
+ * @file Stats.tsx
+ * @description 관리자를 위한 시스템 통계 및 실시간 업무 모니터링 페이지입니다.
+ * 월별 접수 현황, 시험원별 업무 병목 현상(KPI), 실시간 진행 목록 조회 기능을 제공합니다.
+ */
 
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
@@ -7,38 +12,46 @@ import { StatusBadge } from '../components/StatusBadge';
 import { Pagination } from '../components/Pagination';
 
 export const Stats = () => {
+  // 인증 정보
   const { user } = useAuth();
-  const [receptions, setReceptions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all');
-  const [viewingTest, setViewingTest] = useState<any>(null);
+
+  // 데이터 상태 관리
+  const [receptions, setReceptions] = useState<any[]>([]); // 전체 접수/시험 내역
+  const [loading, setLoading] = useState(true);           // 로딩 상태
+  const [activeTab, setActiveTab] = useState<'all' | 'progress' | 'completed'>('all'); // 목록 탭 분류
+  const [viewingTest, setViewingTest] = useState<any>(null); // 상세 보기용 모달 데이터
   
-  // Pagination State
+  // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
+  // 통계 필터링 조건 (현재 연월 기반)
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
 
+  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     fetchData();
   }, []);
 
+  /** 실시간 접수 및 시험 데이터 로드 */
   const fetchData = async () => {
     setLoading(true);
     try {
       const data = await apiClient.receptions.list();
       setReceptions(data);
     } catch (err) {
-      console.error('Fetch stats failed:', err);
+      console.error('통계 데이터 로드 실패:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  // 선택된 연도와 월 추출
   const targetYear = selectedMonth.split('-')[0];
   const targetMonthNum = parseInt(selectedMonth.split('-')[1], 10);
 
+  /** 선택된 월에 해당하는 데이터만 필터링 (Memoization) */
   const filteredByMonth = useMemo(() => {
     if (!selectedMonth) return receptions;
     return receptions.filter(r => {
@@ -47,6 +60,7 @@ export const Stats = () => {
     });
   }, [receptions, selectedMonth, targetYear, targetMonthNum]);
 
+  /** 시험원별 성과 지표(KPI) 계산 */
   const testerStats = useMemo(() => {
     const stats: Record<string, any> = {};
     filteredByMonth.forEach(r => {
@@ -66,6 +80,7 @@ export const Stats = () => {
     return Object.values(stats);
   }, [filteredByMonth]);
 
+  /** 현재 선택된 탭에 따라 목록 필터링 */
   const displayTests = useMemo(() => {
     return filteredByMonth.filter(test => {
       if (activeTab === 'all') return true;
@@ -74,11 +89,13 @@ export const Stats = () => {
     });
   }, [filteredByMonth, activeTab]);
 
+  /** 실시간 목록 페이지네이션 */
   const paginatedTests = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return displayTests.slice(start, start + itemsPerPage);
   }, [displayTests, currentPage, itemsPerPage]);
 
+  // 요약 수치 계산
   const total = filteredByMonth.length;
   const inProgress = filteredByMonth.filter(r => !['COMPLETED', 'DISPOSED'].includes(r.status)).length;
   const completed = filteredByMonth.filter(r => r.status === 'COMPLETED').length;
@@ -90,7 +107,7 @@ export const Stats = () => {
   return (
     <main className="dashboard-grid animate-fade-in">
       
-      {/* 1. Welcome Message */}
+      {/* 1. 상단 환영 메시지 및 월 선택 필터 */}
       <header className="card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2563eb 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', border: 'none' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>안녕하세요 {user?.name || '관리자'}님! 👋</h1>
@@ -108,7 +125,7 @@ export const Stats = () => {
         </div>
       </header>
 
-      {/* 2. KPI Cards */}
+      {/* 2. 핵심 요약 지표 (KPI) 카드 섹션 */}
       <div className="kpi-card" style={{ gridColumn: 'span 4' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -145,7 +162,7 @@ export const Stats = () => {
         </div>
       </div>
 
-      {/* 3. Tester Stats Table */}
+      {/* 3. 시험원별 업무 분담 현황 테이블 */}
       <section className="card" style={{ gridColumn: '1 / -1' }}>
         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem' }}>
           <Users size={20} /> 시험원별 수행 현황 (Tester Metrics)
@@ -188,7 +205,7 @@ export const Stats = () => {
         </div>
       </section>
 
-      {/* 4. Real-time Test Table */}
+      {/* 4. 실시간 상세 목록 섹션 (탭 분류) */}
       <section className="card" style={{ gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
           <h2 className="card-title" style={{ margin: 0, border: 'none', fontSize: '1.2rem' }}>실시간 시험 목록 (통합 조회)</h2>
@@ -249,7 +266,7 @@ export const Stats = () => {
         />
       </section>
 
-      {/* Detail Modal */}
+      {/* 상세 보기 팝업 모달 */}
       {viewingTest && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
           <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>

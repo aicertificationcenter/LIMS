@@ -1,3 +1,9 @@
+/**
+ * @file Reception.tsx
+ * @description 관리자가 신규 시험 접수를 등록하고, 접수된 건들에 대해 시험원(Tester)을 배정하는 페이지입니다.
+ * 접수 현황 조회, 필터링, 검색 및 인보이스(견격서) 상태 확인 기능을 포함합니다.
+ */
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
@@ -7,26 +13,33 @@ import { InvoiceViewModal } from '../components/InvoiceViewModal';
 import { Pagination } from '../components/Pagination';
 
 export const Reception = () => {
+  // 인증 및 네비게이션
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [receptions, setReceptions] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterTesterId, setFilterTesterId] = useState('');
 
+  // 데이터 상태 관리
+  const [receptions, setReceptions] = useState<any[]>([]); // 전체 접수 내역
+  const [users, setUsers] = useState<any[]>([]);          // 시험원 배정을 위한 사용자 목록
+  const [loading, setLoading] = useState(true);           // 데이터 로딩 상태
+  
+  // 검색 및 필터 상태
+  const [searchQuery, setSearchQuery] = useState('');     // 의뢰처/인물 검색어
+  const [filterTesterId, setFilterTesterId] = useState(''); // 특정 시험원별 필터링
+
+  // 인보이스 모달 관련 상태
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [modalPosition, setModalPosition] = useState<{ x: number, y: number } | null>(null);
 
-  // Pagination State
+  // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // 로컬 입력 상태 (목록 보정용)
   const [consultationDrafts, setConsultationDrafts] = useState<Record<string, string>>({});
   const [selectedTesters, setSelectedTesters] = useState<Record<string, string>>({});
 
+  // 컴포넌트 마운트 시 초기 데이터 로드 및 URL 검색어 반영
   useEffect(() => {
     fetchData();
     const params = new URLSearchParams(window.location.search);
@@ -36,6 +49,7 @@ export const Reception = () => {
     }
   }, []);
 
+  /** 서버로부터 접수 목록과 사용자 목록을 동시 로드 */
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -46,12 +60,13 @@ export const Reception = () => {
       setReceptions(recList);
       setUsers(userList);
     } catch (err) {
-      console.error(err);
+      console.error('데이터 로드 실패:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  /** 검색어 및 시험원 필터에 따른 목록 필터링 (Memoization 적용) */
   const filteredReceptions = useMemo(() => {
     return receptions.filter(r => {
       const companyMatch = r.clientId?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -61,6 +76,7 @@ export const Reception = () => {
     });
   }, [receptions, searchQuery, filterTesterId]);
 
+  /** 특정 접수 건의 상담 메모 업데이트 */
   const handleUpdateConsultation = async (id: string) => {
     const consultation = consultationDrafts[id];
     try {
@@ -69,43 +85,50 @@ export const Reception = () => {
         body: JSON.stringify({ id, consultation })
       });
       alert('상담내용이 성공적으로 저장되었습니다.');
-      // Refresh to show latest
+      // 변경 사항 반영을 위해 목록 다시 불러오기
       const data = await apiClient.receptions.list();
       setReceptions(data);
     } catch (err) {
-      console.error('Failed to update consultation:', err);
+      console.error('상담내용 수정 실패:', err);
       alert('상담내용 저장에 실패했습니다.');
     }
   };
 
+  /** 현재 페이지에 표시할 접수 데이터 추출 */
   const paginatedReceptions = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredReceptions.slice(start, start + itemsPerPage);
   }, [filteredReceptions, currentPage, itemsPerPage]);
 
+  // 관리 권한 체크 (레이아웃 보호)
   if (user?.role !== 'ADMIN') {
     return <Navigate to="/stats" replace />;
   }
 
-  const [client, setClient] = useState('');
-  const [clientName, setClientName] = useState('');
-  const [email, setEmail] = useState('');
-  const [bizNo, setBizNo] = useState('');
-  const [phone, setPhone] = useState('');
-  const [target, setTarget] = useState('');
-  const [extra, setExtra] = useState('');
-  const [clientAddress, setClientAddress] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // --- 신규 접수 입력 폼 상태 ---
+  const [client, setClient] = useState('');           // 의뢰 기관
+  const [clientName, setClientName] = useState('');   // 담당자명
+  const [email, setEmail] = useState('');             // 이메일
+  const [bizNo, setBizNo] = useState('');             // 사업자번호
+  const [phone, setPhone] = useState('');             // 전화번호
+  const [target, setTarget] = useState('');           // 시험 대상
+  const [extra, setExtra] = useState('');             // 기타 참고사항
+  const [clientAddress, setClientAddress] = useState(''); // 의뢰처 주소
+  const [isSubmitting, setIsSubmitting] = useState(false); // 제출 중 상태
 
+  /** 신규 시험 접수 제출 처리 */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const extraData = JSON.stringify({ clientAddress });
+      // 주소와 기타 정보를 JSON 형태로 'extra' 필드에 통합 저장
+      const extraData = JSON.stringify({ clientAddress, note: extra });
       const newRec = await apiClient.receptions.create({ 
         client, clientName, email, bizNo, phone, target, extra: extraData 
       });
       alert(`신규 시험 접수가 완료되었습니다.\n접수번호: ${newRec.barcode}`);
+      
+      // 입력 폼 초기화 및 목록 갱신
       fetchData();
       setClient(''); setClientName(''); setEmail(''); setBizNo(''); setPhone(''); setTarget(''); setExtra(''); setClientAddress('');
     } catch (err: any) {
@@ -115,11 +138,12 @@ export const Reception = () => {
     }
   };
 
+  /** 특정 접수 건에 시험원 배정 */
   const handleAssignTester = async (recId: string, testerId: string) => {
     if (testerId) {
       try {
         await apiClient.receptions.assign(recId, testerId);
-        fetchData();
+        fetchData(); // 배정 후 상태 갱신
         alert(`시험원에게 성공적으로 배정되었습니다.`);
       } catch (err: any) {
         alert(err.message);
@@ -133,10 +157,10 @@ export const Reception = () => {
 
   return (
     <main className="dashboard-grid animate-fade-in">
+      {/* 1. 신규 접수 입력 섹션 */}
       <section className="card" style={{ gridColumn: 'span 4', padding: '2rem' }}>
         <h2 className="card-title" style={{ marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>신규 시험 접수하기</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Form Fields [Stays same as before] */}
           <div className="form-group" style={{ display: 'flex', alignItems: 'center' }}>
             <label className="form-label" style={{ width: '130px', marginBottom: 0, fontWeight: 700, color: '#475569' }}>의뢰처 (회사기관)</label>
             <input className="input-field" style={{ flex: 1 }} value={client} onChange={e=>setClient(e.target.value)} required />
@@ -175,6 +199,7 @@ export const Reception = () => {
         </form>
       </section>
 
+      {/* 2. 접수 현황 및 필터 섹션 */}
       <section className="card" style={{ gridColumn: 'span 8', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
           <h2 className="card-title" style={{ margin: 0, border: 'none' }}>최근 등록된 접수 목록 (통합 조회)</h2>
@@ -195,6 +220,7 @@ export const Reception = () => {
           </div>
         </div>
 
+        {/* 3. 접수 항목 카드 리스트 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {paginatedReceptions.map(r => (
             <div key={r.id} style={{ padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: 'white' }}>
@@ -229,7 +255,7 @@ export const Reception = () => {
                 </div>
               </div>
 
-              {/* Workflow Stepper */}
+              {/* 워크플로우 진행 단계 표시 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                  {[
                    { id: 'RECEIVED', label: '시험의뢰', isDone: true },
@@ -256,6 +282,7 @@ export const Reception = () => {
                  })}
               </div>
 
+              {/* 시험원 배정 인터페이스 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>현장 시험원 배정:</span>
@@ -307,6 +334,7 @@ export const Reception = () => {
                 </div>
               </div>
 
+              {/* 관리자 메모/상담내역 */}
               <div style={{ marginTop: '1.25rem', background: '#fff', padding: '1rem', borderRadius: '12px', border: '1px dotted var(--kaic-blue)', position: 'relative' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--kaic-navy)', marginBottom: '10px' }}>
                   <MessageSquare size={16} color="var(--kaic-blue)" /> 관리자 상담내용 (시험원 전달용)
@@ -335,10 +363,7 @@ export const Reception = () => {
                 </div>
               </div>
 
-              <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#ef4444' }}>
-                ※ 등록이 완료된 서류입니다. (수정 불가 모드 - Read Only)
-              </div>
-
+              {/* 페이지 이동 버튼 (견적/인보이스) */}
               <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
                 {!!r.invoice ? (
                   <>
@@ -360,6 +385,7 @@ export const Reception = () => {
           {paginatedReceptions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', padding: '4rem' }}>검색 결과가 없습니다.</p>}
         </div>
 
+        {/* 페이지네이션 */}
         <Pagination 
           totalItems={filteredReceptions.length} 
           itemsPerPage={itemsPerPage} 
@@ -369,6 +395,7 @@ export const Reception = () => {
         />
       </section>
 
+      {/* 인보이스 상세 정보 팝업(모달) */}
       {showInvoiceModal && selectedInvoice && (
         <InvoiceViewModal 
           invoice={selectedInvoice} 

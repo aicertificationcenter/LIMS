@@ -1,23 +1,34 @@
+/**
+ * @file Register.tsx
+ * @description 새로운 사용자 계정 생성을 요청하는 페이지입니다.
+ * 입력된 정보는 서버에 저장되며, 최고 관리자의 승인(AdminAuth 페이지) 후 정식으로 사용 가능합니다.
+ */
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
 
 export const Register = () => {
+  // 입력 필드 상태
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
+  
+  // UI 상태
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  /** 회원가입 정보 제출 처리 */
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // API를 호출하여 가입 요청 생성 (기본 역할은 PENDING)
       await apiClient.auth.register({ id, pw, email, phone, name });
       alert('회원가입이 요청되었습니다. 관리자 승인을 기다려주세요.');
-      navigate('/login');
+      navigate('/login'); // 완료 후 로그인 페이지로 리다이렉트
     } catch (err: unknown) {
       if (err instanceof Error) {
         alert(err.message);

@@ -1,3 +1,8 @@
+/**
+ * @file Clients.tsx
+ * @description 시스템에 등록된 모든 의뢰처(고객) 정보를 통합 관리하는 페이지입니다.
+ * 실시간 검색, CSV 내보내기, 다중 수신자를 대상으로 한 공지 이메일 발송(파일 첨부 포함) 기능을 제공합니다.
+ */
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
@@ -8,40 +13,47 @@ import { StatusBadge } from '../components/StatusBadge';
 import { Pagination } from '../components/Pagination';
 
 export const Clients = () => {
+  // 인증 정보
   const { user } = useAuth();
-  const [receptions, setReceptions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedReception, setSelectedReception] = useState<any>(null);
   
-  // Pagination State
+  // 데이터 상태 관리
+  const [receptions, setReceptions] = useState<any[]>([]); // 원천 데이터 (모든 접수 건)
+  const [loading, setLoading] = useState(true);           // 로딩 플래그
+  const [searchTerm, setSearchTerm] = useState('');       // 검색어
+  const [selectedReception, setSelectedReception] = useState<any>(null); // 상세 보기용 접수 건
+  
+  // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailSubject, setEmailSubject] = useState('');
-  const [emailBody, setEmailBody] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
-  const [files, setFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // 이메일 발송 관련 상태
+  const [showEmailModal, setShowEmailModal] = useState(false); // 메일 발송 모달 표시 여부
+  const [emailSubject, setEmailSubject] = useState('');       // 메일 제목
+  const [emailBody, setEmailBody] = useState('');             // 메일 본문
+  const [isSending, setIsSending] = useState(false);          // 발송 중여부
+  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set()); // 선택된 수신자 집합
+  const [files, setFiles] = useState<File[]>([]);             // 첨부할 파일 목록
+  const fileInputRef = useRef<HTMLInputElement>(null);         // 파일 선택을 위한 Ref
 
+  /** 컴포넌트 마운트 시 데이터 로드 */
   useEffect(() => {
     fetchData();
   }, []);
 
+  /** 원천 접수 목록 조회 (의뢰처 정보를 추출하기 위함) */
   const fetchData = async () => {
     setLoading(true);
     try {
       const data = await apiClient.receptions.list();
       setReceptions(data);
     } catch (err) {
-      console.error('Fetch clients list failed:', err);
+      console.error('의뢰처 목록 조회 실패:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  /** 검색어 필터링 처리 (기관명, 의뢰인, 바코드) */
   const filteredData = useMemo(() => {
     return receptions.filter(r => 
       r.clientId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,11 +62,13 @@ export const Clients = () => {
     );
   }, [receptions, searchTerm]);
 
+  /** 페이지네이션 데이터 */
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage, itemsPerPage]);
 
+  /** 전체 접수 건에서 중복되지 않는 고유한 의뢰처(이메일 기준) 목록 추출 */
   const uniqueClientInfo = useMemo(() => {
     const clientsMap: Record<string, any> = {};
     receptions.forEach(r => {
@@ -69,6 +83,7 @@ export const Clients = () => {
     return Object.values(clientsMap).sort((a,b) => a.clientId.localeCompare(b.clientId));
   }, [receptions]);
 
+  /** 모달이 열릴 때 수신자 목록 초기화 */
   useEffect(() => {
     if (showEmailModal) {
       setSelectedEmails(new Set(uniqueClientInfo.map(c => c.email)));
@@ -76,6 +91,7 @@ export const Clients = () => {
     }
   }, [showEmailModal, uniqueClientInfo]);
 
+  /** 개별 수신자 선택 토글 */
   const toggleEmail = (email: string) => {
     const newSet = new Set(selectedEmails);
     if (newSet.has(email)) newSet.delete(email);
@@ -83,9 +99,11 @@ export const Clients = () => {
     setSelectedEmails(newSet);
   };
 
+  /** 전체 수신자 선택/해제 */
   const selectAll = () => setSelectedEmails(new Set(uniqueClientInfo.map(c => c.email)));
   const selectNone = () => setSelectedEmails(new Set());
 
+  /** 파일 첨부 핸들러 */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -93,10 +111,12 @@ export const Clients = () => {
     }
   };
 
+  /** 첨부 파일 제거 */
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  /** 파일을 Base64 문자열로 변환 (API 전송용) */
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -109,6 +129,7 @@ export const Clients = () => {
     });
   };
 
+  /** 현재 표시된 목록을 CSV 파일로 내보냅니다. */
   const handleExportCSV = () => {
     if (receptions.length === 0) return;
     
@@ -141,6 +162,7 @@ export const Clients = () => {
     document.body.removeChild(link);
   };
 
+  /** 선택된 의뢰처들에게 공지 메일을 발송합니다. */
   const handleSendEmail = async () => {
     if (!emailSubject || !emailBody) {
       alert('제목과 내용을 모두 입력해 주세요.');
@@ -153,6 +175,7 @@ export const Clients = () => {
 
     setIsSending(true);
     try {
+      // 첨부파일들을 Base64로 병렬 변환
       const attachments = await Promise.all(
         files.map(async (file) => ({
           filename: file.name,
@@ -160,6 +183,7 @@ export const Clients = () => {
         }))
       );
 
+      // 백엔드 이메일 API 호출
       const res = await fetch('/api/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -188,6 +212,7 @@ export const Clients = () => {
     }
   };
 
+  /** 상태 코드별 한글 라벨 변환 */
   const getStatusLabel = (status: string) => {
     switch(status) {
       case 'RECEIVED': return '시험의뢰';
@@ -200,6 +225,7 @@ export const Clients = () => {
     }
   };
 
+  // 권한 체크 (관리자 전용)
   if (user?.role !== 'ADMIN') {
     return <div style={{ padding: '4rem', textAlign: 'center' }}>접근 권한이 없습니다.</div>;
   }

@@ -1,3 +1,8 @@
+/**
+ * @file AdminAuth.tsx
+ * @description 최고 관리자 전용 사용자 계정 관리 페이지입니다.
+ * 신규 가입자 승인, 사용자 정보 수정(성명, 이메일, 연락처, 비밀번호), 권한 변경 및 계정 삭제 기능을 제공합니다.
+ */
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
@@ -6,33 +11,44 @@ import { Navigate } from 'react-router-dom';
 import { Trash2, ShieldAlert, UserCheck, Edit2, X } from 'lucide-react';
 
 export const AdminAuth = () => {
+  // 인증 정보
   const { user } = useAuth();
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   
-  // Single Edit Modal State
+  // 데이터 상태 관리
+  const [users, setUsers] = useState<any[]>([]); // 시스템 전체 사용자 목록
+  const [loading, setLoading] = useState(true); // 데이터 로딩 플래그
+  
+  // 사용자 정보 수정을 위한 모달 상태
   const [editUser, setEditUser] = useState<any>(null);
 
+  /** 전체 사용자 데이터 로드 (관리자 권한인 경우에만 수행) */
   const fetchData = async () => {
     setLoading(true);
     try {
       const uData = await apiClient.users.list();
       setUsers(uData);
     } catch (err: any) {
-      console.error('Fetch users list failed:', err);
+      console.error('사용자 목록 조회 실패:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  /** 컴포넌트 마운트 및 인증 정보 로드 시 실행 */
   useEffect(() => {
     if (user?.role === 'ADMIN') fetchData();
   }, [user]);
 
+  // 권한 체크 (관리자가 아니면 통계 페이지로 추방)
   if (user?.role !== 'ADMIN') {
     return <Navigate to="/stats" />;
   }
 
+  /** 
+   * 사용자의 역할(Role)을 변경합니다. 
+   * @param id 사용자 ID
+   * @param newRole 부여할 새로운 역할
+   */
   const handleRoleChange = async (id: string, newRole: string) => {
     try {
       const res = await fetch('/api/users', {
@@ -46,6 +62,7 @@ export const AdminAuth = () => {
     }
   };
 
+  /** 모달을 통해 수정된 사용자 정보를 서버에 저장합니다. */
   const handleUpdateUser = async () => {
     if (!editUser) return;
     try {
@@ -95,13 +112,14 @@ export const AdminAuth = () => {
   return (
     <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '5rem' }}>
       
-      {/* 1. Account Management Section */}
+      {/* 1. 계정 관리 메인 카드 */}
       <section className="card" style={{ gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', borderBottom: '2px solid #f1f5f9', paddingBottom: '1rem' }}>
            <UserCheck size={24} color="var(--kaic-navy)" />
            <h2 className="card-title" style={{ margin: 0, border: 'none' }}>사용자 계정 승인 및 관리 (Live)</h2>
         </div>
 
+        {/* 1.1 가입 승인 대기 섹션 (PENDING 상태인 사용자만 표시) */}
         {pendingUsers.length > 0 && (
           <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem' }}>
             <h3 style={{ color: '#9a3412', fontSize: '1rem', marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -121,6 +139,7 @@ export const AdminAuth = () => {
           </div>
         )}
 
+        {/* 1.2 활성 사용자 관리 테이블 */}
         <table className="data-table">
           <thead>
             <tr>
@@ -195,7 +214,7 @@ export const AdminAuth = () => {
         </table>
       </section>
 
-      {/* 2. User Detail Edit Modal */}
+      {/* 2. 사용자 상세 정보 수정용 모달 */}
       {editUser && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div className="card" style={{ width: '450px', padding: '2rem' }}>

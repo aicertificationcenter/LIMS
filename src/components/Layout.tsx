@@ -1,3 +1,9 @@
+/**
+ * @file Layout.tsx
+ * @description 애플리케이션의 최상위 웹 레이아웃 구성을 담당합니다.
+ * 상단 네비게이션 바(GNB), 사용자 역할에 따른 메뉴 필터링, 실시간 알림 시스템을 포함합니다.
+ */
+
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
@@ -5,43 +11,49 @@ import { apiClient } from '../api/client';
 import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users } from 'lucide-react';
 
 export const Layout = () => {
+  // 인증 및 라우팅 정보
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [showNoti, setShowNoti] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
 
+  // 알림 시스템 상태
+  const [showNoti, setShowNoti] = useState(false);  // 알림창 표시 여부
+  const [notifications, setNotifications] = useState<any[]>([]); // 미확인 알림 목록
+
+  // 알림 폴링 주입 (30초 주기)
   useEffect(() => {
     if (user) {
       fetchNotifications();
-      // Poll every 30 seconds for new notifications
       const interval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
 
+  /** 서버에서 새로운 알림 목록을 가져옵니다. */
   const fetchNotifications = async () => {
     if (!user) return;
     try {
       const data = await apiClient.notifications.list(user.id);
       setNotifications(data);
     } catch (err) {
-      console.error('Fetch notifications failed:', err);
+      console.error('알림 조회 실패:', err);
     }
   };
 
+  /** 로그아웃 처리 */
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  /** 모든 알림을 읽음으로 처리하고 목록을 비웁니다. */
   const clearNoti = async () => {
     if (user) {
       try {
         await apiClient.notifications.markAsRead(user.id);
         setNotifications([]);
       } catch (err) {
-        console.error('Mark read failed:', err);
+        console.error('알림 읽음 처리 실패:', err);
       }
     }
     setShowNoti(false);

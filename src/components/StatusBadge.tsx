@@ -1,12 +1,20 @@
+/**
+ * @file StatusBadge.tsx
+ * @description 시험 의뢰의 진행 상태(RECEIVED, IN_PROGRESS 등)를 시각적으로 표시하는 공통 배지 컴포넌트입니다.
+ * 상태 코드에 따라 정의된 배경색과 한글 라벨을 출력합니다.
+ */
 
 import React from 'react';
 
 interface StatusBadgeProps {
+  /** 시험 상태 코드 (예: 'RECEIVED', 'COMPLETED') */
   status: string;
+  /** 명시적인 라벨이 있는 경우 우선적으로 표시 */
   label?: string;
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
+  // 상태별 스타일 및 한글 라벨 매핑
   const map: Record<string, { bg: string, label: string }> = {
     'RECEIVED': { bg: '#3b82f6', label: '시험의뢰' },
     'QUOTED': { bg: '#6366f1', label: '견적발송' },

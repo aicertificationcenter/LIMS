@@ -1,24 +1,37 @@
+/**
+ * @file Login.tsx
+ * @description 사용자 인증(로그인)을 담당하는 페이지입니다.
+ * 아이디와 비밀번호를 입력받아 AuthContext의 로그인 상태를 갱신하고 메인 페이지로 이동합니다.
+ */
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 
 export const Login = () => {
+  // 입력 필드 상태
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
+  
+  // UI 상태
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // 인증 및 네비게이션 훅
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  /** 로그인 폼 제출 처리 */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
+      // API를 호출하여 로그인 검증
       const user = await apiClient.auth.login(id, pw);
-      login(user);
-      navigate('/stats');
+      login(user); // 글로벌 인증 상태 업데이트
+      navigate('/stats'); // 기본 페이지로 이동
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

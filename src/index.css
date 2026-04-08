@@ -1,23 +1,29 @@
+/**
+ * KAIC-LIMS Global Stylesheet
+ * @description 애플리케이션의 핵심 디자인 시스템 및 공통 컴포넌트 스타일을 정의합니다.
+ * 모던한 인터페이스를 위해 Inter 폰트와 전용 브랜드 컬러 팔레트를 사용합니다.
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* KAIC Brand Colors */
-  --kaic-navy: #1D2A78;
-  --kaic-blue: #0066B3;
-  --kaic-light-blue: #E6F0F9;
+  /* 1. 디자인 시스템 토큰 (Brand Identity) */
+  --kaic-navy: #1D2A78;       /* 메인 브랜드 컬러: 네이비 */
+  --kaic-blue: #0066B3;       /* 포인트 컬러: 블루 */
+  --kaic-light-blue: #E6F0F9; /* 배경 및 위젯 보조 컬러 */
   
-  /* Status Colors */
-  --status-pending: #FCD34D; /* Yellow */
-  --status-ready: #10B981;   /* Green */
-  --status-progress: #3B82F6;/* Blue */
+  /* 2. 상태 표시 토큰 (Status Indication) */
+  --status-pending: #FCD34D;  /* 대기 상태: 황색 */
+  --status-ready: #10B981;    /* 준비/완료 상태: 녹색 */
+  --status-progress: #3B82F6; /* 진행 상태: 블루 */
   
-  /* Neutral scale */
+  /* 3. 중립 색상 팔레트 (Neutral Scale) */
   --neutral-50:  #f8fafc;
   --neutral-100: #f1f5f9;
   --neutral-800: #1e293b;
   --neutral-900: #0f172a;
 
-  /* UI Tokens */
+  /* 4. UI 장식 토큰 (Decoration) */
   --radius-lg: 12px;
   --radius-xl: 16px;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -25,17 +31,15 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   --glass-bg: rgba(255, 255, 255, 0.85);
   
-  /* Touch target rule */
-  --min-touch-target: 64px; /* Exaggerated for gloves/tablet */
-  /* Input Custom Styles */
-  --kaic-input-bg: #fdfaf5; /* Soft beige/off-white */
-  --kaic-input-text: #0a0a0a; /* Deep charcoal/black */
+  /* 5. 입력 폼 전용 스타일 (Form Customization) */
+  --kaic-input-bg: #fdfaf5; 
+  --kaic-input-text: #0a0a0a;
   --kaic-input-border: #cbd5e1;
 
+  /* 6. 타이포그래피 설정 */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: #333;
   background-color: var(--neutral-50);
@@ -44,6 +48,24 @@
   box-sizing: border-box;
 }
 
+/* 박스 모델 초기화 */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* 기본 바디 스타일 및 배경 효과 */
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--neutral-50);
+  background-image: radial-gradient(circle at top right, var(--kaic-light-blue) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: #222;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 공통 입력 필드 스타일 */
 .input-field {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -69,22 +91,7 @@
   font-weight: 400;
 }
 
-*, *::before, *::after {
-  box-sizing: inherit;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--neutral-50);
-  background-image: radial-gradient(circle at top right, var(--kaic-light-blue) 0%, transparent 40%);
-  background-attachment: fixed;
-  color: #222;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Animations */
+/* 애니메이션 정의 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -94,13 +101,14 @@ body {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* Base button defaults */
+/* 버튼 기본 인터랙션 */
 button {
   cursor: pointer;
   border: none;
   font-family: inherit;
   transition: all 0.2s ease-in-out;
 }
+
 button:active {
   transform: scale(0.98);
 }
