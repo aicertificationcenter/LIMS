@@ -444,7 +444,7 @@ export const MyTests = () => {
             {(selectedTest.testStartDate && selectedTest.testType) && (
               <div style={{ marginTop: '3rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>시험성적서 (갑)지 미리보기</h3>
+                  <h3 style={{ fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>시험성적서 (갑)지 실시간 미리보기 (Ver 2.1)</h3>
                   <button 
                     className="btn btn-secondary" 
                     onClick={() => {
