@@ -495,7 +495,7 @@ export const Invoices = () => {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                       <span style={{ color: '#64748b' }}>
-                        Discount {discountType === 'PERCENT' ? `(${discountRate}%)` : `(${discountAmount.toLocaleString()} ₩)`}
+                        Discount {discountType === 'PERCENT' ? `(${discountRate}%)` : `(₩)`}
                       </span>
                       <span style={{ color: '#ef4444' }}>- {discountAmt.toLocaleString()} ₩</span>
                   </div>
