@@ -582,7 +582,21 @@ export const MyTests = () => {
                           </div>
 
                           <div style={{ marginBottom: '12px' }}>
-                            <h4 style={{ margin: '0 0 5px 0' }}>4. 시험결과 : </h4>
+                            <h4 style={{ margin: '0 0 5px 0' }}>4. 시험목적 : </h4>
+                            <div style={{ marginLeft: '20px', fontSize: '1rem', fontWeight: 400, textDecoration: 'underline', textUnderlineOffset: '4px' }}>
+                              {selectedTest.testPurpose || '-'}
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '12px' }}>
+                            <h4 style={{ margin: '0 0 5px 0' }}>5. 시험방법 : </h4>
+                            <div style={{ marginLeft: '20px', fontSize: '1rem', fontWeight: 400, whiteSpace: 'pre-wrap', textDecoration: 'underline', textUnderlineOffset: '4px', lineHeight: 1.4 }}>
+                              {selectedTest.testMethod || '-'}
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '12px' }}>
+                            <h4 style={{ margin: '0 0 5px 0' }}>6. 시험결과 : </h4>
                             <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
                             <table style={{ borderCollapse: 'collapse' }}>
                               <tbody>

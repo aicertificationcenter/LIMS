@@ -1,5 +1,5 @@
 참고) 나중에 다시 전체 서버를 실행하시려면?
-VSC(Visual Studio Code)나 터미널을 열고 E:\OneDrive\바탕 화면\LIMS 폴더 안에서 다음 두 가지를 각각 실행해주시면 됩니다.
+VSC(Visual Studio Code)나 터미널을 열고 E:\OneDrive\바탕 화면\LIMS_2 폴더 안에서 다음 두 가지를 각각 실행해주시면 됩니다.
 
 1. 프론트엔드 (UI 화면) 실행
 
@@ -67,4 +67,5 @@ git commit -m "04052330"
 
 # 3. 깃허브로 업로드
 git push origin main
-
+=============
+이지숙 jisook1206 / jisook1206
