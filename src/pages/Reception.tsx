@@ -25,6 +25,7 @@ export const Reception = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [consultationDrafts, setConsultationDrafts] = useState<Record<string, string>>({});
+  const [selectedTesters, setSelectedTesters] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchData();
@@ -256,15 +257,35 @@ export const Reception = () => {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>현장 시험원 배정:</span>
-                    {user?.role === 'ADMIN' && r.status === 'RECEIVED' ? (
-                      <select className="input-field" style={{ minHeight: '36px', fontSize: '0.85rem', marginBottom: 0, width: '200px' }} onChange={(e) => handleAssignTester(r.id, e.target.value)} value={r.tests?.[0]?.testerId || ''}>
-                        <option value="" disabled>시험원 선택</option>
-                        {users.filter(u => u.role !== 'ADMIN').map(u => (
-                          <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-                        ))}
-                      </select>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>현장 시험원 배정:</span>
+                    {user?.role === 'ADMIN' && r.status !== 'COMPLETED' ? (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <select 
+                          className="input-field" 
+                          style={{ minHeight: '36px', fontSize: '0.85rem', marginBottom: 0, width: '160px' }} 
+                          onChange={(e) => setSelectedTesters(prev => ({ ...prev, [r.id]: e.target.value }))} 
+                          value={selectedTesters[r.id] ?? r.tests?.[0]?.testerId ?? ''}
+                        >
+                          <option value="" disabled>시험원 선택</option>
+                          {users.filter(u => u.role !== 'ADMIN').map(u => (
+                            <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                          ))}
+                        </select>
+                        <button 
+                          className="btn btn-primary" 
+                          style={{ margin: 0, padding: '4px 12px', fontSize: '0.8rem', minHeight: '36px', width: 'auto', background: 'var(--kaic-blue)', borderRadius: '6px' }}
+                          onClick={() => handleAssignTester(r.id, selectedTesters[r.id] ?? r.tests?.[0]?.testerId)}
+                          disabled={!(selectedTesters[r.id] ?? r.tests?.[0]?.testerId)}
+                        >
+                          배정하기
+                        </button>
+                        {r.tests?.[0]?.tester?.name && (
+                          <span style={{ fontSize: '0.8rem', color: '#047857', fontWeight: 600 }}>
+                            (현 배정: {r.tests[0].tester.name})
+                          </span>
+                        )}
+                      </div>
                     ) : r.tests?.[0]?.tester?.name ? (
                       <span style={{ fontWeight: 700, color: '#047857', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></span>
