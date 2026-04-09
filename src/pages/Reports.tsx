@@ -131,12 +131,12 @@ export const Reports = () => {
         if (extraData.tcDetails && Array.isArray(extraData.tcDetails)) {
           setTcDetails(extraData.tcDetails);
         } else {
-          setTcDetails(new Array(extraData.tcResults?.length || 1).fill(null).map(() => ({ method: '', procedure: '' })));
+          setTcDetails(new Array(extraData.tcResults?.length || 1).fill(null).map(() => ({ method: '', procedure: '', note: '' })));
         }
       } catch (e) {
         setTcResults([{ goal: '', result: '' }]);
         setTcMethods([{ category: '', type: '', standard: '' }]);
-        setTcDetails([{ method: '', procedure: '' }]);
+        setTcDetails([{ method: '', procedure: '', note: '' }]);
         setEnvDiagramUrl(null);
         setPcSpec('');
         setEnvDescription('');
@@ -148,7 +148,7 @@ export const Reports = () => {
     } else {
       setTcResults([{ goal: '', result: '' }]);
       setTcMethods([{ category: '', type: '', standard: '' }]);
-      setTcDetails([{ method: '', procedure: '' }]);
+      setTcDetails([{ method: '', procedure: '', note: '' }]);
       setEnvDiagramUrl(null);
       setPcSpec('');
       setEnvDescription('');
@@ -189,7 +189,7 @@ export const Reports = () => {
     const newDetails = [...tcDetails];
     if (count > newDetails.length) {
       for (let i = newDetails.length; i < count; i++) {
-        newDetails.push({ method: '', procedure: '' });
+        newDetails.push({ method: '', procedure: '', note: '' });
       }
     } else {
       newDetails.splice(count);
@@ -774,18 +774,32 @@ export const Reports = () => {
                       {tc.standard || '(위쪽에서 입력된 시험규격이 표시됩니다)'}
                     </div>
 
-                    <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '8px', fontWeight: 700 }}>세부 시험방법 및 특이사항</div>
+                    <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '8px', fontWeight: 700 }}>세부 시험방법</div>
                     <textarea 
                       className="input-field" 
                       value={tcDetails[idx]?.procedure || ''}
                       onChange={(e) => {
                         const newDetails = [...tcDetails];
-                        if(!newDetails[idx]) newDetails[idx] = { method: '', procedure: '' };
+                        if(!newDetails[idx]) newDetails[idx] = { method: '', procedure: '', note: '' };
                         newDetails[idx].procedure = e.target.value;
                         setTcDetails(newDetails);
                       }}
-                      placeholder="해당 시험항목의 구체적인 시험 절차, 방법, 평가 도구 및 특이사항 등을 상세하게 기술해 주세요." 
-                      style={{ width: '100%', height: '150px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
+                      placeholder="해당 시험항목의 구체적인 시험 절차, 방법, 평가 도구 등을 상세하게 기술해 주세요." 
+                      style={{ width: '100%', minHeight: '120px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical', marginBottom: '1.5rem' }}
+                    />
+
+                    <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '8px', fontWeight: 700 }}>특이사항</div>
+                    <textarea 
+                      className="input-field" 
+                      value={tcDetails[idx]?.note || ''}
+                      onChange={(e) => {
+                        const newDetails = [...tcDetails];
+                        if(!newDetails[idx]) newDetails[idx] = { method: '', procedure: '', note: '' };
+                        newDetails[idx].note = e.target.value;
+                        setTcDetails(newDetails);
+                      }}
+                      placeholder="시험 중 발생한 예외 사항, 주의점 등 특이사항을 기술해 주세요." 
+                      style={{ width: '100%', minHeight: '80px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
                     />
                   </div>
                 </div>
