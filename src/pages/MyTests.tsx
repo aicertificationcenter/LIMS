@@ -517,9 +517,8 @@ export const MyTests = () => {
                         <Save size={20} /> 시험정보 저장 (Save Test Info)
                       </button>
                     </div>
-                  </div>
-                  </div>
                 </div>
+
 
                 {/* 2. Schedule & Type Section (Grid) */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #eef2f6' }}>
