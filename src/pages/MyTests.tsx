@@ -575,8 +575,8 @@ export const MyTests = () => {
                       const yy = year.substring(2);
                       const typeChar = testType === '일반시험' ? 'T' : 'K';
                       const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
-                      const issueNo = `KAIC-\${year}-\${typeChar}\${seq}-0`;
-                      const productId = `\${yy}-\${typeChar}-\${seq}-S1`;
+                      const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
+                      const productId = `${yy}-${typeChar}-${seq}-S1`;
                       const techMgr = users.find(u => u.role === 'TECH_MGR');
                       
                       // 공통 스타일 정의
