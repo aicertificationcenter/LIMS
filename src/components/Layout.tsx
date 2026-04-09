@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users } from 'lucide-react';
+import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users, CheckSquare } from 'lucide-react';
 
 export const Layout = () => {
   // 인증 및 라우팅 정보
@@ -106,7 +106,12 @@ export const Layout = () => {
           )}
           {user.role !== 'ADMIN' && (
             <Link to="/reports" style={{ color: location.pathname==='/reports' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={18} /> 성적서 발행
+              <FileText size={18} /> 성적서 작성
+            </Link>
+          )}
+          {user.role !== 'ADMIN' && (
+            <Link to="/publish" style={{ color: location.pathname==='/publish' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <CheckSquare size={18} /> 발행
             </Link>
           )}
         </nav>

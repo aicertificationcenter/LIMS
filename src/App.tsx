@@ -14,6 +14,7 @@ import { Reception } from './pages/Reception';
 import { MyTests } from './pages/MyTests';
 import { Stats } from './pages/Stats';
 import { Reports } from './pages/Reports';
+import { Publish } from './pages/Publish';
 import { Clients } from './pages/Clients';
 import { Invoices } from './pages/Invoices';
 import './App.css';
@@ -42,6 +43,7 @@ function App() {
             <Route path="my-tests" element={<MyTests />} />    {/* 나의 할당 시험 관리 */}
             <Route path="stats" element={<Stats />} />          {/* 통계 및 대시보드 */}
             <Route path="reports" element={<Reports />} />      {/* 성적서 발급 관리 */}
+            <Route path="publish" element={<Publish />} />      {/* 발행 및 증적 관리 */}
             <Route path="clients" element={<Clients />} />      {/* 의뢰 기관 정보 관리 */}
             <Route path="invoices" element={<Invoices />} />    {/* 인보이스/견적서 발행 */}
             
