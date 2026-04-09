@@ -15,7 +15,6 @@ import {
   Save, 
   Package, 
   Target, 
-  FileText, 
   Calendar 
 } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
