@@ -548,7 +548,7 @@ export const MyTests = () => {
                                 </style>
                             </head>
                             <body>
-                              \${printContent.innerHTML}
+                              ${printContent.innerHTML}
                               <script>
                                 setTimeout(() => {
                                   window.print();
