@@ -17,6 +17,49 @@ export const Reports = () => {
   const [myTests, setMyTests] = useState<any[]>([]); // 내가 담당한 시험 목록
   const [loading, setLoading] = useState(true);     // 데이터 로딩 플래그
   const [selectedId, setSelectedId] = useState<string | null>(null); // 현재 성적서 작업 중인 시험 ID
+  
+  /** 현재 선택된 시험 객체 */
+  const selectedTest = myTests.find((t: any) => t.id === selectedId);
+
+  // --- 시험 결과 요약(Test Case) 상태 관리 ---
+  const [tcCount, setTcCount] = useState(1);
+  const [tcResults, setTcResults] = useState<any[]>([]);
+
+  // 선택된 시험이 바뀔 때 기존 TC 데이터 로드
+  useEffect(() => {
+    if (selectedTest?.extra) {
+      try {
+        const extraData = JSON.parse(selectedTest.extra);
+        if (extraData.tcResults && Array.isArray(extraData.tcResults)) {
+          setTcResults(extraData.tcResults);
+          setTcCount(extraData.tcResults.length);
+        } else {
+          setTcResults([{ goal: '', result: '' }]);
+          setTcCount(1);
+        }
+      } catch (e) {
+        setTcResults([{ goal: '', result: '' }]);
+        setTcCount(1);
+      }
+    } else {
+      setTcResults([{ goal: '', result: '' }]);
+      setTcCount(1);
+    }
+  }, [selectedTest?.id, selectedId]); // selectedId change also triggers reload
+
+  // TC 개수 변경 시 배열 크기 조정
+  const handleTcCountChange = (count: number) => {
+    setTcCount(count);
+    const newResults = [...tcResults];
+    if (count > newResults.length) {
+      for (let i = newResults.length; i < count; i++) {
+        newResults.push({ goal: '', result: '' });
+      }
+    } else {
+      newResults.splice(count);
+    }
+    setTcResults(newResults);
+  };
 
   // 사용자 정보 로드 시 시험 목록 가져오기
   useEffect(() => {
@@ -40,8 +83,8 @@ export const Reports = () => {
     }
   };
 
-  /** 현재 선택된 시험 객체 */
-  const selectedTest = myTests.find((t: any) => t.id === selectedId);
+
+  /** 시험을 최종 완료 상태로 변경합니다. (성적서가 등록되어야 가능) */
 
   /** 
    * 단일 파일을 증적 자료로 업로드합니다.
@@ -140,6 +183,28 @@ export const Reports = () => {
     }
   };
 
+  /** TC 결과 저장 함수 */
+  const handleSaveTCResults = async () => {
+    if (!selectedId) return;
+    try {
+      let extraData: any = {};
+      if (selectedTest?.extra) {
+        try { extraData = JSON.parse(selectedTest.extra); } catch(e) {}
+      }
+      extraData.tcResults = tcResults;
+
+      await fetch('/api/receptions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedId, extra: JSON.stringify(extraData) })
+      });
+      alert('시험 결과 요약 정보가 저장되었습니다.');
+      fetchMyTasks();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   if (loading) {
     return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>데이터를 불러오는 중...</div>;
   }
@@ -175,6 +240,91 @@ export const Reports = () => {
            </div>
            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>시험번호: {selectedTest.testerBarcode || selectedTest.barcode}</p>
         </header>
+
+        {/* 0. 시험 결과 요약 입력 섹션 (신규) */}
+        <section className="card" style={{ gridColumn: '1 / -1', border: '2px solid #e2e8f0', background: '#fff' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '1rem' }}>
+            <h3 style={{ fontSize: '1.5rem', margin: 0, fontWeight: 800, color: '#1e293b', width: '100%', textAlign: 'center' }}>시 험 결 과 요 약</h3>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '2px solid #000', marginBottom: '2rem' }}>
+            <div style={{ padding: '1rem', borderRight: '1px solid #000', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ fontWeight: 600, width: '100px', textAlign: 'center' }}>접수번호</div>
+              <div style={{ borderLeft: '1px solid #000', paddingLeft: '1rem', flex: 1, color: '#334155' }}>
+                {selectedTest.barcode}
+              </div>
+            </div>
+            <div style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ fontWeight: 600, width: '100px', textAlign: 'center' }}>시험 담당자</div>
+              <div style={{ borderLeft: '1px solid #000', paddingLeft: '1rem', flex: 1, color: '#334155' }}>
+                {user?.name}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>Test Case 개수 선택 (최대 15개):</span>
+            <select 
+              value={tcCount} 
+              onChange={(e) => handleTcCountChange(Number(e.target.value))}
+              style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 600 }}
+            >
+              {[...Array(15)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>{i + 1}개</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '4px', overflow: 'hidden' }}>
+            {tcResults.map((tc, idx) => (
+              <div key={idx} style={{ padding: '1.5rem', borderBottom: idx === tcResults.length - 1 ? 'none' : '1px solid #e2e8f0', display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111', flexShrink: 0, paddingTop: '10px' }}>
+                  [{idx + 1}]
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', width: '80px', paddingTop: '12px' }}>목표 확인:</span>
+                    <textarea 
+                      className="input-field" 
+                      placeholder="예: 시험대상목적물의 기능 정확성 달성 여부 확인 (목표: Accuracy 95%)"
+                      value={tc.goal}
+                      onChange={(e) => {
+                        const newRes = [...tcResults];
+                        newRes[idx].goal = e.target.value;
+                        setTcResults(newRes);
+                      }}
+                      style={{ fontSize: '0.95rem', minHeight: '60px' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', width: '80px', paddingTop: '12px' }}>결과 요약:</span>
+                    <textarea 
+                      className="input-field" 
+                      placeholder="예: 기능 정확성 달성 목표 제시기준: 결함 분류 정확도가 달성됨. (Accuracy: 100%)"
+                      value={tc.result}
+                      onChange={(e) => {
+                        const newRes = [...tcResults];
+                        newRes[idx].result = e.target.value;
+                        setTcResults(newRes);
+                      }}
+                      style={{ fontSize: '0.95rem', minHeight: '60px', borderLeft: '3px solid var(--kaic-blue)' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleSaveTCResults}
+              style={{ padding: '1rem 3rem', fontSize: '1.1rem', background: 'var(--kaic-navy)', borderRadius: '30px' }}
+            >
+              시험 결과 요약 정보 저장
+            </button>
+          </div>
+        </section>
 
         {/* 1. 증적 자료 관리 섹션 */}
         <section className="card" style={{ gridColumn: 'span 8' }}>
