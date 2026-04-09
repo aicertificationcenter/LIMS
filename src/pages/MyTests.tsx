@@ -548,7 +548,7 @@ export const MyTests = () => {
                                 </style>
                             </head>
                             <body>
-                              ${printContent.innerHTML}
+                              \${printContent.innerHTML}
                               <script>
                                 setTimeout(() => {
                                   window.print();
@@ -575,8 +575,8 @@ export const MyTests = () => {
                       const yy = year.substring(2);
                       const typeChar = testType === '일반시험' ? 'T' : 'K';
                       const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
-                      const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
-                      const productId = `${yy}-${typeChar}-${seq}-S1`;
+                      const issueNo = `KAIC-\${year}-\${typeChar}\${seq}-0`;
+                      const productId = `\${yy}-\${typeChar}-\${seq}-S1`;
                       const techMgr = users.find(u => u.role === 'TECH_MGR');
                       
                       // 공통 스타일 정의
@@ -628,13 +628,13 @@ export const MyTests = () => {
                                 </div>
                               </div>
 
-                              <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                              <div style={{ marginBottom: '4px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                 <h4 style={{ ...itemTitleStyle, margin: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>2. 시험대상품목 : </h4>
                                 <span style={{ fontWeight: 600, fontSize: '9pt', wordBreak: 'break-all' }}>{testProduct || '-'}</span>
                               </div>
 
                               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                                <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <table className="table" style={{ width: '80%', margin: '0 auto', borderCollapse: 'collapse' }}>
                                   <tbody>
                                     <tr>
                                       <td style={{ border: '0.5pt solid black', padding: '4px', background: '#f8fafc', width: '35%', textAlign: 'center', fontSize: '8pt' }}>시험대상품목번호</td>
@@ -675,7 +675,7 @@ export const MyTests = () => {
                                   </span>
                                 </h4>
                                 <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
-                                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                  <table style={{ width: '85%', margin: '0 auto', borderCollapse: 'collapse' }}>
                                     <tbody>
                                       <tr>
                                         <td rowSpan={2} style={{ border: '0.5pt solid black', padding: '6px', fontSize: '8pt', width: '60px', textAlign: 'center', background: '#f8fafc' }}>확 인</td>
@@ -696,14 +696,12 @@ export const MyTests = () => {
                               </div>
 
                               <div style={{ marginTop: '10px' }}>
-                                <h4 style={{ ...itemTitleStyle, margin: '0 0 6px 0', display: 'flex', alignItems: 'center' }}>○ 시험장소 : 
+                                <h4 style={{ ...itemTitleStyle, margin: '0 0 6px 0', display: 'flex', alignItems: 'center' }}>7. 시험장소 : 
                                   <span style={{ fontWeight: 400, display: 'inline-flex', gap: '10px', marginLeft: '12px', fontSize: '7.5pt' }}>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{testLocation?.includes('고정') ? '☑' : '☐'} 고정시험실</span>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>☐ 외부시험실(위탁)</span>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>☐ 외부시험실(일반)</span>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>{testLocation?.includes('현장') ? '☑' : '☐'} 기타( </span>
-                                    <span style={{ wordBreak: 'break-all', maxWidth: '300px' }}>{testAddress || '-'}</span>
-                                    <span> )</span>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>{testLocation?.includes('현장') ? '☑' : '☐'} 기타</span>
                                   </span>
                                 </h4>
                                 <div style={{ fontSize: '7.5pt', marginLeft: '20px', color: '#475569', lineHeight: 1.5 }}>
@@ -715,7 +713,7 @@ export const MyTests = () => {
 
                              <div style={{ textAlign: 'center', marginTop: '30px', paddingBottom: '10px' }}>
                               <div style={{ fontSize: '10pt', fontWeight: 700 }}>{new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}.</div>
-                              <div style={{ fontSize: '16pt', fontWeight: 900, marginTop: '15px' }}>한국인공지능검증원장 <span style={{ marginLeft: '25px', fontSize: '10pt', border: '0.5pt solid black', borderRadius: '50%', padding: '6px' }}>(印)</span></div>
+                              <div style={{ fontSize: '16pt', fontWeight: 900, marginTop: '15px' }}>한국인공지능검증원장</div>
                               <div style={{ fontSize: '7.5pt', color: '#64748b', marginTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                 <div style={{ textAlign: 'left', lineHeight: 1.4, maxWidth: '80%' }}>* 이 시험성적서는 시험목적에 의한 시험대상품목의 시험결과 확인 이외의 용도로 사용될 수 없습니다.</div>
                                 <div style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>(KAIC-F-7.8-03(갑))</div>
