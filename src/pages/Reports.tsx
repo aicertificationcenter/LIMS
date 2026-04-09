@@ -27,7 +27,8 @@ export const Reports = () => {
   const [tcMethods, setTcMethods] = useState<any[]>([]);
 
   // --- 시험 환경(Environment) 상태 관리 ---
-  const [envDiagramUrl, setEnvDiagramUrl] = useState<string | null>(null);
+  const [envImageCount, setEnvImageCount] = useState(1);
+  const [envImages, setEnvImages] = useState<any[]>(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
   const [pcSpec, setPcSpec] = useState('');
   const [envDescription, setEnvDescription] = useState('');
 
@@ -53,9 +54,26 @@ export const Reports = () => {
           setTcMethods([{ category: '', type: '', standard: '' }]);
         }
 
-        // 시험환경 데이터 로드
-        setEnvDiagramUrl(extraData.envDiagramUrl || null);
-        setPcSpec(extraData.pcSpec || '');
+        // 시험환경 데이터 로드 (다중 이미지 지원)
+        if (extraData.envImages && Array.isArray(extraData.envImages)) {
+          // 최신 다중 이미지 구조
+          const loadedImages = [...extraData.envImages];
+          // 부족한 슬롯 채우기
+          while (loadedImages.length < 4) loadedImages.push({ url: null, caption: '' });
+          setEnvImages(loadedImages);
+          setEnvImageCount(extraData.envImageCount || 1);
+        } else if (extraData.envDiagramUrl) {
+          // 구버전 단일 이미지 마이그레이션
+          const migrated = new Array(4).fill(null).map(() => ({ url: null, caption: '' }));
+          migrated[0].url = extraData.envDiagramUrl;
+          setEnvImages(migrated);
+          setEnvImageCount(1);
+        } else {
+          setEnvImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+          setEnvImageCount(1);
+        }
+
+        setPcSpec(extraData. pcSpec || '');
         setEnvDescription(extraData.envDescription || '');
 
         if (extraData.tcDetails && Array.isArray(extraData.tcDetails)) {
@@ -67,7 +85,8 @@ export const Reports = () => {
         setTcResults([{ goal: '', result: '' }]);
         setTcMethods([{ category: '', type: '', standard: '' }]);
         setTcDetails([{ method: '' }]);
-        setEnvDiagramUrl(null);
+        setEnvImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+        setEnvImageCount(1);
         setPcSpec('');
         setEnvDescription('');
         setTcCount(1);
@@ -76,7 +95,8 @@ export const Reports = () => {
       setTcResults([{ goal: '', result: '' }]);
       setTcMethods([{ category: '', type: '', standard: '' }]);
       setTcDetails([{ method: '' }]);
-      setEnvDiagramUrl(null);
+      setEnvImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+      setEnvImageCount(1);
       setPcSpec('');
       setEnvDescription('');
       setTcCount(1);
@@ -253,7 +273,8 @@ export const Reports = () => {
       }
       extraData.tcResults = tcResults;
       extraData.tcMethods = tcMethods;
-      extraData.envDiagramUrl = envDiagramUrl;
+      extraData.envImages = envImages;
+      extraData.envImageCount = envImageCount;
       extraData.pcSpec = pcSpec;
       extraData.envDescription = envDescription;
       extraData.tcDetails = tcDetails;
@@ -270,14 +291,16 @@ export const Reports = () => {
     }
   };
 
-  /** 시험환경 구성도 이미지 업로드 핸들러 */
-  const handleEnvDiagramUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /** 시험환경 이미지 업로드 핸들러 */
+  const handleEnvImageUpload = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+ 
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setEnvDiagramUrl(ev.target?.result as string);
+      const newImages = [...envImages];
+      newImages[idx].url = ev.target?.result as string;
+      setEnvImages(newImages);
     };
     reader.readAsDataURL(file);
   };
@@ -472,8 +495,9 @@ export const Reports = () => {
               </table>
             </div>
 
-            <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#444', lineHeight: 1.6, padding: '0 5px' }}>
-              ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.
+            <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#444', lineHeight: 1.6, padding: '0 5px' }}>
+              ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.<br/>
+              ○ 소프트웨어 성능시험 시험대상품목 “<span style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{selectedTest?.testProduct || '(품목명)'}</span>”을 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
             </p>
           </div>
 
@@ -481,54 +505,64 @@ export const Reports = () => {
           <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '2rem' }}>
             <SectionHeader title="시험환경" />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '5.5fr 4.5fr', border: '1.5px solid #000' }}>
-              {/* 왼쪽: 시험환경 구성도 */}
-              <div style={{ borderRight: '1.5px solid #000', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <ImageIcon size={20} /> 시험환경 구성도
-                </div>
-                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'white' }}>
-                  {envDiagramUrl ? (
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '500px', marginBottom: '1rem' }}>
-                      <img src={envDiagramUrl} alt="시험환경 구성도" style={{ width: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-                      <button 
-                         onClick={() => setEnvDiagramUrl(null)} 
-                         style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: 'white', border: 'none', width: '24px', height: '24px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
-                      >
-                         ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ width: '100%', height: '200px', background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#64748b', marginBottom: '1rem' }}>
-                      <ImageIcon size={48} style={{ opacity: 0.2, marginBottom: '10px' }} />
-                      <span style={{ fontSize: '0.9rem' }}>구성도 이미지를 업로드하세요</span>
-                    </div>
-                  )}
-                  <label className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', padding: '8px 16px' }}>
-                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleEnvDiagramUpload} />
-                    <UploadCloud size={16} /> 구성도 이미지 선택
-                  </label>
-                </div>
-              </div>
+            <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>환경 구성도 이미지 개수:</span>
+              <select 
+                value={envImageCount} 
+                onChange={(e) => setEnvImageCount(Number(e.target.value))}
+                style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 600 }}
+              >
+                {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}개</option>)}
+              </select>
+            </div>
 
-              {/* 오른쪽: 시험용 PC 규격 */}
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  <Monitor size={20} /> 시험용 PC 규격
-                </div>
-                <div style={{ padding: '1.5rem', flex: 1, background: 'white' }}>
-                  <textarea 
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${envImageCount}, 1fr)`, gap: '1rem', marginBottom: '1.5rem' }}>
+              {envImages.slice(0, envImageCount).map((img, idx) => (
+                <div key={idx} style={{ border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', background: '#fff' }}>
+                  <div style={{ height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', marginBottom: '10px', borderRadius: '4px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
+                    {img.url ? (
+                      <img src={img.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#94a3b8' }}>
+                        <ImageIcon size={32} style={{ opacity: 0.3 }} />
+                        <span style={{ fontSize: '0.75rem' }}>이미지 없음</span>
+                      </div>
+                    )}
+                  </div>
+                  <label className="btn btn-secondary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer', fontSize: '0.8rem', marginBottom: '10px' }}>
+                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleEnvImageUpload(idx, e)} />
+                    이미지 선택
+                  </label>
+                  <input 
                     className="input-field" 
-                    value={pcSpec} 
-                    onChange={e => setPcSpec(e.target.value)} 
-                    placeholder="○ Client&#10;- CPU : Intel i7...&#10;- RAM : 32GB...&#10;&#10;○ 진동센서&#10;- Model : ..." 
-                    style={{ width: '100%', height: '300px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'none' }}
+                    placeholder="이미지 설명" 
+                    value={img.caption} 
+                    onChange={(e) => {
+                      const newImages = [...envImages];
+                      newImages[idx].caption = e.target.value;
+                      setEnvImages(newImages);
+                    }}
+                    style={{ fontSize: '0.85rem' }}
                   />
                 </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', border: '1.5px solid #000' }}>
+              <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Monitor size={20} /> 시험용 PC 규격
+              </div>
+              <div style={{ padding: '1.5rem', background: 'white' }}>
+                <textarea 
+                  className="input-field" 
+                  value={pcSpec} 
+                  onChange={e => setPcSpec(e.target.value)} 
+                  placeholder="○ Client&#10;- CPU : Intel i7...&#10;- RAM : 32GB..." 
+                  style={{ width: '100%', height: '200px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'none' }}
+                />
               </div>
             </div>
 
-            {/* 시험환경 설명 */}
             <div style={{ marginTop: '1.25rem', border: '1.5px solid #000' }}>
               <div style={{ background: '#f1f5f9', padding: '8px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
                 시험환경 설명
@@ -588,10 +622,6 @@ export const Reports = () => {
                 </tbody>
               </table>
             </div>
-
-            <p style={{ marginTop: '1.5rem', fontSize: '1.05rem', color: '#1e293b', fontWeight: 700, textAlign: 'center', background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-              소프트웨어 성능시험 시험대상품목 “<span style={{ color: 'var(--kaic-blue)', textDecoration: 'underline' }}>{selectedTest?.testProduct || '(품목명)'}</span>”을 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
-            </p>
           </div>
 
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
