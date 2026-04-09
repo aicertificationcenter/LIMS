@@ -75,10 +75,13 @@ export const Reports = () => {
   const [tcMethods, setTcMethods] = useState<any[]>([]);
 
   // --- 시험 환경(Environment) 상태 관리 ---
-  const [envImageCount, setEnvImageCount] = useState(1);
-  const [envImages, setEnvImages] = useState<any[]>(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+  const [envDiagramUrl, setEnvDiagramUrl] = useState<string | null>(null);
   const [pcSpec, setPcSpec] = useState('');
   const [envDescription, setEnvDescription] = useState('');
+
+  // --- 시험장 환경(Venue) 상태 관리 ---
+  const [venueImageCount, setVenueImageCount] = useState(1);
+  const [venueImages, setVenueImages] = useState<any[]>(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
 
   // --- 시험 상세 방법(Details) 상태 관리 ---
   const [tcDetails, setTcDetails] = useState<any[]>([]);
@@ -102,27 +105,26 @@ export const Reports = () => {
           setTcMethods([{ category: '', type: '', standard: '' }]);
         }
 
-        // 시험환경 데이터 로드 (다중 이미지 지원)
-        if (extraData.envImages && Array.isArray(extraData.envImages)) {
-          // 최신 다중 이미지 구조
-          const loadedImages = [...extraData.envImages];
-          // 부족한 슬롯 채우기
-          while (loadedImages.length < 4) loadedImages.push({ url: null, caption: '' });
-          setEnvImages(loadedImages);
-          setEnvImageCount(extraData.envImageCount || 1);
-        } else if (extraData.envDiagramUrl) {
-          // 구버전 단일 이미지 마이그레이션
-          const migrated = new Array(4).fill(null).map(() => ({ url: null, caption: '' }));
-          migrated[0].url = extraData.envDiagramUrl;
-          setEnvImages(migrated);
-          setEnvImageCount(1);
-        } else {
-          setEnvImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
-          setEnvImageCount(1);
-        }
-
-        setPcSpec(extraData. pcSpec || '');
+        // 시험환경 데이터 로드
+        setEnvDiagramUrl(extraData.envDiagramUrl || null);
+        setPcSpec(extraData.pcSpec || '');
         setEnvDescription(extraData.envDescription || '');
+
+        // 시험장 환경 데이터 로드 (다중 이미지 갤러리)
+        if (extraData.venueImages && Array.isArray(extraData.venueImages)) {
+          const loadedImages = [...extraData.venueImages];
+          while (loadedImages.length < 4) loadedImages.push({ url: null, caption: '' });
+          setVenueImages(loadedImages);
+          setVenueImageCount(extraData.venueImageCount || 1);
+        } else if (extraData.envImages && Array.isArray(extraData.envImages)) {
+          const loadedImages = [...extraData.envImages];
+          while (loadedImages.length < 4) loadedImages.push({ url: null, caption: '' });
+          setVenueImages(loadedImages);
+          setVenueImageCount(extraData.envImageCount || 1);
+        } else {
+          setVenueImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+          setVenueImageCount(1);
+        }
 
         if (extraData.tcDetails && Array.isArray(extraData.tcDetails)) {
           setTcDetails(extraData.tcDetails);
@@ -133,20 +135,22 @@ export const Reports = () => {
         setTcResults([{ goal: '', result: '' }]);
         setTcMethods([{ category: '', type: '', standard: '' }]);
         setTcDetails([{ method: '' }]);
-        setEnvImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
-        setEnvImageCount(1);
+        setEnvDiagramUrl(null);
         setPcSpec('');
         setEnvDescription('');
+        setVenueImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+        setVenueImageCount(1);
         setTcCount(1);
       }
     } else {
       setTcResults([{ goal: '', result: '' }]);
       setTcMethods([{ category: '', type: '', standard: '' }]);
       setTcDetails([{ method: '' }]);
-      setEnvImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
-      setEnvImageCount(1);
+      setEnvDiagramUrl(null);
       setPcSpec('');
       setEnvDescription('');
+      setVenueImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+      setVenueImageCount(1);
       setTcCount(1);
     }
   }, [selectedTest?.id, selectedId]); // selectedId change also triggers reload
@@ -325,10 +329,11 @@ export const Reports = () => {
       }
       extraData.tcResults = tcResults;
       extraData.tcMethods = tcMethods;
-      extraData.envImages = envImages;
-      extraData.envImageCount = envImageCount;
+      extraData.envDiagramUrl = envDiagramUrl;
       extraData.pcSpec = pcSpec;
       extraData.envDescription = envDescription;
+      extraData.venueImages = venueImages;
+      extraData.venueImageCount = venueImageCount;
       extraData.tcDetails = tcDetails;
 
       await fetch('/api/receptions', {
@@ -343,16 +348,29 @@ export const Reports = () => {
     }
   };
 
-  /** 시험환경 이미지 업로드 핸들러 */
-  const handleEnvImageUpload = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  /** 시험환경 구성도(단일) 업로드 핸들러 */
+  const handleEnvDiagramUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressedDataUrl = await compressImage(file);
+      setEnvDiagramUrl(compressedDataUrl);
+    } catch (err) {
+      console.error('이미지 업로드 실패:', err);
+      alert('이미지 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  /** 시험장 환경(갤러리) 이미지 업로드 핸들러 */
+  const handleVenueImageUpload = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
  
     try {
       const compressedDataUrl = await compressImage(file);
-      const newImages = [...envImages];
+      const newImages = [...venueImages];
       newImages[idx].url = compressedDataUrl;
-      setEnvImages(newImages);
+      setVenueImages(newImages);
     } catch (err) {
       console.error('이미지 업로드 실패:', err);
       alert('이미지 처리 중 오류가 발생했습니다.');
@@ -558,60 +576,51 @@ export const Reports = () => {
           {/* 0-1. 시험 환경 섹션 */}
           <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '2rem' }}>
             <SectionHeader title="시험환경" />
-
-            <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>환경 구성도 이미지 개수:</span>
-              <select 
-                value={envImageCount} 
-                onChange={(e) => setEnvImageCount(Number(e.target.value))}
-                style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 600 }}
-              >
-                {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}개</option>)}
-              </select>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${envImageCount}, 1fr)`, gap: '1rem', marginBottom: '1.5rem' }}>
-              {envImages.slice(0, envImageCount).map((img, idx) => (
-                <div key={idx} style={{ border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', marginBottom: '10px', borderRadius: '6px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
-                    {img.url ? <img src={img.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="미리보기" /> : (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#94a3b8' }}>
-                        <ImageIcon size={32} style={{ opacity: 0.3 }} />
-                        <span style={{ fontSize: '0.75rem' }}>이미지 없음</span>
-                      </div>
-                    )}
-                  </div>
-                  <label className="btn btn-secondary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer', fontSize: '0.8rem', marginBottom: '10px' }}>
-                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleEnvImageUpload(idx, e)} />
-                    이미지 선택
+ 
+            <div style={{ display: 'grid', gridTemplateColumns: '5.5fr 4.5fr', border: '1.5px solid #000' }}>
+              {/* 왼쪽: 시험환경 구성도 */}
+              <div style={{ borderRight: '1.5px solid #000', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <ImageIcon size={20} /> 시험환경 구성도
+                </div>
+                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'white' }}>
+                  {envDiagramUrl ? (
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '500px', marginBottom: '1rem' }}>
+                      <img src={envDiagramUrl} alt="시험환경 구성도" style={{ width: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                      <button 
+                         onClick={() => setEnvDiagramUrl(null)} 
+                         style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: 'white', border: 'none', width: '24px', height: '24px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                      >
+                         ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', height: '200px', background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#64748b', marginBottom: '1rem' }}>
+                      <ImageIcon size={48} style={{ opacity: 0.2, marginBottom: '10px' }} />
+                      <span style={{ fontSize: '0.9rem' }}>구성도 이미지를 업로드하세요</span>
+                    </div>
+                  )}
+                  <label className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', padding: '8px 16px' }}>
+                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleEnvDiagramUpload} />
+                    <UploadCloud size={16} /> 구성도 이미지 선택
                   </label>
-                  <input 
+                </div>
+              </div>
+ 
+              {/* 오른쪽: 시험용 PC 규격 */}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Monitor size={20} /> 시험용 PC 규격
+                </div>
+                <div style={{ padding: '1.5rem', flex: 1, background: 'white' }}>
+                  <textarea 
                     className="input-field" 
-                    placeholder="이미지 설명" 
-                    value={img.caption} 
-                    onChange={(e) => {
-                      const newImages = [...envImages];
-                      newImages[idx].caption = e.target.value;
-                      setEnvImages(newImages);
-                    }}
-                    style={{ fontSize: '0.85rem' }}
+                    value={pcSpec} 
+                    onChange={e => setPcSpec(e.target.value)} 
+                    placeholder="○ Client&#10;- CPU : Intel i7...&#10;- RAM : 32GB..." 
+                    style={{ width: '100%', height: '200px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'none' }}
                   />
                 </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', border: '1.5px solid #000' }}>
-              <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <Monitor size={20} /> 시험용 PC 규격
-              </div>
-              <div style={{ padding: '1.5rem', background: 'white' }}>
-                <textarea 
-                  className="input-field" 
-                  value={pcSpec} 
-                  onChange={e => setPcSpec(e.target.value)} 
-                  placeholder="○ Client&#10;- CPU : Intel i7...&#10;- RAM : 32GB..." 
-                  style={{ width: '100%', height: '200px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'none' }}
-                />
               </div>
             </div>
 
@@ -676,6 +685,52 @@ export const Reports = () => {
             </div>
           </div>
 
+          {/* 0-3. 시험장 환경 섹션 */}
+          <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '2rem' }}>
+            <SectionHeader title="시험장 환경" />
+ 
+            <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>시험장 사진 개수:</span>
+              <select 
+                value={venueImageCount} 
+                onChange={(e) => setVenueImageCount(Number(e.target.value))}
+                style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 600 }}
+              >
+                {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}개</option>)}
+              </select>
+            </div>
+ 
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${venueImageCount}, 1fr)`, gap: '1rem', marginBottom: '1.5rem' }}>
+              {venueImages.slice(0, venueImageCount).map((img, idx) => (
+                <div key={idx} style={{ border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', marginBottom: '10px', borderRadius: '6px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
+                    {img.url ? <img src={img.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="미리보기" /> : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#94a3b8' }}>
+                        <ImageIcon size={32} style={{ opacity: 0.3 }} />
+                        <span style={{ fontSize: '0.75rem' }}>이미지 없음</span>
+                      </div>
+                    )}
+                  </div>
+                  <label className="btn btn-secondary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer', fontSize: '0.8rem', marginBottom: '10px' }}>
+                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleVenueImageUpload(idx, e)} />
+                    사진 선택
+                  </label>
+                  <input 
+                    className="input-field" 
+                    placeholder="사진 설명" 
+                    value={img.caption} 
+                    onChange={(e) => {
+                      const newImages = [...venueImages];
+                      newImages[idx].caption = e.target.value;
+                      setVenueImages(newImages);
+                    }}
+                    style={{ fontSize: '0.85rem' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+ 
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
             <button 
               className="btn btn-primary" 
