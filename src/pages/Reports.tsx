@@ -82,6 +82,7 @@ export const Reports = () => {
   // --- 시험장 환경(Venue) 상태 관리 ---
   const [venueImageCount, setVenueImageCount] = useState(1);
   const [venueImages, setVenueImages] = useState<any[]>(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
+  const [venueDescription, setVenueDescription] = useState('');
 
   // --- 시험 상세 방법(Details) 상태 관리 ---
   const [tcDetails, setTcDetails] = useState<any[]>([]);
@@ -125,6 +126,7 @@ export const Reports = () => {
           setVenueImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
           setVenueImageCount(1);
         }
+        setVenueDescription(extraData.venueDescription || '');
 
         if (extraData.tcDetails && Array.isArray(extraData.tcDetails)) {
           setTcDetails(extraData.tcDetails);
@@ -140,6 +142,7 @@ export const Reports = () => {
         setEnvDescription('');
         setVenueImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
         setVenueImageCount(1);
+        setVenueDescription('');
         setTcCount(1);
       }
     } else {
@@ -334,6 +337,7 @@ export const Reports = () => {
       extraData.envDescription = envDescription;
       extraData.venueImages = venueImages;
       extraData.venueImageCount = venueImageCount;
+      extraData.venueDescription = venueDescription;
       extraData.tcDetails = tcDetails;
 
       await fetch('/api/receptions', {
@@ -382,10 +386,13 @@ export const Reports = () => {
   }
 
   // 재사용 가능한 섹션 제목 컴포넌트
-  const SectionHeader = ({ title }: { title: string }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem' }}>
-      <div style={{ width: '4px', height: '20px', background: 'var(--kaic-navy)', borderRadius: '2px' }}></div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{title}</h3>
+  const SectionHeader = ({ title, children }: { title: string; children?: React.ReactNode }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '4px', height: '20px', background: 'var(--kaic-navy)', borderRadius: '2px' }}></div>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{title}</h3>
+      </div>
+      {children && <div>{children}</div>}
     </div>
   );
 
@@ -423,7 +430,20 @@ export const Reports = () => {
 
         {/* 0. 시험 결과 요약 입력 섹션 */}
         <section className="card" style={{ gridColumn: '1 / -1', border: '1px solid #cbd5e1', background: '#fff', padding: '1.5rem', borderRadius: '12px' }}>
-          <SectionHeader title="시험 결과 요약" />
+          <SectionHeader title="시험 결과 요약">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>Test Case 개수 선택 (최대 15개):</span>
+              <select 
+                value={tcCount} 
+                onChange={(e) => handleTcCountChange(Number(e.target.value))}
+                style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 600, fontSize: '0.9rem' }}
+              >
+                {[...Array(15)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}개</option>
+                ))}
+              </select>
+            </div>
+          </SectionHeader>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '2px solid #000', marginBottom: '2rem' }}>
             <div style={{ padding: '1rem', borderRight: '1px solid #000', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -438,19 +458,6 @@ export const Reports = () => {
                 {user?.name}
               </div>
             </div>
-          </div>
-
-          <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>Test Case 개수 선택 (최대 15개):</span>
-            <select 
-              value={tcCount} 
-              onChange={(e) => handleTcCountChange(Number(e.target.value))}
-              style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 600 }}
-            >
-              {[...Array(15)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>{i + 1}개</option>
-              ))}
-            </select>
           </div>
 
           <div style={{ border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
@@ -568,8 +575,7 @@ export const Reports = () => {
             </div>
 
             <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#444', lineHeight: 1.6, padding: '0 5px' }}>
-              ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.<br/>
-              ○ 소프트웨어 성능시험 시험대상품목 “<span style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{selectedTest?.testProduct || '(품목명)'}</span>”을 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
+              ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.
             </p>
           </div>
 
@@ -683,6 +689,10 @@ export const Reports = () => {
                 </tbody>
               </table>
             </div>
+
+            <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#444', lineHeight: 1.6, padding: '0 5px' }}>
+              ○ 소프트웨어 성능시험 시험대상품목 “<span style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{selectedTest?.testProduct || '(품목명)'}</span>”을 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
+            </p>
           </div>
 
           {/* 0-3. 시험장 환경 섹션 */}
@@ -728,6 +738,21 @@ export const Reports = () => {
                   />
                 </div>
               ))}
+            </div>
+
+            <div style={{ marginTop: '1.25rem', border: '1.5px solid #000' }}>
+              <div style={{ background: '#f1f5f9', padding: '8px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
+                시험 수행 과정 및 환경 설명
+              </div>
+              <div style={{ padding: '1rem', background: 'white' }}>
+                <textarea 
+                  className="input-field" 
+                  value={venueDescription} 
+                  onChange={e => setVenueDescription(e.target.value)} 
+                  placeholder="시험을 어떻게 진행했는지 (과정, 추가 환경 등) 상세히 기술해 주세요..." 
+                  style={{ width: '100%', height: '100px', border: 'none', background: 'transparent', fontSize: '0.9rem', lineHeight: 1.5, resize: 'vertical' }}
+                />
+              </div>
             </div>
           </div>
  
