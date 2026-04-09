@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
     case 'PATCH':
       try {
-        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation, testProduct, testPurpose, testMethod } = req.body;
+        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation, testProduct, testPurpose, testMethod, extra } = req.body;
         
         // Update sample status and generate testerBarcode if needed
         const sample = await prisma.sample.findUnique({ where: { id } });
@@ -97,7 +97,8 @@ export default async function handler(req, res) {
              consultation,
              testProduct,
              testPurpose,
-             testMethod
+             testMethod,
+             extra
           }
         });
 
