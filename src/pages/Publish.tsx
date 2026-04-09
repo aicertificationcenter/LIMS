@@ -202,6 +202,11 @@ export const Publish = () => {
     pushMethodBlock({ type: 'envDiagram', weight: envDiagramUrl ? 40 : 25, data: { envDiagramUrl, pcSpec, envDescription } });
   }
 
+  // [블록 B2: 시험 세부항목 및 방법 (테이블2)]
+  if (tcDetails && tcDetails.length > 0) {
+    pushMethodBlock({ type: 'tcDetailsTable', weight: Math.min(25 + tcDetails.length * 8, 80), data: { details: tcDetails, methods: tcMethods, product: selectedTest?.testProduct || '(나의시험에서 입력한 품목명이 자동 연동됩니다)' } });
+  }
+
 
   // [블록 D: 시험장 환경 상세 (다중사진과 설명)]
   if (venueImages.slice(0, venueImageCount).some((v:any) => v.url)) {
@@ -392,6 +397,7 @@ export const Publish = () => {
                     if (block.type === 'tcMethodsTable') {
                       return (
                         <div key={bIdx}>
+                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt' }}>▶ 시험방법</div>
                           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black', fontSize: '8.5pt' }}>
                             <thead style={{ background: '#f1f5f9' }}>
                               <tr>
@@ -420,6 +426,38 @@ export const Publish = () => {
                           </table>
                           <div style={{ marginTop: '6px', fontSize: '8pt', color: '#475569', lineHeight: 1.4 }}>
                             ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (block.type === 'tcDetailsTable') {
+                      return (
+                        <div key={bIdx}>
+                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt', color: '#1e293b' }}>▶ 시험 세부항목 및 방법</div>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black', fontSize: '8.5pt' }}>
+                            <thead style={{ background: '#f1f5f9' }}>
+                              <tr>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '15%' }}>시험항목</th>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '45%' }}>시험 세부항목/기준</th>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '40%' }}>시험 방법</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {block.data.details.map((tc: any, tIdx: number) => (
+                                <tr key={tIdx}>
+                                  <td style={{ border: '1px solid black', padding: '6px', fontWeight: 800 }}>TC{tIdx+1}</td>
+                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left', whiteSpace: 'pre-wrap', color: '#334155' }}>
+                                    {block.data.methods[tIdx]?.standard || '-'}
+                                  </td>
+                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left', whiteSpace: 'pre-wrap', color: '#334155' }}>
+                                    {tc.method || '-'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          <div style={{ marginTop: '6px', fontSize: '8pt', color: '#475569', lineHeight: 1.4 }}>
+                            ○ 소프트웨어 성능시험 시험대상품목 "{block.data.product}"을(를) 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
                           </div>
                         </div>
                       );
