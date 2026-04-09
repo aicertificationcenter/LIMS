@@ -9,6 +9,54 @@ import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Download, FileText, Trash2, UploadCloud, FileType, Image as ImageIcon, Monitor, Save } from 'lucide-react';
 
+/**
+ * 이미지 파일을 압축하고 리사이징하는 헬퍼 함수
+ * @param file 원본 파일
+ * @param maxWidth 최대 너비 (기본 1200px)
+ * @param maxHeight 최대 높이 (기본 1200px)
+ * @param quality 압축 품질 (0~1, 기본 0.8)
+ */
+const compressImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.8): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+ 
+        // 비율 유지하며 리사이징 계산
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            width = maxHeight;
+          }
+        }
+ 
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('Canvas context not available');
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        // JPEG로 압축하여 용량 축소
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 export const Reports = () => {
   // 인증 정보
   const { user } = useAuth();
@@ -174,24 +222,28 @@ export const Reports = () => {
     const file = e.target.files?.[0];
     if (!file || !selectedId || !user) return;
     
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      try {
-        await apiClient.evidences.create({
-          sampleId: selectedId,
-          uploaderId: user.id,
-          fileName: file.name,
-          fileType: file.type,
-          dataUrl
-        });
-        alert(`${file.name} 증적이 업로드되었습니다.`);
-        fetchMyTasks();
-      } catch (err: any) {
-        alert(err.message);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      // 이미지 파일인 경우 압축 수행
+      const dataUrl = file.type.startsWith('image/') 
+        ? await compressImage(file) 
+        : await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve(ev.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+ 
+      await apiClient.evidences.create({
+        sampleId: selectedId,
+        uploaderId: user.id,
+        fileName: file.name,
+        fileType: file.type.startsWith('image/') ? 'image/jpeg' : file.type, // 압축 시 jpeg로 변경됨
+        dataUrl
+      });
+      alert(`${file.name} 증적이 업로드되었습니다.`);
+      fetchMyTasks();
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
   /** 증적 자료를 로컬로 다운로드합니다. */
@@ -292,17 +344,19 @@ export const Reports = () => {
   };
 
   /** 시험환경 이미지 업로드 핸들러 */
-  const handleEnvImageUpload = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEnvImageUpload = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
  
-    const reader = new FileReader();
-    reader.onload = (ev) => {
+    try {
+      const compressedDataUrl = await compressImage(file);
       const newImages = [...envImages];
-      newImages[idx].url = ev.target?.result as string;
+      newImages[idx].url = compressedDataUrl;
       setEnvImages(newImages);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('이미지 업로드 실패:', err);
+      alert('이미지 처리 중 오류가 발생했습니다.');
+    }
   };
 
   if (loading) {
@@ -518,11 +572,9 @@ export const Reports = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${envImageCount}, 1fr)`, gap: '1rem', marginBottom: '1.5rem' }}>
               {envImages.slice(0, envImageCount).map((img, idx) => (
-                <div key={idx} style={{ border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', background: '#fff' }}>
-                  <div style={{ height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', marginBottom: '10px', borderRadius: '4px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
-                    {img.url ? (
-                      <img src={img.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                    ) : (
+                <div key={idx} style={{ border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', marginBottom: '10px', borderRadius: '6px', overflow: 'hidden', border: '1px dashed #cbd5e1' }}>
+                    {img.url ? <img src={img.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="미리보기" /> : (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#94a3b8' }}>
                         <ImageIcon size={32} style={{ opacity: 0.3 }} />
                         <span style={{ fontSize: '0.75rem' }}>이미지 없음</span>
