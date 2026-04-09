@@ -131,12 +131,12 @@ export const Reports = () => {
         if (extraData.tcDetails && Array.isArray(extraData.tcDetails)) {
           setTcDetails(extraData.tcDetails);
         } else {
-          setTcDetails(new Array(extraData.tcResults?.length || 1).fill(null).map(() => ({ method: '' })));
+          setTcDetails(new Array(extraData.tcResults?.length || 1).fill(null).map(() => ({ method: '', procedure: '' })));
         }
       } catch (e) {
         setTcResults([{ goal: '', result: '' }]);
         setTcMethods([{ category: '', type: '', standard: '' }]);
-        setTcDetails([{ method: '' }]);
+        setTcDetails([{ method: '', procedure: '' }]);
         setEnvDiagramUrl(null);
         setPcSpec('');
         setEnvDescription('');
@@ -148,12 +148,13 @@ export const Reports = () => {
     } else {
       setTcResults([{ goal: '', result: '' }]);
       setTcMethods([{ category: '', type: '', standard: '' }]);
-      setTcDetails([{ method: '' }]);
+      setTcDetails([{ method: '', procedure: '' }]);
       setEnvDiagramUrl(null);
       setPcSpec('');
       setEnvDescription('');
       setVenueImages(new Array(4).fill(null).map(() => ({ url: null, caption: '' })));
       setVenueImageCount(1);
+      setVenueDescription('');
       setTcCount(1);
     }
   }, [selectedTest?.id, selectedId]); // selectedId change also triggers reload
@@ -188,7 +189,7 @@ export const Reports = () => {
     const newDetails = [...tcDetails];
     if (count > newDetails.length) {
       for (let i = newDetails.length; i < count; i++) {
-        newDetails.push({ method: '' });
+        newDetails.push({ method: '', procedure: '' });
       }
     } else {
       newDetails.splice(count);
@@ -753,6 +754,42 @@ export const Reports = () => {
                   style={{ width: '100%', height: '100px', border: 'none', background: 'transparent', fontSize: '0.9rem', lineHeight: 1.5, resize: 'vertical' }}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* 0-4. 시험항목별 시험방법 섹션 */}
+          <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '2rem' }}>
+            <SectionHeader title="시험항목별 시험방법" />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {tcMethods.slice(0, tcCount).map((tc, idx) => (
+                <div key={idx} style={{ border: '2px solid #000', borderRadius: '8px', overflow: 'hidden', background: '#fff' }}>
+                  <div style={{ background: '#f1f5f9', padding: '12px 1.5rem', borderBottom: '2px solid #000', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontWeight: 800, color: 'var(--kaic-navy)', fontSize: '1.1rem' }}>[TC {idx + 1}]</span>
+                    <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{tc.category || '(시험대상 항목)'}</span>
+                  </div>
+                  <div style={{ padding: '1.5rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '8px', fontWeight: 700 }}>시험기준 / 규격</div>
+                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '6px', fontSize: '0.95rem', color: '#334155', whiteSpace: 'pre-wrap', lineHeight: 1.5, border: '1px solid #cbd5e1', marginBottom: '1.5rem' }}>
+                      {tc.standard || '(위쪽에서 입력된 시험규격이 표시됩니다)'}
+                    </div>
+
+                    <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '8px', fontWeight: 700 }}>세부 시험방법 및 특이사항</div>
+                    <textarea 
+                      className="input-field" 
+                      value={tcDetails[idx]?.procedure || ''}
+                      onChange={(e) => {
+                        const newDetails = [...tcDetails];
+                        if(!newDetails[idx]) newDetails[idx] = { method: '', procedure: '' };
+                        newDetails[idx].procedure = e.target.value;
+                        setTcDetails(newDetails);
+                      }}
+                      placeholder="해당 시험항목의 구체적인 시험 절차, 방법, 평가 도구 및 특이사항 등을 상세하게 기술해 주세요." 
+                      style={{ width: '100%', height: '150px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
  
