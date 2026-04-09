@@ -29,6 +29,10 @@ export const Reports = () => {
   // --- 시험 환경(Environment) 상태 관리 ---
   const [envDiagramUrl, setEnvDiagramUrl] = useState<string | null>(null);
   const [pcSpec, setPcSpec] = useState('');
+  const [envDescription, setEnvDescription] = useState('');
+
+  // --- 시험 상세 방법(Details) 상태 관리 ---
+  const [tcDetails, setTcDetails] = useState<any[]>([]);
 
   // 선택된 시험이 바뀔 때 기존 TC 데이터 로드
   useEffect(() => {
@@ -52,18 +56,29 @@ export const Reports = () => {
         // 시험환경 데이터 로드
         setEnvDiagramUrl(extraData.envDiagramUrl || null);
         setPcSpec(extraData.pcSpec || '');
+        setEnvDescription(extraData.envDescription || '');
+
+        if (extraData.tcDetails && Array.isArray(extraData.tcDetails)) {
+          setTcDetails(extraData.tcDetails);
+        } else {
+          setTcDetails(new Array(extraData.tcResults?.length || 1).fill(null).map(() => ({ method: '' })));
+        }
       } catch (e) {
         setTcResults([{ goal: '', result: '' }]);
         setTcMethods([{ category: '', type: '', standard: '' }]);
+        setTcDetails([{ method: '' }]);
         setEnvDiagramUrl(null);
         setPcSpec('');
+        setEnvDescription('');
         setTcCount(1);
       }
     } else {
       setTcResults([{ goal: '', result: '' }]);
       setTcMethods([{ category: '', type: '', standard: '' }]);
+      setTcDetails([{ method: '' }]);
       setEnvDiagramUrl(null);
       setPcSpec('');
+      setEnvDescription('');
       setTcCount(1);
     }
   }, [selectedTest?.id, selectedId]); // selectedId change also triggers reload
@@ -93,6 +108,17 @@ export const Reports = () => {
       newMethods.splice(count);
     }
     setTcMethods(newMethods);
+
+    // Details 동기화
+    const newDetails = [...tcDetails];
+    if (count > newDetails.length) {
+      for (let i = newDetails.length; i < count; i++) {
+        newDetails.push({ method: '' });
+      }
+    } else {
+      newDetails.splice(count);
+    }
+    setTcDetails(newDetails);
   };
 
   // 사용자 정보 로드 시 시험 목록 가져오기
@@ -229,6 +255,8 @@ export const Reports = () => {
       extraData.tcMethods = tcMethods;
       extraData.envDiagramUrl = envDiagramUrl;
       extraData.pcSpec = pcSpec;
+      extraData.envDescription = envDescription;
+      extraData.tcDetails = tcDetails;
 
       await fetch('/api/receptions', {
         method: 'PATCH',
@@ -497,6 +525,74 @@ export const Reports = () => {
                 </div>
               </div>
             </div>
+
+            {/* 시험환경 설명 */}
+            <div style={{ marginTop: '2rem', border: '1.5px solid #000' }}>
+              <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b' }}>
+                시험환경 설명
+              </div>
+              <div style={{ padding: '1.5rem', background: 'white' }}>
+                <textarea 
+                  className="input-field" 
+                  value={envDescription} 
+                  onChange={e => setEnvDescription(e.target.value)} 
+                  placeholder="시험환경 구성 및 주요 특징에 대한 상세 설명을 입력하세요..." 
+                  style={{ width: '100%', height: '120px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 0-2. 시험 세부항목 및 방법 섹션 (신규) */}
+          <div style={{ marginTop: '3.5rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textDecoration: 'underline', color: '#1e293b', letterSpacing: '2px' }}>시험 세부항목 및 방법</h2>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000' }}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9' }}>
+                    <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '15%' }}>시험항목</th>
+                    <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '45%' }}>시험 세부항목/기준</th>
+                    <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '40%' }}>시험 방법</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tcDetails.map((tc, idx) => (
+                    <tr key={idx}>
+                      <td style={{ border: '1px solid #000', padding: '12px', textAlign: 'center', fontWeight: 800, background: '#fff' }}>
+                        TC{idx + 1}
+                      </td>
+                      <td style={{ border: '1px solid #000', padding: '12px', background: '#f8fafc', color: '#334155', verticalAlign: 'top' }}>
+                        {/* 상단 시험방법 테이블의 '시험규격(standard)' 필드와 연동됨 */}
+                        <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: 1.5, minHeight: '60px' }}>
+                          {tcMethods[idx]?.standard || '(상단 시험방법의 시험규격을 입력하면 자동 연동됩니다)'}
+                        </div>
+                      </td>
+                      <td style={{ border: '1px solid #000', padding: '8px' }}>
+                        <textarea 
+                          className="input-field" 
+                          value={tc.method}
+                          onChange={(e) => {
+                            const newDetails = [...tcDetails];
+                            newDetails[idx].method = e.target.value;
+                            setTcDetails(newDetails);
+                          }}
+                          placeholder="구체적인 시험 방법 입력"
+                          rows={3}
+                          style={{ fontSize: '0.9rem', border: 'none', background: 'transparent' }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p style={{ marginTop: '1.5rem', fontSize: '1.05rem', color: '#1e293b', fontWeight: 700, textAlign: 'center', background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+              소프트웨어 성능시험 시험대상품목 “<span style={{ color: 'var(--kaic-blue)', textDecoration: 'underline' }}>{selectedTest?.testProduct || '(품목명)'}</span>”을 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
+            </p>
           </div>
 
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
