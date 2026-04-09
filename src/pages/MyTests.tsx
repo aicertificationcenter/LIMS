@@ -15,6 +15,7 @@ import {
   Save, 
   Package, 
   Target, 
+  FileText, 
   Calendar 
 } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
@@ -79,10 +80,6 @@ export const MyTests = () => {
   const [testProduct, setTestProduct] = useState('');   // 시험 대상 품목
   const [testPurpose, setTestPurpose] = useState('');   // 시험 목적
   const [testMethod, setTestMethod] = useState('');     // 시험 방법
-  
-  // TC(Test Case)별 상세 정보 (추가)
-  const [tcCount, setTcCount] = useState(1);
-  const [tcMethods, setTcMethods] = useState<any[]>([]);
 
   /** 
    * 선택된 시험이 변경될 때 양식 데이터 동기화
@@ -98,42 +95,8 @@ export const MyTests = () => {
       setTestProduct(selectedTest.testProduct || '');
       setTestPurpose(selectedTest.testPurpose || '');
       setTestMethod(selectedTest.testMethod || '');
-
-      // extra 필드 데이터 파싱
-      if (selectedTest.extra) {
-        try {
-          const extraData = JSON.parse(selectedTest.extra);
-          if (extraData.tcCount) setTcCount(extraData.tcCount);
-          if (extraData.tcMethods && Array.isArray(extraData.tcMethods)) {
-            setTcMethods(extraData.tcMethods);
-          } else {
-            setTcMethods(Array(extraData.tcCount || 1).fill(null).map(() => ({ category: '', type: '', standard: '' })));
-          }
-        } catch (e) {
-          console.error("extra 데이터 파싱 실패:", e);
-          setTcMethods([{ category: '', type: '', standard: '' }]);
-          setTcCount(1);
-        }
-      } else {
-        setTcMethods([{ category: '', type: '', standard: '' }]);
-        setTcCount(1);
-      }
     }
   }, [selectedId, selectedTest]);
-
-  /** TC 개수 변경 처리 */
-  const handleTcCountChange = (count: number) => {
-    setTcCount(count);
-    const newMethods = [...tcMethods];
-    if (count > newMethods.length) {
-      for (let i = newMethods.length; i < count; i++) {
-        newMethods.push({ category: '', type: '', standard: '' });
-      }
-    } else {
-      newMethods.splice(count);
-    }
-    setTcMethods(newMethods);
-  };
 
   /** 
    * 상세 보기 창 열기 및 자동 시험번호 생성
@@ -218,12 +181,7 @@ export const MyTests = () => {
           testAddress,
           testProduct,
           testPurpose,
-          testMethod,
-          extra: JSON.stringify({
-            ...(selectedTest.extra ? JSON.parse(selectedTest.extra) : {}),
-            tcCount,
-            tcMethods
-          })
+          testMethod
         })
       });
       alert(selectedTest.status === 'RECEIVED' ? '시험이 시작되었습니다.' : '시험 정보가 업데이트되었습니다.');
@@ -402,125 +360,20 @@ export const MyTests = () => {
                       style={{ minHeight: '70px', resize: 'vertical' }}
                     />
                   </div>
-                  <div className="form-group" style={{ margin: '1rem 0 0 0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                      <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textDecoration: 'underline', color: '#1e293b', letterSpacing: '2px' }}>시 험 방 법</h2>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                       <label style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>□ 시험항목 | TC 개수 선택:</label>
-                       <select 
-                         className="input-field" 
-                         value={tcCount} 
-                         onChange={(e) => handleTcCountChange(Number(e.target.value))}
-                         style={{ width: '100px', height: '36px', padding: '0 8px' }}
-                       >
-                         {[...Array(15)].map((_, i) => (
-                           <option key={i+1} value={i+1}>{i+1}개</option>
-                         ))}
-                       </select>
-                    </div>
-
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000' }}>
-                        <thead>
-                          <tr style={{ background: '#f1f5f9' }}>
-                            <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '25%' }}>시험대상품목의<br/>명칭</th>
-                            <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '35%' }}>시험대상 항목</th>
-                            <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '15%' }}>시험대상 품목의<br/>형태</th>
-                            <th style={{ border: '1px solid #000', padding: '10px', fontSize: '0.9rem', width: '25%' }}>시험규격</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tcMethods.map((tc, idx) => (
-                            <tr key={idx}>
-                              {idx === 0 && (
-                                <td rowSpan={tcCount} style={{ border: '1px solid #000', padding: '12px', verticalAlign: 'middle', background: '#fff' }}>
-                                  <div style={{ fontWeight: 600, color: 'var(--kaic-blue)', textAlign: 'center', wordBreak: 'break-all' }}>
-                                    {testProduct || '(항목 2에서 입력한 품목명이 자동 연동됩니다)'}
-                                  </div>
-                                </td>
-                              )}
-                              <td style={{ border: '1px solid #000', padding: '8px' }}>
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                                  <span style={{ fontWeight: 800, color: '#111', flexShrink: 0, marginTop: '10px' }}>[TC{idx + 1}]</span>
-                                  <textarea 
-                                    className="input-field" 
-                                    value={tc.category}
-                                    onChange={(e) => {
-                                      const newMethods = [...tcMethods];
-                                      newMethods[idx].category = e.target.value;
-                                      setTcMethods(newMethods);
-                                    }}
-                                    placeholder="시험대상 항목 입력"
-                                    rows={2}
-                                    style={{ fontSize: '0.85rem', border: 'none', background: 'transparent', resize: 'vertical' }}
-                                  />
-                                </div>
-                              </td>
-                              <td style={{ border: '1px solid #000', padding: '8px' }}>
-                                <textarea 
-                                  className="input-field" 
-                                  value={tc.type}
-                                  onChange={(e) => {
-                                    const newMethods = [...tcMethods];
-                                    newMethods[idx].type = e.target.value;
-                                    setTcMethods(newMethods);
-                                  }}
-                                  placeholder="형태 입력 (예: 소프트웨어)"
-                                  rows={2}
-                                  style={{ fontSize: '0.85rem', border: 'none', background: 'transparent', textAlign: 'center' }}
-                                />
-                              </td>
-                              <td style={{ border: '1px solid #000', padding: '8px' }}>
-                                <textarea 
-                                  className="input-field" 
-                                  value={tc.standard}
-                                  onChange={(e) => {
-                                    const newMethods = [...tcMethods];
-                                    newMethods[idx].standard = e.target.value;
-                                    setTcMethods(newMethods);
-                                  }}
-                                  placeholder="시험규격 입력"
-                                  rows={2}
-                                  style={{ fontSize: '0.85rem', border: 'none', background: 'transparent' }}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <p style={{ marginTop: '0.75rem', fontSize: '0.81rem', color: '#475569', lineHeight: 1.5, padding: '0 5px' }}>
-                      ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.
-                    </p>
-
-                    <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
-                      <button 
-                        className="btn btn-primary" 
-                        onClick={handleStartTest}
-                        style={{ 
-                          padding: '0.8rem 3rem', 
-                          fontSize: '1.1rem', 
-                          fontWeight: 800, 
-                          borderRadius: '30px', 
-                          background: 'var(--kaic-navy)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                          border: 'none'
-                        }}
-                      >
-                        <Save size={20} /> 시험정보 저장 (Save Test Info)
-                      </button>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FileText size={16} color="#64748b" /> 5. 시험 방법
+                    </label>
+                    <textarea 
+                      className="input-field" 
+                      rows={4} 
+                      placeholder="예: [AI모델] 복막 분할 모델의 DSC 목표 달성. 유착 중등도 분류 모델의 Accuracy, Sensitivity, Specificify 목표 달성" 
+                      value={testMethod} 
+                      onChange={e => setTestMethod(e.target.value)} 
+                      style={{ minHeight: '120px', resize: 'vertical' }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-
-
-
 
                 {/* 2. Schedule & Type Section (Grid) */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #eef2f6' }}>
