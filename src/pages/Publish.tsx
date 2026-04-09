@@ -54,7 +54,7 @@ export const Publish = () => {
     }
   }, [selectedTest?.id, selectedId]);
 
-  const handlePrint = () => {
+  const handlePrint = (isPreview: boolean = false) => {
     const printContent = document.getElementById('report-pdf-preview');
     if (!printContent) return;
 
@@ -63,6 +63,9 @@ export const Publish = () => {
       alert('팝업 차단을 해제해주세요.');
       return;
     }
+
+    // DRAFT 워터마크 추가 처리
+    const draftHtml = isPreview ? '<div class="draft-badge">DRAFT</div>' : '';
 
     printWindow.document.write(`
       <html>
@@ -74,7 +77,6 @@ export const Publish = () => {
               .document-frame {
                 position: relative;
                 width: 210mm;
-                /* height: 297mm; */
                 min-height: 297mm;
                 box-sizing: border-box;
                 background: white;
@@ -103,13 +105,19 @@ export const Publish = () => {
                 top: 55%; left: 50%; transform: translate(-50%, -50%);
                 width: 120mm; opacity: 0.08; z-index: 0; pointer-events: none;
               }
+              .draft-badge {
+                position: fixed;
+                top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 150pt; color: rgba(255, 0, 0, 0.15); font-weight: 900; z-index: 1000; pointer-events: none;
+              }
               table { width: 100%; border-collapse: collapse; margin: 10px 0; }
               th, td { border: 0.5pt solid black; padding: 6px; text-align: center; font-size: 9pt; color: black; }
               .header-table th, .header-table td { font-size: 8pt; padding: 4px; }
             </style>
         </head>
         <body>
-          \${printContent.innerHTML}
+          ${draftHtml}
+          ${printContent.innerHTML}
           <script>
             setTimeout(() => {
               window.print();
@@ -128,9 +136,9 @@ export const Publish = () => {
       await fetch('/api/receptions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId, status: 'COMPLETED' })
+        body: JSON.stringify({ id: selectedId, status: 'APPROVAL_REQUESTED' })
       });
-      alert('결재요청이 완료되었습니다. (상태: COMPLETED)');
+      alert('결재요청이 완료되었습니다.\n[참고: 결재 완료 후 출력 기능 활성화]');
       fetchMyTasks();
       setSelectedId(null);
     } catch (err: any) {
@@ -140,10 +148,11 @@ export const Publish = () => {
 
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}>데이터 로딩중...</div>;
 
-  const totalPages = 2 + (tcOutputs.length || 0);
+  // 갑지(1) + 요약(1) + 방법(1) + TC결과들(N)
+  const totalPages = 3 + (tcOutputs.length || 0);
 
   // 공통 A4 페이지 래퍼 컴포넌트
-  const EuljiPageWrapper = ({ pageNum, title, children }: any) => {
+  const EuljiPageWrapper = ({ pageNum, title, children, isLastPage }: any) => {
     return (
       <div className="document-frame" style={{ width: '210mm', minHeight: '297mm', position: 'relative', background: 'white', boxSizing: 'border-box', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', margin: '0 auto 2rem auto' }}>
         <div className="outer-border" style={{ position: 'absolute', top: '10mm', left: '10mm', right: '10mm', bottom: '10mm', border: '0.3pt solid #000', pointerEvents: 'none' }}></div>
@@ -168,8 +177,13 @@ export const Publish = () => {
           </div>
 
           {/* Main Content */}
-          <div style={{ flex: 1, fontSize: '9pt', color: 'black' }}>
+          <div style={{ flex: 1, fontSize: '9pt', color: 'black', position: 'relative' }}>
             {children}
+            {isLastPage && (
+              <div style={{ textAlign: 'right', fontWeight: 800, fontSize: '10pt', marginTop: '30px' }}>
+                - 끝 -
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -228,7 +242,7 @@ export const Publish = () => {
             </EuljiPageWrapper>
 
             {/* Page 2: 시험방법 */}
-            <EuljiPageWrapper pageNum={3} title="시험방법 (시험항목별 세부방법)">
+            <EuljiPageWrapper pageNum={3} title="시험방법 (시험항목별 세부방법)" isLastPage={tcOutputs.length === 0}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {tcDetails.map((td, i) => (
                   <div key={i} style={{ border: '1px solid #cbd5e1', padding: '15px', borderRadius: '4px', background: '#f8fafc' }}>
@@ -261,7 +275,7 @@ export const Publish = () => {
 
             {/* Page 3 ~ X : TC별 시험결과 */}
             {tcOutputs.map((out, idx) => (
-              <EuljiPageWrapper key={idx} pageNum={idx + 4} title={`시험결과 (TC ${idx + 1} - ${tcMethods[idx]?.category || ''})`}>
+              <EuljiPageWrapper key={idx} pageNum={idx + 4} isLastPage={idx === tcOutputs.length - 1} title={`시험결과 (TC ${idx + 1} - ${tcMethods[idx]?.category || ''})`}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
 
                   <div style={{ border: '1px solid black', padding: '12px', background: '#fff' }}>
@@ -335,10 +349,10 @@ export const Publish = () => {
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
             <button 
               className="btn btn-secondary" 
-              onClick={handlePrint}
-              style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '40px', background: '#334155', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => handlePrint(true)}
+              style={{ padding: '1rem 2rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '40px', background: '#e2e8f0', color: '#475569', border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <Printer size={20} /> 출력하기 (Print PDF)
+              <FileText size={20} /> 미리보기 (Draft)
             </button>
             <button 
               className="btn btn-primary" 
@@ -346,6 +360,15 @@ export const Publish = () => {
               style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '40px', background: '#10b981', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
             >
               <CheckCircle size={20} /> 결재요청 (Submit)
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => handlePrint(false)}
+              disabled={selectedTest.status !== 'COMPLETED'}
+              style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '40px', background: selectedTest.status === 'COMPLETED' ? '#3b82f6' : '#cbd5e1', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: selectedTest.status === 'COMPLETED' ? 'pointer' : 'not-allowed' }}
+              title={selectedTest.status !== 'COMPLETED' ? '결재가 완료되어야 활성화됩니다.' : ''}
+            >
+              <Printer size={20} /> 출력하기 (Print Final)
             </button>
           </div>
 
