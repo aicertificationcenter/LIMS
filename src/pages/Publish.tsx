@@ -182,7 +182,7 @@ export const Publish = () => {
   let currentMethodWeight = 0;
 
   const pushMethodBlock = (block: any) => {
-    if (currentMethodWeight + block.weight > 82 && currentMethodChunk.length > 0) {
+    if (currentMethodWeight + block.weight > 92 && currentMethodChunk.length > 0) {
       methodPages.push(currentMethodChunk);
       currentMethodChunk = [];
       currentMethodWeight = 0;
@@ -241,7 +241,7 @@ export const Publish = () => {
       const titleWeight = 10 + Math.ceil(descLen / 50);
       blocks.push({ type: 'ev_title', weight: titleWeight, data: { ev, evIdx } });
       ev.images?.forEach((img: any) => {
-        blocks.push({ type: 'ev_img', weight: 32, data: img });
+        blocks.push({ type: 'ev_img', weight: 36, data: img });
       });
     });
     blocks.push({ type: 'evaluation', weight: 20, data: tc });
@@ -250,7 +250,7 @@ export const Publish = () => {
     let currentTcWeight = 0;
 
     blocks.forEach(block => {
-      if (currentTcWeight + block.weight > 82 && currentTcChunk.length > 0) {
+      if (currentTcWeight + block.weight > 92 && currentTcChunk.length > 0) {
         tcPages.push({ tcIndex: idx, blocks: currentTcChunk });
         currentTcChunk = [];
         currentTcWeight = 0;
@@ -579,7 +579,7 @@ export const Publish = () => {
                       if (block.type === 'ev_img') {
                         return (
                           <div key={bIdx} style={{ border: '1px solid #e2e8f0', padding: '4px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', marginBottom: '2px' }}>
-                            <img src={block.data.url} alt="증적" style={{ maxWidth: '100%', maxHeight: '220px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
+                            <img src={block.data.url} alt="증적" style={{ width: '100%', height: 'auto', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
                             <div style={{ fontSize: '8pt', marginTop: '4px', color: '#334155', fontWeight: 600 }}>{block.data.caption}</div>
                           </div>
                         );

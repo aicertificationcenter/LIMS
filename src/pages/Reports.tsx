@@ -589,7 +589,7 @@ export const Reports = () => {
                     <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleEnvDiagramUpload} />
                     <UploadCloud size={16} /> 구성도 이미지 선택
                   </label>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>※ PDF 인쇄 공간 최적화를 위해 가로사진(예: 16:9)을 권장합니다.</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>※ 최적의 PDF 출력을 위해 가로사진(16:9 비율) 크기가 최적입니다.</div>
                 </div>
               </div>
  
