@@ -286,6 +286,14 @@ export const Reports = () => {
     return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>데이터를 불러오는 중...</div>;
   }
 
+  // 재사용 가능한 섹션 제목 컴포넌트
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem' }}>
+      <div style={{ width: '4px', height: '20px', background: 'var(--kaic-navy)', borderRadius: '2px' }}></div>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{title}</h3>
+    </div>
+  );
+
   // 성적서 편집 상세 모드
   if (selectedTest) {
     return (
@@ -318,11 +326,9 @@ export const Reports = () => {
            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>시험번호: {selectedTest.testerBarcode || selectedTest.barcode}</p>
         </header>
 
-        {/* 0. 시험 결과 요약 입력 섹션 (신규) */}
-        <section className="card" style={{ gridColumn: '1 / -1', border: '2px solid #e2e8f0', background: '#fff' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.5rem', margin: 0, fontWeight: 800, color: '#1e293b', width: '100%', textAlign: 'center' }}>시 험 결 과 요 약</h3>
-          </div>
+        {/* 0. 시험 결과 요약 입력 섹션 */}
+        <section className="card" style={{ gridColumn: '1 / -1', border: '1px solid #cbd5e1', background: '#fff', padding: '1.5rem', borderRadius: '12px' }}>
+          <SectionHeader title="시험 결과 요약" />
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '2px solid #000', marginBottom: '2rem' }}>
             <div style={{ padding: '1rem', borderRight: '1px solid #000', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -352,13 +358,13 @@ export const Reports = () => {
             </select>
           </div>
 
-          <div style={{ border: '1px solid #cbd5e1', borderRadius: '4px', overflow: 'hidden' }}>
+          <div style={{ border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
             {tcResults.map((tc, idx) => (
-              <div key={idx} style={{ padding: '1.5rem', borderBottom: idx === tcResults.length - 1 ? 'none' : '1px solid #e2e8f0', display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111', flexShrink: 0, paddingTop: '10px' }}>
-                  [{idx + 1}]
+              <div key={idx} style={{ padding: '1rem 1.5rem', borderBottom: idx === tcResults.length - 1 ? 'none' : '1px solid #e2e8f0', display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--kaic-navy)', flexShrink: 0, paddingTop: '10px' }}>
+                  TC{idx + 1}
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', width: '80px', paddingTop: '12px' }}>목표 확인:</span>
                     <textarea 
@@ -392,10 +398,8 @@ export const Reports = () => {
             ))}
           </div>
 
-          <div style={{ marginTop: '3rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textDecoration: 'underline', color: '#1e293b', letterSpacing: '2px' }}>시 험 방 법</h2>
-            </div>
+          <div style={{ marginTop: '2rem', borderTop: '1px dashed #cbd5e1', paddingTop: '1.5rem' }}>
+            <SectionHeader title="시험방법" />
 
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000' }}>
@@ -473,11 +477,9 @@ export const Reports = () => {
             </p>
           </div>
 
-          {/* 0-1. 시험 환경 섹션 (신규) */}
-          <div style={{ marginTop: '3.5rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textDecoration: 'underline', color: '#1e293b', letterSpacing: '2px' }}>시 험 환 경</h2>
-            </div>
+          {/* 0-1. 시험 환경 섹션 */}
+          <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '2rem' }}>
+            <SectionHeader title="시험환경" />
 
             <div style={{ display: 'grid', gridTemplateColumns: '5.5fr 4.5fr', border: '1.5px solid #000' }}>
               {/* 왼쪽: 시험환경 구성도 */}
@@ -527,27 +529,25 @@ export const Reports = () => {
             </div>
 
             {/* 시험환경 설명 */}
-            <div style={{ marginTop: '2rem', border: '1.5px solid #000' }}>
-              <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b' }}>
+            <div style={{ marginTop: '1.25rem', border: '1.5px solid #000' }}>
+              <div style={{ background: '#f1f5f9', padding: '8px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>
                 시험환경 설명
               </div>
-              <div style={{ padding: '1.5rem', background: 'white' }}>
+              <div style={{ padding: '1rem', background: 'white' }}>
                 <textarea 
                   className="input-field" 
                   value={envDescription} 
                   onChange={e => setEnvDescription(e.target.value)} 
                   placeholder="시험환경 구성 및 주요 특징에 대한 상세 설명을 입력하세요..." 
-                  style={{ width: '100%', height: '120px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
+                  style={{ width: '100%', height: '100px', border: 'none', background: 'transparent', fontSize: '0.9rem', lineHeight: 1.5, resize: 'vertical' }}
                 />
               </div>
             </div>
           </div>
 
-          {/* 0-2. 시험 세부항목 및 방법 섹션 (신규) */}
-          <div style={{ marginTop: '3.5rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textDecoration: 'underline', color: '#1e293b', letterSpacing: '2px' }}>시험 세부항목 및 방법</h2>
-            </div>
+          {/* 0-2. 시험 세부항목 및 방법 섹션 */}
+          <div style={{ marginTop: '2.5rem', borderTop: '1px dashed #cbd5e1', paddingTop: '2rem' }}>
+            <SectionHeader title="시험 세부항목 및 방법" />
 
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000' }}>
@@ -565,7 +565,6 @@ export const Reports = () => {
                         TC{idx + 1}
                       </td>
                       <td style={{ border: '1px solid #000', padding: '12px', background: '#f8fafc', color: '#334155', verticalAlign: 'top' }}>
-                        {/* 상단 시험방법 테이블의 '시험규격(standard)' 필드와 연동됨 */}
                         <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: 1.5, minHeight: '60px' }}>
                           {tcMethods[idx]?.standard || '(상단 시험방법의 시험규격을 입력하면 자동 연동됩니다)'}
                         </div>
