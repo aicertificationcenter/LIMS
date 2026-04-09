@@ -182,7 +182,7 @@ export const Publish = () => {
   let currentMethodWeight = 0;
 
   const pushMethodBlock = (block: any) => {
-    if (currentMethodWeight + block.weight > 100 && currentMethodChunk.length > 0) {
+    if (currentMethodWeight + block.weight > 82 && currentMethodChunk.length > 0) {
       methodPages.push(currentMethodChunk);
       currentMethodChunk = [];
       currentMethodWeight = 0;
@@ -216,7 +216,7 @@ export const Publish = () => {
     pushMethodBlock({ type: 'tcDetailHeader', weight: 10, data: null });
     tcDetails.forEach((td, i) => {
       const textLen = (td.method || '').length + (td.procedure || '').length + (td.note || '').length;
-      let weight = 15 + Math.ceil(textLen / 60); 
+      let weight = 15 + Math.ceil(textLen / 50); 
       if (weight > 80) weight = 80;
       pushMethodBlock({ type: 'tcDetailItem', weight, data: { td, original: tcMethods[i], index: i } });
     });
@@ -234,9 +234,11 @@ export const Publish = () => {
     blocks.push({ type: 'summary', weight: 12, data: tc });
 
     tc.evidences?.slice(0, tc.evidenceCount).forEach((ev: any, evIdx: number) => {
-      blocks.push({ type: 'ev_title', weight: 10, data: { ev, evIdx } });
+      const descLen = (ev.description || '').length;
+      const titleWeight = 10 + Math.ceil(descLen / 50);
+      blocks.push({ type: 'ev_title', weight: titleWeight, data: { ev, evIdx } });
       ev.images?.forEach((img: any) => {
-        blocks.push({ type: 'ev_img', weight: 26, data: img });
+        blocks.push({ type: 'ev_img', weight: 32, data: img });
       });
     });
     blocks.push({ type: 'evaluation', weight: 20, data: tc });
@@ -245,7 +247,7 @@ export const Publish = () => {
     let currentTcWeight = 0;
 
     blocks.forEach(block => {
-      if (currentTcWeight + block.weight > 100 && currentTcChunk.length > 0) {
+      if (currentTcWeight + block.weight > 82 && currentTcChunk.length > 0) {
         tcPages.push({ tcIndex: idx, blocks: currentTcChunk });
         currentTcChunk = [];
         currentTcWeight = 0;
@@ -266,7 +268,7 @@ export const Publish = () => {
         <div className="outer-border" style={{ position: 'absolute', top: '10mm', left: '10mm', right: '10mm', bottom: '10mm', border: '0.3pt solid #000', pointerEvents: 'none' }}></div>
         <img src="/Back.png" className="watermark" alt="" style={{ position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '120mm', opacity: 0.08, zIndex: 0, pointerEvents: 'none' }} />
 
-        <div className="document-content" style={{ padding: '15mm 20mm', display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', zIndex: 1 }}>
+        <div className="document-content" style={{ padding: '12mm 15mm', display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1.5pt solid black', paddingBottom: '10px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <img src="/kaic-logo.png" alt="KAIC" style={{ height: '30px' }} />
@@ -527,7 +529,7 @@ export const Publish = () => {
                       if (block.type === 'ev_img') {
                         return (
                           <div key={bIdx} style={{ border: '1px solid #e2e8f0', padding: '4px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', marginBottom: '2px' }}>
-                            <img src={block.data.url} alt="증적" style={{ maxWidth: '100%', maxHeight: '250px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
+                            <img src={block.data.url} alt="증적" style={{ maxWidth: '100%', maxHeight: '220px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
                             <div style={{ fontSize: '8pt', marginTop: '4px', color: '#334155', fontWeight: 600 }}>{block.data.caption}</div>
                           </div>
                         );
