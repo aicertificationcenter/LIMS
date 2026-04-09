@@ -191,9 +191,10 @@ export const Publish = () => {
     currentMethodWeight += block.weight;
   };
 
-  // [블록 A: 기본 시험방법 (원문)]
-  if (selectedTest?.testMethod) {
-    pushMethodBlock({ type: 'testMethodSrc', weight: 15, data: selectedTest.testMethod });
+
+    // [블록 A: 시험 세부항목 및 방법 테이블 (기본 개요 대체)]
+  if (tcMethods && tcMethods.length > 0) {
+    pushMethodBlock({ type: 'tcMethodsTable', weight: Math.min(25 + tcMethods.length * 8, 80), data: { methods: tcMethods, product: selectedTest?.testProduct || '(나의시험에서 입력한 품목명이 자동 연동됩니다)' } });
   }
 
   // [블록 B: 시험환경]
@@ -201,10 +202,6 @@ export const Publish = () => {
     pushMethodBlock({ type: 'envDiagram', weight: envDiagramUrl ? 40 : 25, data: { envDiagramUrl, pcSpec, envDescription } });
   }
 
-  // [블록 C: 시험 세부항목 및 방법 테이블]
-  if (tcMethods && tcMethods.length > 0) {
-    pushMethodBlock({ type: 'tcMethodsTable', weight: Math.min(20 + tcMethods.length * 6, 80), data: tcMethods });
-  }
 
   // [블록 D: 시험장 환경 상세 (다중사진과 설명)]
   if (venueImages.slice(0, venueImageCount).some((v:any) => v.url)) {
@@ -230,6 +227,7 @@ export const Publish = () => {
   const tcPages: any[] = [];
   tcOutputs.forEach((tc, idx) => {
     const blocks: any[] = [];
+    blocks.push({ type: 'tc_objective', weight: 15, data: { purpose: tcDetails[idx]?.method, standard: tcMethods[idx]?.standard } });
     blocks.push({ type: 'metric', weight: tc.metricFormulaImg ? 20 : 12, data: tc });
     blocks.push({ type: 'summary', weight: 12, data: tc });
 
@@ -369,14 +367,6 @@ export const Publish = () => {
               <EuljiPageWrapper key={`method-${cIdx}`} pageNum={++currentPageCount} sectionMainTitle={cIdx === 0 ? "시험방법" : null} subTitle={cIdx === 0 ? null : "시험방법 (계속)"} isLastPage={false}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {chunk.map((block: any, bIdx: number) => {
-                    if (block.type === 'testMethodSrc') {
-                      return (
-                        <div key={bIdx}>
-                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt' }}>▶ 일반 시험방법 (개요)</div>
-                          <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data}</div>
-                        </div>
-                      );
-                    }
                     if (block.type === 'envDiagram') {
                        return (
                         <div key={bIdx} style={{ border: '1px solid black', padding: '8px' }}>
@@ -402,27 +392,35 @@ export const Publish = () => {
                     if (block.type === 'tcMethodsTable') {
                       return (
                         <div key={bIdx}>
-                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt' }}>▶ 시험 세부항목 및 방법</div>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black', fontSize: '8.5pt' }}>
                             <thead style={{ background: '#f1f5f9' }}>
                               <tr>
-                                <th style={{ border: '1px solid black', padding: '6px' }}>TC 번호</th>
-                                <th style={{ border: '1px solid black', padding: '6px' }}>시험대상 항목</th>
-                                <th style={{ border: '1px solid black', padding: '6px' }}>시험방법 부문</th>
-                                <th style={{ border: '1px solid black', padding: '6px' }}>시험규격</th>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '25%' }}>시험대상품목의 명칭</th>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '35%' }}>시험대상 항목</th>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '20%' }}>시험대상 품목의 형태</th>
+                                <th style={{ border: '1px solid black', padding: '6px', width: '20%' }}>시험규격</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {block.data.map((tm: any, tIdx: number) => (
+                              {block.data.methods.map((tm: any, tIdx: number) => (
                                 <tr key={tIdx}>
-                                  <td style={{ border: '1px solid black', padding: '4px' }}>TC {tIdx+1}</td>
-                                  <td style={{ border: '1px solid black', padding: '4px' }}>{tm.category || '-'}</td>
-                                  <td style={{ border: '1px solid black', padding: '4px' }}>{tm.type || '-'}</td>
-                                  <td style={{ border: '1px solid black', padding: '4px', textAlign: 'left' }}>{tm.standard || '-'}</td>
+                                  {tIdx === 0 && (
+                                    <td rowSpan={block.data.methods.length} style={{ border: '1px solid black', padding: '6px', fontWeight: 600, color: 'var(--kaic-blue)', wordBreak: 'break-all' }}>
+                                      {block.data.product}
+                                    </td>
+                                  )}
+                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left' }}>
+                                    <span style={{ fontWeight: 800 }}>[TC{tIdx+1}]</span> {tm.category || '-'}
+                                  </td>
+                                  <td style={{ border: '1px solid black', padding: '6px' }}>{tm.type || '-'}</td>
+                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left' }}>{tm.standard || '-'}</td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
+                          <div style={{ marginTop: '6px', fontSize: '8pt', color: '#475569', lineHeight: 1.4 }}>
+                            ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.
+                          </div>
                         </div>
                       );
                     }
@@ -498,6 +496,20 @@ export const Publish = () => {
                     )}
 
                     {pageChunk.blocks.map((block: any, bIdx: number) => {
+                      if (block.type === 'tc_objective') {
+                        return (
+                          <div key={bIdx} style={{ background: '#f8fafc', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '4px', marginBottom: '2px' }}>
+                            <div style={{ display: 'flex', marginBottom: '6px' }}>
+                              <span style={{ fontWeight: 800, width: '50px', color: '#334155', fontSize: '9pt' }}>1) 목적 :</span>
+                              <span style={{ flex: 1, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '9pt' }}>{block.data.purpose || '-'}</span>
+                            </div>
+                            <div style={{ display: 'flex' }}>
+                              <span style={{ fontWeight: 800, width: '50px', color: '#334155', fontSize: '9pt' }}>2) 규격 :</span>
+                              <span style={{ flex: 1, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '9pt' }}>{block.data.standard || '-'}</span>
+                            </div>
+                          </div>
+                        );
+                      }
                       if (block.type === 'metric') {
                         return (
                           <div key={bIdx} style={{ border: '1px solid black', padding: '6px', background: '#fff' }}>
