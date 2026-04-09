@@ -106,7 +106,6 @@ export const Publish = () => {
               table { width: 100%; border-collapse: collapse; margin: 10px 0; }
               th, td { border: 0.5pt solid black; padding: 6px; text-align: center; font-size: 9pt; color: black; }
               .header-table th, .header-table td { font-size: 8pt; padding: 4px; }
-              img.evidence-img { max-width: 100%; max-height: 150px; object-fit: contain; }
             </style>
         </head>
         <body>
@@ -292,11 +291,11 @@ export const Publish = () => {
                           <div style={{ fontSize: '8.5pt', marginBottom: '10px', whiteSpace: 'pre-wrap', color: '#334155' }}>
                             {ev.description}
                           </div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', marginTop: '10px' }}>
                             {ev.images?.map((img: any, iIdx: number) => (
-                              <div key={iIdx} style={{ border: '1px solid #e2e8f0', padding: '4px', textAlign: 'center', maxWidth: '48%' }}>
-                                <img src={img.url} alt="증적" className="evidence-img" />
-                                <div style={{ fontSize: '8pt', marginTop: '4px', color: '#475569' }}>{img.caption}</div>
+                              <div key={iIdx} style={{ border: '1px solid #e2e8f0', padding: '10px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', pageBreakInside: 'avoid' }}>
+                                <img src={img.url} alt="증적" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
+                                <div style={{ fontSize: '9pt', marginTop: '8px', color: '#334155', fontWeight: 600 }}>{img.caption}</div>
                               </div>
                             ))}
                           </div>
