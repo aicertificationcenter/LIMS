@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { Download, FileText, Trash2, UploadCloud, FileType } from 'lucide-react';
+import { Download, FileText, Trash2, UploadCloud, FileType, Image as ImageIcon, Monitor, Save } from 'lucide-react';
 
 export const Reports = () => {
   // 인증 정보
@@ -25,6 +25,10 @@ export const Reports = () => {
   const [tcCount, setTcCount] = useState(1);
   const [tcResults, setTcResults] = useState<any[]>([]);
   const [tcMethods, setTcMethods] = useState<any[]>([]);
+
+  // --- 시험 환경(Environment) 상태 관리 ---
+  const [envDiagramUrl, setEnvDiagramUrl] = useState<string | null>(null);
+  const [pcSpec, setPcSpec] = useState('');
 
   // 선택된 시험이 바뀔 때 기존 TC 데이터 로드
   useEffect(() => {
@@ -44,14 +48,22 @@ export const Reports = () => {
         } else {
           setTcMethods([{ category: '', type: '', standard: '' }]);
         }
+
+        // 시험환경 데이터 로드
+        setEnvDiagramUrl(extraData.envDiagramUrl || null);
+        setPcSpec(extraData.pcSpec || '');
       } catch (e) {
         setTcResults([{ goal: '', result: '' }]);
         setTcMethods([{ category: '', type: '', standard: '' }]);
+        setEnvDiagramUrl(null);
+        setPcSpec('');
         setTcCount(1);
       }
     } else {
       setTcResults([{ goal: '', result: '' }]);
       setTcMethods([{ category: '', type: '', standard: '' }]);
+      setEnvDiagramUrl(null);
+      setPcSpec('');
       setTcCount(1);
     }
   }, [selectedTest?.id, selectedId]); // selectedId change also triggers reload
@@ -215,17 +227,31 @@ export const Reports = () => {
       }
       extraData.tcResults = tcResults;
       extraData.tcMethods = tcMethods;
+      extraData.envDiagramUrl = envDiagramUrl;
+      extraData.pcSpec = pcSpec;
 
       await fetch('/api/receptions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, extra: JSON.stringify(extraData) })
       });
-      alert('시험 결과 및 방법 정보가 저장되었습니다.');
+      alert('시험 정보(결과, 방법, 환경)가 저장되었습니다.');
       fetchMyTasks();
     } catch (err: any) {
       alert(err.message);
     }
+  };
+
+  /** 시험환경 구성도 이미지 업로드 핸들러 */
+  const handleEnvDiagramUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setEnvDiagramUrl(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   if (loading) {
@@ -419,13 +445,67 @@ export const Reports = () => {
             </p>
           </div>
 
+          {/* 0-1. 시험 환경 섹션 (신규) */}
+          <div style={{ marginTop: '3.5rem', borderTop: '2px solid #e2e8f0', paddingTop: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 900, textDecoration: 'underline', color: '#1e293b', letterSpacing: '2px' }}>시 험 환 경</h2>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '5.5fr 4.5fr', border: '1.5px solid #000' }}>
+              {/* 왼쪽: 시험환경 구성도 */}
+              <div style={{ borderRight: '1.5px solid #000', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <ImageIcon size={20} /> 시험환경 구성도
+                </div>
+                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'white' }}>
+                  {envDiagramUrl ? (
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '500px', marginBottom: '1rem' }}>
+                      <img src={envDiagramUrl} alt="시험환경 구성도" style={{ width: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                      <button 
+                         onClick={() => setEnvDiagramUrl(null)} 
+                         style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: 'white', border: 'none', width: '24px', height: '24px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                      >
+                         ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', height: '200px', background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#64748b', marginBottom: '1rem' }}>
+                      <ImageIcon size={48} style={{ opacity: 0.2, marginBottom: '10px' }} />
+                      <span style={{ fontSize: '0.9rem' }}>구성도 이미지를 업로드하세요</span>
+                    </div>
+                  )}
+                  <label className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', padding: '8px 16px' }}>
+                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleEnvDiagramUpload} />
+                    <UploadCloud size={16} /> 구성도 이미지 선택
+                  </label>
+                </div>
+              </div>
+
+              {/* 오른쪽: 시험용 PC 규격 */}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: '#f1f5f9', padding: '10px', borderBottom: '1.5px solid #000', textAlign: 'center', fontWeight: 800, fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Monitor size={20} /> 시험용 PC 규격
+                </div>
+                <div style={{ padding: '1.5rem', flex: 1, background: 'white' }}>
+                  <textarea 
+                    className="input-field" 
+                    value={pcSpec} 
+                    onChange={e => setPcSpec(e.target.value)} 
+                    placeholder="○ Client&#10;- CPU : Intel i7...&#10;- RAM : 32GB...&#10;&#10;○ 진동센서&#10;- Model : ..." 
+                    style={{ width: '100%', height: '300px', border: 'none', background: 'transparent', fontSize: '0.95rem', lineHeight: 1.6, resize: 'none' }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
             <button 
               className="btn btn-primary" 
               onClick={handleSaveTCResults}
-              style={{ padding: '1rem 4rem', fontSize: '1.2rem', fontWeight: 800, background: 'var(--kaic-navy)', borderRadius: '40px', boxShadow: '0 4px 12px rgba(29, 42, 120, 0.3)' }}
+              style={{ padding: '1rem 4rem', fontSize: '1.2rem', fontWeight: 800, background: 'var(--kaic-navy)', borderRadius: '40px', boxShadow: '0 4px 12px rgba(29, 42, 120, 0.3)', display: 'flex', alignItems: 'center', gap: '12px' }}
             >
-              시험 결과 및 방법 저장 (Save All)
+              <Save size={24} /> 모든 시험 정보 저장 (Save All Information)
             </button>
           </div>
         </section>
