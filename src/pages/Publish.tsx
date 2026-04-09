@@ -64,24 +64,25 @@ export const Publish = () => {
       return;
     }
 
-    // DRAFT 워터마크 추가 처리
     const draftHtml = isPreview ? '<div class="draft-badge">DRAFT</div>' : '';
+    const docTitle = selectedTest?.barcode || '시험성적서';
 
     printWindow.document.write(`
       <html>
         <head>
-            <title>시험성적서 (을지) 인쇄</title>
+            <title>${docTitle}</title>
             <style>
               @page { size: A4; margin: 0; }
               body { margin: 0; padding: 0; font-family: "Malgun Gothic", dotum, sans-serif; -webkit-print-color-adjust: exact; color: black; background: white; }
               .document-frame {
                 position: relative;
                 width: 210mm;
-                min-height: 297mm;
+                height: 297mm; /* 완전히 넘치지 않게 고정 높이 */
                 box-sizing: border-box;
                 background: white;
                 page-break-after: always;
                 page-break-inside: avoid;
+                overflow: hidden;
               }
               .outer-border {
                 position: absolute;
@@ -136,7 +137,7 @@ export const Publish = () => {
       await fetch('/api/receptions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId, status: 'APPROVAL_REQUESTED' })
+        body: JSON.stringify({ id: selectedId, status: 'COMPLETED' })
       });
       alert('결재요청이 완료되었습니다.\n[참고: 결재 완료 후 출력 기능 활성화]');
       fetchMyTasks();
@@ -148,18 +149,74 @@ export const Publish = () => {
 
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}>데이터 로딩중...</div>;
 
-  // 갑지(1) + 요약(1) + 방법(1) + TC결과들(N)
-  const totalPages = 3 + (tcOutputs.length || 0);
+  // --- 페이지 네이션 엔진 ---
+  // 1. 시험방법(Methods) 쪼개기 (가중치 제한: 100)
+  const methodPages = [];
+  let currentMethodChunk: any[] = [];
+  let currentMethodWeight = 0;
+
+  tcDetails.forEach((td, i) => {
+    // 텍스트 길이에 비례해 가중치를 산정하되 기본 20 보장
+    const textLen = (td.method || '').length + (td.procedure || '').length + (td.note || '').length;
+    let weight = 20 + Math.ceil(textLen / 50); 
+    if (weight > 100) weight = 90; // 한 블럭이 페이지를 다 먹을 경우 최대치 제한
+
+    if (currentMethodWeight + weight > 100 && currentMethodChunk.length > 0) {
+      methodPages.push(currentMethodChunk);
+      currentMethodChunk = [];
+      currentMethodWeight = 0;
+    }
+    currentMethodChunk.push({ data: td, index: i, originalMethod: tcMethods[i] });
+    currentMethodWeight += weight;
+  });
+  if (currentMethodChunk.length > 0) {
+    methodPages.push(currentMethodChunk);
+  }
+
+  // 2. TC 증적결과(Outputs) 쪼개기 (가중치 제한: 100)
+  const tcPages: any[] = [];
+  tcOutputs.forEach((tc, idx) => {
+    const blocks: any[] = [];
+    blocks.push({ type: 'metric', weight: tc.metricFormulaImg ? 25 : 15, data: tc });
+    blocks.push({ type: 'summary', weight: 15, data: tc });
+
+    // 증적 쪼개기
+    tc.evidences?.slice(0, tc.evidenceCount).forEach((ev: any, evIdx: number) => {
+      blocks.push({ type: 'ev_title', weight: 15, data: { ev, evIdx } });
+      ev.images?.forEach((img: any) => {
+        blocks.push({ type: 'ev_img', weight: 45, data: img });
+      });
+    });
+    blocks.push({ type: 'evaluation', weight: 25, data: tc });
+
+    let currentTcChunk: any[] = [];
+    let currentTcWeight = 0;
+
+    blocks.forEach(block => {
+      if (currentTcWeight + block.weight > 100 && currentTcChunk.length > 0) {
+        tcPages.push({ tcIndex: idx, blocks: currentTcChunk });
+        currentTcChunk = [];
+        currentTcWeight = 0;
+      }
+      currentTcChunk.push(block);
+      currentTcWeight += block.weight;
+    });
+    if (currentTcChunk.length > 0) {
+      tcPages.push({ tcIndex: idx, blocks: currentTcChunk });
+    }
+  });
+
+  // 총 페이지 = 1(갑지) + 1(요약) + methodPages.length + tcPages.length
+  const totalPages = 1 + 1 + methodPages.length + tcPages.length;
 
   // 공통 A4 페이지 래퍼 컴포넌트
   const EuljiPageWrapper = ({ pageNum, title, children, isLastPage }: any) => {
     return (
-      <div className="document-frame" style={{ width: '210mm', minHeight: '297mm', position: 'relative', background: 'white', boxSizing: 'border-box', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', margin: '0 auto 2rem auto' }}>
+      <div className="document-frame" style={{ width: '210mm', height: '297mm', position: 'relative', background: 'white', boxSizing: 'border-box', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', margin: '0 auto 2rem auto', overflow: 'hidden', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
         <div className="outer-border" style={{ position: 'absolute', top: '10mm', left: '10mm', right: '10mm', bottom: '10mm', border: '0.3pt solid #000', pointerEvents: 'none' }}></div>
         <img src="/Back.png" className="watermark" alt="" style={{ position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '120mm', opacity: 0.08, zIndex: 0, pointerEvents: 'none' }} />
 
         <div className="document-content" style={{ padding: '20mm', display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', zIndex: 1 }}>
-
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1.5pt solid black', paddingBottom: '10px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -173,21 +230,21 @@ export const Publish = () => {
 
           {/* Section Title */}
           <div style={{ marginBottom: '15px', color: '#1e293b' }}>
-             <span style={{ fontSize: '13pt', fontWeight: 800, padding: '4px 10px', background: '#e2e8f0', borderRadius: '4px' }}>{title}</span>
+             <span style={{ fontSize: '12pt', fontWeight: 800, padding: '4px 10px', background: '#e2e8f0', borderRadius: '4px' }}>{title}</span>
           </div>
 
           {/* Main Content */}
-          <div style={{ flex: 1, fontSize: '9pt', color: 'black', position: 'relative' }}>
+          <div style={{ flex: 1, fontSize: '8.5pt', color: 'black', position: 'relative', overflow: 'hidden' }}>
             {children}
             {isLastPage && (
-              <div style={{ textAlign: 'right', fontWeight: 800, fontSize: '10pt', marginTop: '30px' }}>
+              <div style={{ position: 'absolute', bottom: '0px', right: '0px', fontWeight: 800, fontSize: '10pt', paddingRight: '10px' }}>
                 - 끝 -
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div style={{ textAlign: 'right', fontSize: '8pt', fontWeight: 700, marginTop: '20px' }}>
+          <div style={{ textAlign: 'right', fontSize: '8pt', fontWeight: 700, marginTop: '10px', borderTop: '0.5pt solid #cbd5e1', paddingTop: '10px' }}>
             (KAIC-F-7.8-01(을))
           </div>
         </div>
@@ -196,6 +253,8 @@ export const Publish = () => {
   };
 
   if (selectedTest) {
+    let currentPageCount = 1; // 1은 갑지
+
     return (
       <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
         <header className="card" style={{ gridColumn: '1 / -1', background: 'var(--kaic-navy)', color: 'white', padding: '1.5rem 2rem' }}>
@@ -210,11 +269,10 @@ export const Publish = () => {
         </header>
 
         <section style={{ gridColumn: '1 / -1', background: '#94a3b8', padding: '3rem 1rem', borderRadius: '12px' }}>
-
           <div id="report-pdf-preview" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-            {/* Page 1: 시험결과 요약 */}
-            <EuljiPageWrapper pageNum={2} title="시험결과 요약">
+            {/* Page 2: 시험결과 요약 */}
+            <EuljiPageWrapper pageNum={++currentPageCount} title="시험결과 요약" isLastPage={false}>
               <div style={{ marginBottom: '15px', fontSize: '10pt' }}>
                 <div style={{ marginBottom: '5px' }}><strong>• 담당자 :</strong> {user?.name || '-'}</div>
               </div>
@@ -230,8 +288,8 @@ export const Publish = () => {
                   {tcResults.map((r, i) => (
                     <tr key={i}>
                       <td style={{ border: '1px solid black', padding: '10px', fontWeight: 600 }}>TC {i+1}</td>
-                      <td style={{ border: '1px solid black', padding: '10px' }}>{r.goal || '-'}</td>
-                      <td style={{ border: '1px solid black', padding: '10px' }}>{r.result || '-'}</td>
+                      <td style={{ border: '1px solid black', padding: '10px', textAlign: 'left' }}>{r.goal || '-'}</td>
+                      <td style={{ border: '1px solid black', padding: '10px', textAlign: 'left' }}>{r.result || '-'}</td>
                     </tr>
                   ))}
                   {tcResults.length === 0 && (
@@ -241,109 +299,109 @@ export const Publish = () => {
               </table>
             </EuljiPageWrapper>
 
-            {/* Page 2: 시험방법 */}
-            <EuljiPageWrapper pageNum={3} title="시험방법 (시험항목별 세부방법)" isLastPage={tcOutputs.length === 0}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {tcDetails.map((td, i) => (
-                  <div key={i} style={{ border: '1px solid #cbd5e1', padding: '15px', borderRadius: '4px', background: '#f8fafc' }}>
-                    <div style={{ fontWeight: 800, marginBottom: '10px', fontSize: '10pt', color: 'var(--kaic-blue)' }}>[TC {i+1}] {tcMethods[i]?.category || ''}</div>
-
-                    <div style={{ display: 'flex', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 700, width: '70px' }}>목 적 :</span>
-                      <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{td.method || '-'}</span>
-                    </div>
-
-                    <div style={{ display: 'flex', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 700, width: '70px' }}>규 격 :</span>
-                      <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{tcMethods[i]?.standard || '-'}</span>
-                    </div>
-
-                    <div style={{ display: 'flex', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 700, width: '70px' }}>방 법 :</span>
-                      <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{td.procedure || '-'}</span>
-                    </div>
-
-                    <div style={{ display: 'flex' }}>
-                      <span style={{ fontWeight: 700, width: '70px' }}>특이사항 :</span>
-                      <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{td.note || '-'}</span>
-                    </div>
-                  </div>
-                ))}
-                {tcDetails.length === 0 && <div>데이터가 없습니다.</div>}
-              </div>
-            </EuljiPageWrapper>
-
-            {/* Page 3 ~ X : TC별 시험결과 */}
-            {tcOutputs.map((out, idx) => (
-              <EuljiPageWrapper key={idx} pageNum={idx + 4} isLastPage={idx === tcOutputs.length - 1} title={`시험결과 (TC ${idx + 1} - ${tcMethods[idx]?.category || ''})`}>
+            {/* Methods Pages */}
+            {methodPages.map((chunk, cIdx) => (
+              <EuljiPageWrapper key={`method-${cIdx}`} pageNum={++currentPageCount} title="시험방법 (시험항목별 세부방법)" isLastPage={false}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-
-                  <div style={{ border: '1px solid black', padding: '12px', background: '#fff' }}>
-                    <div style={{ fontWeight: 800, marginBottom: '8px', fontSize: '10pt' }}>▶ 시험지표</div>
-                    <div style={{ marginBottom: '6px' }}>1) 평가지표 : {out.metricName || '-'}</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                      <span style={{ marginRight: '6px' }}>2) 평가산식 : </span>
-                      {out.metricFormulaImg ? (
-                        <img src={out.metricFormulaImg} alt="산식" style={{ maxHeight: '60px' }} />
-                      ) : '-'}
+                  {chunk.map((item: any, i: number) => (
+                    <div key={i} style={{ border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px', background: '#f8fafc' }}>
+                      <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9pt', color: 'var(--kaic-blue)' }}>[TC {item.index+1}] {item.originalMethod?.category || ''}</div>
+                      <div style={{ display: 'flex', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 700, width: '60px' }}>목 적 :</span>
+                        <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{item.data.method || '-'}</span>
+                      </div>
+                      <div style={{ display: 'flex', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 700, width: '60px' }}>규 격 :</span>
+                        <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{item.originalMethod?.standard || '-'}</span>
+                      </div>
+                      <div style={{ display: 'flex', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 700, width: '60px' }}>방 법 :</span>
+                        <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{item.data.procedure || '-'}</span>
+                      </div>
+                      <div style={{ display: 'flex' }}>
+                        <span style={{ fontWeight: 700, width: '60px' }}>특이사항 :</span>
+                        <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{item.data.note || '-'}</span>
+                      </div>
                     </div>
-                  </div>
-
-                  <div style={{ border: '1px solid black', padding: '12px', background: '#fff' }}>
-                    <div style={{ fontWeight: 800, marginBottom: '8px', fontSize: '10pt' }}>▶ 시험결과 (요약)</div>
-                    <div style={{ whiteSpace: 'pre-wrap' }}>{out.resultSummary || '-'}</div>
-                  </div>
-
-                  <div style={{ border: '1px solid black', padding: '12px', background: '#fff' }}>
-                    <div style={{ fontWeight: 800, marginBottom: '12px', fontSize: '10pt' }}>▶ 증적 목록</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                      {out.evidences?.slice(0, out.evidenceCount).map((ev: any, evIdx: number) => (
-                        <div key={evIdx} style={{ border: '1px dashed #cbd5e1', padding: '10px' }}>
-                          <div style={{ fontWeight: 700, marginBottom: '6px', color: 'var(--kaic-blue)' }}>
-                            세부시험 {evIdx + 1} : {ev.title || '-'}
-                          </div>
-                          <div style={{ fontSize: '8.5pt', marginBottom: '10px', whiteSpace: 'pre-wrap', color: '#334155' }}>
-                            {ev.description}
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', marginTop: '10px' }}>
-                            {ev.images?.map((img: any, iIdx: number) => (
-                              <div key={iIdx} style={{ border: '1px solid #e2e8f0', padding: '10px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', pageBreakInside: 'avoid' }}>
-                                <img src={img.url} alt="증적" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
-                                <div style={{ fontSize: '9pt', marginTop: '8px', color: '#334155', fontWeight: 600 }}>{img.caption}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '5px' }}>
-                     <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '10pt' }}>▶ 성능 평가 결과</div>
-                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1.5px solid black' }}>
-                        <thead style={{ background: '#f1f5f9' }}>
-                          <tr>
-                            <th style={{ border: '1px solid black', padding: '8px' }}>성능지표</th>
-                            <th style={{ border: '1px solid black', padding: '8px' }}>성능목표</th>
-                            <th style={{ border: '1px solid black', padding: '8px' }}>시험결과</th>
-                            <th style={{ border: '1px solid black', padding: '8px' }}>평가</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{out.metricName || '-'}</td>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{out.metricTarget || '-'}</td>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{out.metricResult || '-'}</td>
-                            <td style={{ border: '1px solid black', padding: '8px', fontWeight: 800 }}>{out.metricEvaluation || '-'}</td>
-                          </tr>
-                        </tbody>
-                     </table>
-                  </div>
-
+                  ))}
                 </div>
               </EuljiPageWrapper>
             ))}
 
+            {/* TC Result Pages */}
+            {tcPages.map((pageChunk, pIdx) => {
+              const isAbsoluteLast = (pIdx === tcPages.length - 1);
+              return (
+                <EuljiPageWrapper key={`tc-${pIdx}`} pageNum={++currentPageCount} title={`시험결과 (TC ${pageChunk.tcIndex + 1} - ${tcMethods[pageChunk.tcIndex]?.category || ''})`} isLastPage={isAbsoluteLast}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {pageChunk.blocks.map((block: any, bIdx: number) => {
+                      if (block.type === 'metric') {
+                        return (
+                          <div key={bIdx} style={{ border: '1px solid black', padding: '8px', background: '#fff' }}>
+                            <div style={{ fontWeight: 800, marginBottom: '4px', fontSize: '9pt' }}>▶ 시험지표</div>
+                            <div style={{ marginBottom: '4px' }}>1) 평가지표 : {block.data.metricName || '-'}</div>
+                            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                              <span style={{ marginRight: '6px' }}>2) 평가산식 : </span>
+                              {block.data.metricFormulaImg ? <img src={block.data.metricFormulaImg} alt="산식" style={{ maxHeight: '45px' }} /> : '-'}
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (block.type === 'summary') {
+                        return (
+                          <div key={bIdx} style={{ border: '1px solid black', padding: '8px', background: '#fff' }}>
+                            <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9pt' }}>▶ 시험결과 (요약)</div>
+                            <div style={{ whiteSpace: 'pre-wrap' }}>{block.data.resultSummary || '-'}</div>
+                          </div>
+                        );
+                      }
+                      if (block.type === 'ev_title') {
+                        return (
+                          <div key={bIdx} style={{ fontWeight: 700, marginTop: '5px', padding: '5px', color: 'var(--kaic-blue)', background: '#f1f5f9', borderLeft: '3px solid var(--kaic-blue)' }}>
+                            세부시험 {block.data.evIdx + 1} : {block.data.ev.title || '-'}
+                            {block.data.ev.description && <div style={{ fontSize: '8pt', marginTop: '4px', color: '#475569', fontWeight: 400, whiteSpace: 'pre-wrap' }}>{block.data.ev.description}</div>}
+                          </div>
+                        );
+                      }
+                      if (block.type === 'ev_img') {
+                        return (
+                          <div key={bIdx} style={{ border: '1px solid #e2e8f0', padding: '8px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', marginBottom: '5px' }}>
+                            <img src={block.data.url} alt="증적" style={{ maxWidth: '100%', height: '320px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
+                            <div style={{ fontSize: '8.5pt', marginTop: '6px', color: '#334155', fontWeight: 600 }}>{block.data.caption}</div>
+                          </div>
+                        );
+                      }
+                      if (block.type === 'evaluation') {
+                        return (
+                          <div key={bIdx} style={{ marginTop: '5px' }}>
+                             <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9pt' }}>▶ 성능 평가 결과</div>
+                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black' }}>
+                                <thead style={{ background: '#f1f5f9' }}>
+                                  <tr>
+                                    <th style={{ border: '1px solid black', padding: '6px' }}>성능지표</th>
+                                    <th style={{ border: '1px solid black', padding: '6px' }}>성능목표</th>
+                                    <th style={{ border: '1px solid black', padding: '6px' }}>시험결과</th>
+                                    <th style={{ border: '1px solid black', padding: '6px' }}>평가</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td style={{ border: '1px solid black', padding: '6px' }}>{block.data.metricName || '-'}</td>
+                                    <td style={{ border: '1px solid black', padding: '6px' }}>{block.data.metricTarget || '-'}</td>
+                                    <td style={{ border: '1px solid black', padding: '6px' }}>{block.data.metricResult || '-'}</td>
+                                    <td style={{ border: '1px solid black', padding: '6px', fontWeight: 800 }}>{block.data.metricEvaluation || '-'}</td>
+                                  </tr>
+                                </tbody>
+                             </table>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                </EuljiPageWrapper>
+              );
+            })}
           </div>
 
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
@@ -371,7 +429,6 @@ export const Publish = () => {
               <Printer size={20} /> 출력하기 (Print Final)
             </button>
           </div>
-
         </section>
       </main>
     );
