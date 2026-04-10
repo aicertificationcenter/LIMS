@@ -322,22 +322,28 @@ export const Stats = () => {
               <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px' }}>
                 {viewingTest.target || viewingTest.content || 'N/A'}
               </div>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '8px' }}>기타 및 상담 사항</h3>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px' }}>
-                {viewingTest.extra || viewingTest.consultation || 'N/A'}
-              </div>
-              
-              {viewingTest.status === 'COMPLETED' && viewingTest.reportPdfUrl && (
-                <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd', textAlign: 'center' }}>
-                  <h4 style={{ margin: '0 0 1rem 0', color: '#0369a1' }}>최종 결과 리포트</h4>
-                  <button 
-                    onClick={() => { const win = window.open(); win?.document.write(`<html><body style="margin:0"><iframe src="${viewingTest.reportPdfUrl}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe></body></html>`); }} 
-                    className="btn btn-primary" 
-                    style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                  >
-                    <FileText size={18} /> 발행 성적서 (PDF) 확인하기
-                  </button>
+              {viewingTest.status === 'COMPLETED' ? (
+                <div style={{ marginTop: '1.5rem', padding: '2rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd', textAlign: 'center' }}>
+                  <div style={{ color: '#0369a1', fontWeight: 800, fontSize: '1.2rem', marginBottom: '1rem' }}>해당 건의 시험이 모두 완료되었습니다.</div>
+                  {viewingTest.reportPdfUrl ? (
+                    <button 
+                      onClick={() => window.open(viewingTest.reportPdfUrl, '_blank')}
+                      className="btn btn-primary" 
+                      style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontSize: '1.1rem', borderRadius: '8px' }}
+                    >
+                      <FileText size={20} /> 최종 성적서 확인하기
+                    </button>
+                  ) : (
+                    <div style={{ color: '#ef4444', fontWeight: 600 }}>아직 등록된 성적서가 없습니다.</div>
+                  )}
                 </div>
+              ) : (
+                <>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '8px' }}>기타 및 상담 사항</h3>
+                  <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px' }}>
+                    {viewingTest.extra || viewingTest.consultation || 'N/A'}
+                  </div>
+                </>
               )}
             </div>
           </div>
