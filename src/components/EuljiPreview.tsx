@@ -154,6 +154,7 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   const allTotalPages = actualTotalPages + 1; 
   let currentPageCount = 1;
 
+  const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
   // 정식 발급번호가 있으면 우선 사용, 없으면 시험원 접수번호(testerBarcode), 없으면 접수번호(barcode) 사용
   const displayBarcode = test.formalBarcode || test.testerBarcode || test.barcode;
 
