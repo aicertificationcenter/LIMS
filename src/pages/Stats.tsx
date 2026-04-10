@@ -60,24 +60,46 @@ export const Stats = () => {
     });
   }, [receptions, selectedMonth, targetYear, targetMonthNum]);
 
-  /** 시험원별 성과 지표(KPI) 계산 */
+  /** 시험원별 성과 지표(KPI) 계산 및 7단계 분류 */
   const testerStats = useMemo(() => {
     const stats: Record<string, any> = {};
     filteredByMonth.forEach(r => {
       const tester = r.tests?.[0]?.tester;
-      if (!tester) return;
+      const name = tester ? (tester.name || tester.id) : '미배정';
       
-      const name = tester.name || tester.id;
       if (!stats[name]) {
-        stats[name] = { name, assigned: 0, received: 0, progress: 0, completed: 0 };
+        stats[name] = { 
+          name, 
+          total: 0, 
+          received: 0, 
+          assigned: 0, 
+          in_progress: 0, 
+          approval_requested: 0, 
+          revising: 0, 
+          approved: 0, 
+          completed: 0 
+        };
       }
       
-      stats[name].assigned += 1;
+      stats[name].total += 1;
+      
+      // 7개 상태 분류 매핑
       if (r.status === 'RECEIVED') stats[name].received += 1;
-      if (['QUOTED', 'ASSIGNED', 'IN_PROGRESS'].includes(r.status)) stats[name].progress += 1;
-      if (r.status === 'COMPLETED') stats[name].completed += 1;
+      else if (r.status === 'ASSIGNED' || r.status === 'QUOTED') stats[name].assigned += 1;
+      else if (r.status === 'IN_PROGRESS') stats[name].in_progress += 1;
+      else if (r.status === 'APPROVAL_REQUESTED') stats[name].approval_requested += 1;
+      else if (r.status === 'REVISING') stats[name].revising += 1;
+      else if (r.status === 'APPROVED') stats[name].approved += 1;
+      else if (r.status === 'COMPLETED' || r.status === 'DISPOSED') stats[name].completed += 1;
     });
-    return Object.values(stats);
+
+    // 미배정이 항상 맨 위에 오도록 정렬, 나머지는 이름순
+    const sorted = Object.values(stats).sort((a: any, b: any) => {
+      if (a.name === '미배정') return -1;
+      if (b.name === '미배정') return 1;
+      return a.name.localeCompare(b.name);
+    });
+    return sorted;
   }, [filteredByMonth]);
 
   /** 현재 선택된 탭에 따라 목록 필터링 */
@@ -172,33 +194,45 @@ export const Stats = () => {
             <thead>
               <tr>
                 <th>시험원 이름</th>
-                <th>총 배정</th>
-                <th>접수 대기</th>
-                <th>시험 중</th>
-                <th>시험 완료</th>
-                <th>완료율</th>
+                <th>총 배정건수</th>
+                <th>접수 (미배정)</th>
+                <th>시험배정</th>
+                <th>시험진행</th>
+                <th>결재중</th>
+                <th>반려</th>
+                <th>결재완료</th>
+                <th>최종 완료</th>
+                <th>테스트 완료율</th>
               </tr>
             </thead>
             <tbody>
               {testerStats.map((s: any) => (
                 <tr key={s.name}>
-                  <td style={{ fontWeight: 600 }}>{s.name}</td>
-                  <td>{s.assigned} 건</td>
-                  <td>{s.received} 건</td>
-                  <td>{s.progress} 건</td>
-                  <td style={{ color: 'var(--kaic-blue)', fontWeight: 700 }}>{s.completed} 건</td>
+                  <td style={{ fontWeight: 600, color: s.name === '미배정' ? '#94a3b8' : 'inherit' }}>
+                    {s.name}
+                  </td>
+                  <td style={{ fontWeight: 700 }}>{s.total}</td>
+                  <td>{s.received}</td>
+                  <td>{s.assigned}</td>
+                  <td>{s.in_progress}</td>
+                  <td>{s.approval_requested}</td>
+                  <td style={{ color: s.revising > 0 ? '#ef4444' : 'inherit', fontWeight: s.revising > 0 ? 700 : 400 }}>{s.revising}</td>
+                  <td>{s.approved}</td>
+                  <td style={{ color: 'var(--kaic-blue)', fontWeight: 700 }}>{s.completed}</td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '150px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '120px' }}>
                       <div style={{ flex: 1, height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', background: 'var(--kaic-blue)', width: `${(s.completed/s.assigned)*100}%` }}></div>
+                        <div style={{ height: '100%', background: 'var(--kaic-blue)', width: `${s.total > 0 ? (s.completed/s.total)*100 : 0}%` }}></div>
                       </div>
-                      <span style={{ fontSize: '0.8rem', minWidth: '40px' }}>{((s.completed/s.assigned)*100).toFixed(0)}%</span>
+                      <span style={{ fontSize: '0.8rem', minWidth: '35px', textAlign: 'right' }}>
+                        {s.total > 0 ? ((s.completed/s.total)*100).toFixed(0) : 0}%
+                      </span>
                     </div>
                   </td>
                 </tr>
               ))}
               {testerStats.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
+                <tr><td colSpan={10} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>해당 월에 등록된 데이터가 없습니다.</td></tr>
               )}
             </tbody>
           </table>
