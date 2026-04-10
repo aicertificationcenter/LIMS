@@ -155,8 +155,8 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   let currentPageCount = 1;
 
   const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
-  // 정식 발급번호가 있으면 우선 사용, 없으면 시험원 접수번호(testerBarcode), 없으면 접수번호(barcode) 사용
-  const displayBarcode = test.formalBarcode || test.testerBarcode || test.barcode;
+  // 승인 완료된 경우만 정식 발급번호 사용, 그 외에는 시험원 접수번호(testerBarcode) 또는 접수번호(barcode) 사용
+  const displayBarcode = (isApproved && test.formalBarcode) ? test.formalBarcode : (test.testerBarcode || test.barcode);
 
   return (
     <div id="report-pdf-preview" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>

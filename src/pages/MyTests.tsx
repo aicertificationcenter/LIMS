@@ -530,7 +530,8 @@ export const MyTests = () => {
                       const printContent = document.getElementById('cover-page-content');
                       if (!printContent) return;
 
-                      const currentIssueNoVal = selectedTest.formalBarcode || selectedTest.barcode;
+                      const isApproved = selectedTest.status === 'APPROVED' || selectedTest.status === 'COMPLETED';
+                      const currentIssueNoVal = (isApproved && selectedTest.formalBarcode) ? selectedTest.formalBarcode : selectedTest.barcode;
 
                       const windowUrl = 'about:blank';
                       const uniqueName = new Date().getTime();
