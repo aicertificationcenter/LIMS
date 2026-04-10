@@ -694,9 +694,9 @@ export const Publish = () => {
             <button 
               className="btn btn-secondary" 
               onClick={() => handlePrint(false)}
-              disabled={selectedTest.status !== 'COMPLETED'}
-              style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '40px', background: selectedTest.status === 'COMPLETED' ? '#3b82f6' : '#cbd5e1', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: selectedTest.status === 'COMPLETED' ? 'pointer' : 'not-allowed' }}
-              title={selectedTest.status !== 'COMPLETED' ? '결재가 완료되어야 활성화됩니다.' : ''}
+              disabled={!['APPROVED', 'COMPLETED'].includes(selectedTest.status)}
+              style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 800, borderRadius: '40px', background: ['APPROVED', 'COMPLETED'].includes(selectedTest.status) ? '#3b82f6' : '#cbd5e1', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: ['APPROVED', 'COMPLETED'].includes(selectedTest.status) ? 'pointer' : 'not-allowed' }}
+              title={!['APPROVED', 'COMPLETED'].includes(selectedTest.status) ? '결재가 완료되어야 활성화됩니다.' : ''}
             >
               <Printer size={20} /> 출력하기 (Print Final)
             </button>
