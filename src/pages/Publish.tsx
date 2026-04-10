@@ -346,6 +346,17 @@ export const Publish = () => {
            </div>
         </header>
 
+        {selectedTest.gapjiRejection && selectedTest.status === 'REVISING' && (
+          <div style={{ gridColumn: '1 / -1', padding: '1.25rem', background: '#fef2f2', border: '1.5px solid #ef4444', borderRadius: '12px', color: '#b91c1c', marginTop: '-1rem', marginBottom: '0.5rem', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)' }}>
+            🚨 [갑지 반려사항] {selectedTest.gapjiRejection}
+          </div>
+        )}
+        {selectedTest.euljiRejection && selectedTest.status === 'REVISING' && (
+          <div style={{ gridColumn: '1 / -1', padding: '1.25rem', background: '#fef2f2', border: '1.5px solid #ef4444', borderRadius: '12px', color: '#b91c1c', marginTop: selectedTest.gapjiRejection ? '0' : '-1rem', marginBottom: '0.5rem', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)' }}>
+            🚨 [을지 반려사항] {selectedTest.euljiRejection}
+          </div>
+        )}
+
         <section style={{ gridColumn: '1 / -1', background: '#94a3b8', padding: '3rem 1rem', borderRadius: '12px', position: 'relative' }}>
           {selectedTest.status !== 'APPROVED' && selectedTest.status !== 'COMPLETED' && (
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)', fontSize: '150pt', color: 'rgba(255,0,0,0.2)', fontWeight: 900, pointerEvents: 'none', zIndex: 100 }}>

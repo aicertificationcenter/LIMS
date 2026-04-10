@@ -304,16 +304,7 @@ export const MyTests = () => {
               {(!selectedTest.consultations || selectedTest.consultations.length === 0) && (
                 <div style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', padding: '1rem 0' }}>등록된 협의 내역이 없습니다.</div>
               )}
-              {selectedTest.gapjiRejection && selectedTest.status === 'REVISING' && (
-                <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#b91c1c', marginBottom: '1.5rem', fontWeight: 600 }}>
-                  [갑지 반려사항] {selectedTest.gapjiRejection}
-                </div>
-              )}
-              {selectedTest.euljiRejection && selectedTest.status === 'REVISING' && (
-                <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#b91c1c', marginBottom: '1.5rem', fontWeight: 600 }}>
-                  [을지 반려사항] {selectedTest.euljiRejection}
-                </div>
-              )}
+
               {isLocked && (
                  <div style={{ padding: '1rem', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', color: '#d97706', marginBottom: '1.5rem', fontWeight: 600 }}>
                    현재 결재 진행 중이거나 승인 완료된 건으로 내용을 수정할 수 없습니다.
@@ -335,6 +326,17 @@ export const MyTests = () => {
               )}
             </div>
             
+            {selectedTest.gapjiRejection && selectedTest.status === 'REVISING' && (
+              <div style={{ padding: '1.25rem', background: '#fef2f2', border: '1.5px solid #ef4444', borderRadius: '12px', color: '#b91c1c', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)' }}>
+                🚨 [갑지 반려사항] {selectedTest.gapjiRejection}
+              </div>
+            )}
+            {selectedTest.euljiRejection && selectedTest.status === 'REVISING' && (
+              <div style={{ padding: '1.25rem', background: '#fef2f2', border: '1.5px solid #ef4444', borderRadius: '12px', color: '#b91c1c', marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)' }}>
+                🚨 [을지 반려사항] {selectedTest.euljiRejection}
+              </div>
+            )}
+
             {/* New Workflow Fields: only show if not completed */}
             {selectedTest.status !== 'COMPLETED' && (
               <div style={{ background: '#ffffff', padding: '2.5rem', borderRadius: '16px', marginBottom: '3rem', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
