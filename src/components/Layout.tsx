@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
-import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users, CheckSquare } from 'lucide-react';
+import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users, CheckSquare, Settings } from 'lucide-react';
 
 export const Layout = () => {
   // 인증 및 라우팅 정보
@@ -19,6 +19,7 @@ export const Layout = () => {
   // 알림 시스템 상태
   const [showNoti, setShowNoti] = useState(false);  // 알림창 표시 여부
   const [notifications, setNotifications] = useState<any[]>([]); // 미확인 알림 목록
+  const [showManageDropdown, setShowManageDropdown] = useState(false);
 
   // 알림 폴링 주입 (30초 주기)
   useEffect(() => {
@@ -84,29 +85,39 @@ export const Layout = () => {
             </Link>
           )}
           {user.role === 'ADMIN' && (
-            <Link to="/clients" style={{ color: location.pathname==='/clients' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Users size={18} /> 의뢰처 관리
-            </Link>
-          )}
-          {user.role === 'ADMIN' && (
             <Link to="/invoices" style={{ color: location.pathname==='/invoices' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={18} /> 견적서 발행
-            </Link>
-          )}
-          {user.role === 'ADMIN' && (
-            <Link to="/admin" style={{ color: location.pathname==='/admin' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <UserCheck size={18} /> 시험원관리
+              <FileText size={18} /> 견적서발행
             </Link>
           )}
           {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
             <Link to="/approvals" style={{ color: location.pathname==='/approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CheckSquare size={18} /> 결재
+              <CheckSquare size={18} /> 결재하기
             </Link>
           )}
           {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
             <Link to="/ledger" style={{ color: location.pathname==='/ledger' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileText size={18} /> 발급대장
             </Link>
+          )}
+          {user.role === 'ADMIN' && (
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }} onMouseLeave={() => setShowManageDropdown(false)}>
+              <button 
+                onClick={() => setShowManageDropdown(!showManageDropdown)} 
+                style={{ background: 'transparent', border: 'none', color: (location.pathname==='/admin' || location.pathname==='/clients') ? '#0066B3' : 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, fontSize: '1rem', fontFamily: 'inherit', outline: 'none' }}
+              >
+                <Settings size={18} /> 관리하기
+              </button>
+              {showManageDropdown && (
+                <div style={{ position: 'absolute', top: '100%', left: '0', marginTop: '10px', background: 'white', display: 'flex', flexDirection: 'column', padding: '0.5rem', borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 15px rgba(0,0,0,0.15)', border: '1px solid #e2e8f0', minWidth: '160px' }}>
+                  <Link to="/admin" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/admin' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <UserCheck size={16} /> 시험원관리
+                  </Link>
+                  <Link to="/clients" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/clients' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <Users size={16} /> 의뢰처관리
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
 
           {user.role !== 'ADMIN' && (
