@@ -40,14 +40,15 @@ export default async function handler(req, res) {
       try {
         const { client, clientName, phone, email, bizNo, target, extra } = req.body;
         
-        // barcode 생성 logic (YYYYMMDD-seq)
+        // barcode 생성 logic (KAIC-YY-SEQ)
         const today = new Date();
-        const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+        const yy = String(today.getFullYear()).slice(2);
+        const prefix = `KAIC-${yy}-`;
         const count = await prisma.sample.count({
-          where: { barcode: { startsWith: `KAIC_${dateStr}` } }
+          where: { barcode: { startsWith: prefix } }
         });
         const seq = String(count + 1).padStart(3, '0');
-        const barcode = `KAIC_${dateStr}_${seq}`;
+        const barcode = `${prefix}${seq}`;
 
         const newSample = await prisma.sample.create({
           data: {
@@ -111,7 +112,13 @@ export default async function handler(req, res) {
              testMethod,
              extra
         };
-        if (status) updatedData.status = status;
+        
+        if (status) {
+          updatedData.status = status;
+        } else if (testerId && sample.status === 'RECEIVED') {
+          // 신규 배정 시 자동으로 '시험배정(ASSIGNED)' 상태로 승격
+          updatedData.status = 'ASSIGNED';
+        }
 
         const updatedSample = await prisma.sample.update({
           where: { id },
