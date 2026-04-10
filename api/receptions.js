@@ -19,7 +19,11 @@ export default async function handler(req, res) {
             }
           }
         });
-        return res.status(200).json(samples);
+        const mappedSamples = samples.map(s => ({
+          ...s,
+          reportPdfUrl: s.reportPdfUrl ? `/api/report-pdf?id=${s.id}` : null
+        }));
+        return res.status(200).json(mappedSamples);
       } catch (error) {
         return res.status(500).json({ message: '리스트 조회 중 오류 발생', error: error.message });
       }

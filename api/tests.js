@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         testProduct: t.sample.testProduct,
         testPurpose: t.sample.testPurpose,
         testMethod: t.sample.testMethod,
-        reportPdfUrl: t.sample.reportPdfUrl,
+        reportPdfUrl: t.sample.reportPdfUrl ? `/api/report-pdf?id=${t.sample.id}` : null,
         assignedAt: t.startTime,
         gapjiRejection: t.sample.gapjiRejection,
         euljiRejection: t.sample.euljiRejection,
