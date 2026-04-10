@@ -89,12 +89,12 @@ export const Layout = () => {
               <FileText size={18} /> 견적서발행
             </Link>
           )}
-          {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
+          {['ADMIN', 'TECH_MGR'].includes(user.role) && (
             <Link to="/approvals" style={{ color: location.pathname==='/approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckSquare size={18} /> 결재하기
             </Link>
           )}
-          {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
+          {['ADMIN', 'TECH_MGR'].includes(user.role) && (
             <Link to="/ledger" style={{ color: location.pathname==='/ledger' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileText size={18} /> 발급대장
             </Link>

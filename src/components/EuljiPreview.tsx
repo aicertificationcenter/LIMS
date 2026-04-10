@@ -234,10 +234,10 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black', fontSize: '8.5pt' }}>
                       <thead style={{ background: '#f1f5f9' }}>
                         <tr>
-                          <th style={{ border: '1px solid black', padding: '6px', width: '25%' }}>시험대상품목의 명칭</th>
-                          <th style={{ border: '1px solid black', padding: '6px', width: '35%' }}>시험대상 항목</th>
-                          <th style={{ border: '1px solid black', padding: '6px', width: '20%' }}>시험대상 품목의 형태</th>
-                          <th style={{ border: '1px solid black', padding: '6px', width: '20%' }}>시험규격</th>
+                          <th style={{ border: '1px solid black', padding: '6px', width: '22%' }}>시험대상품목의 명칭</th>
+                          <th style={{ border: '1px solid black', padding: '6px', width: '28%' }}>시험대상 항목</th>
+                          <th style={{ border: '1px solid black', padding: '6px', width: '12%' }}>시험대상 품목의 형태</th>
+                          <th style={{ border: '1px solid black', padding: '6px', width: '38%' }}>시험규격</th>
                         </tr>
                       </thead>
                       <tbody>

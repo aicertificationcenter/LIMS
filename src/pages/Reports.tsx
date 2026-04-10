@@ -475,6 +475,11 @@ export const Reports = () => {
                         const newRes = [...tcResults];
                         newRes[idx].goal = e.target.value;
                         setTcResults(newRes);
+
+                        // 목표 확인 작성 시 하단의 시험대상 항목(category)으로 자동 연동
+                        const newMethods = [...tcMethods];
+                        newMethods[idx].category = e.target.value;
+                        setTcMethods(newMethods);
                       }}
                       style={{ fontSize: '0.95rem', minHeight: '60px' }}
                     />
