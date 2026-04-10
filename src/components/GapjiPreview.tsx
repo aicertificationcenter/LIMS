@@ -22,7 +22,9 @@ export const GapjiPreview = ({
     
     // 승인 완료된 경우만 정식 발급번호 사용, 그 외에는 접수번호 사용
     const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
-    const issueNo = (isApproved && test.formalBarcode) ? test.formalBarcode : test.barcode;
+    const hasFormal = isApproved && !!test.formalBarcode;
+    const issueNoLabel = hasFormal ? '성적서 번호' : '접수번호';
+    const issueNo = hasFormal ? test.formalBarcode : test.barcode;
     const productId = `${yy}-${typeChar}-${seq}-S1`;
     const testerName = test.tests?.[0]?.tester?.name || '-';
     const techMgr = users.find(u => u.role === 'TECH_MGR');
@@ -56,7 +58,7 @@ export const GapjiPreview = ({
                     </div>
                   </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '7pt', color: '#64748b' }}>성적서 번호</div>
+                  <div style={{ fontSize: '7pt', color: '#64748b' }}>{issueNoLabel}</div>
                   <div style={{ fontSize: '9pt', fontWeight: 700 }}>{issueNo}</div>
                   <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / 1 ]</div>
                 </div>
