@@ -10,14 +10,28 @@ export default async function handler(req, res) {
     }
 
     try {
+      const pdfSamplesRaw = await prisma.sample.findMany({
+        where: { reportPdfUrl: { not: null } },
+        select: { id: true }
+      });
+      const samplesWithPdf = new Set(pdfSamplesRaw.map(s => s.id));
+
       const tests = await prisma.test.findMany({
         where: { testerId },
-        include: {
+        select: {
+          startTime: true,
           sample: {
-             include: {
-               consultations: true,
-               evidences: true
-             }
+            select: {
+              id: true, barcode: true, testerBarcode: true, status: true,
+              clientId: true, clientName: true, phone: true, email: true,
+              content: true, target: true, extra: true, consultation: true,
+              testStartDate: true, testEndDate: true, testLocation: true,
+              testType: true, testAddress: true, testProduct: true,
+              testPurpose: true, testMethod: true, gapjiRejection: true,
+              euljiRejection: true, formalBarcode: true, gapjiApproved: true,
+              euljiApproved: true, receivedAt: true,
+              consultations: true, evidences: true
+            }
           }
         },
         orderBy: { startTime: 'desc' },
@@ -46,7 +60,7 @@ export default async function handler(req, res) {
         testProduct: t.sample.testProduct,
         testPurpose: t.sample.testPurpose,
         testMethod: t.sample.testMethod,
-        reportPdfUrl: t.sample.reportPdfUrl ? `/api/report-pdf?id=${t.sample.id}` : null,
+        reportPdfUrl: samplesWithPdf.has(t.sample.id) ? `/api/report-pdf?id=${t.sample.id}` : null,
         assignedAt: t.startTime,
         gapjiRejection: t.sample.gapjiRejection,
         euljiRejection: t.sample.euljiRejection,

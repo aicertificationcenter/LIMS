@@ -6,22 +6,30 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
+        const samplesWithPdfRows = await prisma.sample.findMany({
+          where: { reportPdfUrl: { not: null } },
+          select: { id: true }
+        });
+        const samplesWithPdf = new Set(samplesWithPdfRows.map(s => s.id));
+
         const samples = await prisma.sample.findMany({
           orderBy: { receivedAt: 'desc' },
-          include: {
-            invoice: {
-              include: { items: true }
-            },
-            tests: {
-              include: {
-                tester: true
-              }
-            }
+          select: {
+            id: true, barcode: true, clientId: true, clientName: true,
+            phone: true, email: true, content: true, consultation: true,
+            status: true, location: true, testStartDate: true, testEndDate: true,
+            testLocation: true, testType: true, testAddress: true, bizNo: true,
+            target: true, testProduct: true, testPurpose: true, testMethod: true,
+            extra: true, testerBarcode: true, formalBarcode: true,
+            gapjiApproved: true, euljiApproved: true,
+            gapjiRejection: true, euljiRejection: true, receivedAt: true,
+            invoice: { include: { items: true } },
+            tests: { include: { tester: true } }
           }
         });
         const mappedSamples = samples.map(s => ({
           ...s,
-          reportPdfUrl: s.reportPdfUrl ? `/api/report-pdf?id=${s.id}` : null
+          reportPdfUrl: samplesWithPdf.has(s.id) ? `/api/report-pdf?id=${s.id}` : null
         }));
         return res.status(200).json(mappedSamples);
       } catch (error) {
