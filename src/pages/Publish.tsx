@@ -3,6 +3,7 @@ import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { CheckCircle, Printer, FileText } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
+import { GapjiPreview } from '../components/GapjiPreview';
 
 export const Publish = () => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ export const Publish = () => {
   const [myTests, setMyTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
 
   const selectedTest = myTests.find((t: any) => t.id === selectedId);
 
@@ -47,6 +49,12 @@ export const Publish = () => {
   };
 
   useEffect(() => {
+    fetch('/api/users').then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setUsers(data);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (selectedTest?.extra) {
       try {
         const extraData = JSON.parse(selectedTest.extra);
@@ -82,8 +90,10 @@ export const Publish = () => {
   }, [selectedTest?.id, selectedId]);
 
   const handlePrint = (isPreview: boolean = false) => {
-    const printContent = document.getElementById('report-pdf-preview');
-    if (!printContent) return;
+    const euljiContent = document.getElementById('report-pdf-preview')?.innerHTML || '';
+    const gapjiContent = document.getElementById('gapji-pdf-preview')?.innerHTML || '';
+
+    if (!euljiContent && !gapjiContent) return;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -145,7 +155,8 @@ export const Publish = () => {
         </head>
         <body>
           ${draftHtml}
-          ${printContent.innerHTML}
+          ${gapjiContent}
+          ${euljiContent}
           <script>
             setTimeout(() => {
               window.print();
@@ -371,6 +382,9 @@ export const Publish = () => {
               DRAFT
             </div>
           )}
+          <div id="gapji-pdf-preview" style={{ display: 'none' }}>
+             <GapjiPreview test={selectedTest} users={users} totalPages={totalPages} />
+          </div>
           <div id="report-pdf-preview" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
             {/* Page 2: 시험결과 요약 */}

@@ -6,10 +6,12 @@ import React from 'react';
  */
 export const GapjiPreview = ({ 
   test, 
-  users 
+  users,
+  totalPages = 1
 }: { 
   test: any; 
   users: any[];
+  totalPages?: number;
 }) => {
   if (!test) return null;
 
@@ -60,7 +62,7 @@ export const GapjiPreview = ({
                     <>
                       <div style={{ fontSize: '7pt', color: '#64748b' }}>성적서 번호</div>
                       <div style={{ fontSize: '9pt', fontWeight: 700 }}>{test.formalBarcode}</div>
-                      <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / 1 ]</div>
+                      <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / {totalPages} ]</div>
                     </>
                   ) : (
                     <div style={{ minHeight: '35px' }}></div>
