@@ -135,21 +135,6 @@ export const MyTests = () => {
     }
   };
 
-  /** 
-   * 기존 상담 내역 수정 
-   * @param id 상담 기록 ID
-   */
-  const handleEditConsult = async (id: string) => {
-    if (!editText.trim()) return;
-    try {
-      await apiClient.consultations.update(id, editText);
-      setEditingId(null);
-      fetchMyTasks();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
   const isLocked = selectedTest && ['APPROVAL_REQUESTED', 'APPROVED', 'COMPLETED'].includes(selectedTest.status);
 
   const handleUpdateConsult = async (id: string) => {

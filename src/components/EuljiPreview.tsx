@@ -1,5 +1,3 @@
-import React, { useMemo } from 'react';
-
 const EuljiPageWrapper = ({ pageNum, totalPages, barcode, testerBarcode, sectionMainTitle, subTitle, children, isLastPage }: any) => {
   return (
     <div className="document-frame" style={{ width: '210mm', height: '297mm', position: 'relative', background: 'white', boxSizing: 'border-box', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', margin: '0 auto 2rem auto', overflow: 'hidden', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
@@ -46,7 +44,7 @@ const EuljiPageWrapper = ({ pageNum, totalPages, barcode, testerBarcode, section
   );
 };
 
-export const EuljiPreview = ({ test, user }: { test: any, user: any }) => {
+export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   if (!test) return null;
 
   // 파싱
@@ -136,7 +134,7 @@ export const EuljiPreview = ({ test, user }: { test: any, user: any }) => {
     if (currentTcChunk.length > 0) tcPages.push({ tcIndex: idx, blocks: currentTcChunk });
   });
 
-  const totalPages = 1 + methodPages.length + tcPages.length + 1; // +1 is just assuming test coverage etc, actually `Publish.tsx` used `1 + 1 + ...`, we will match it. Let's compute precisely.
+  // const totalPages = 1 + methodPages.length + tcPages.length + 1; // +1 is just assuming test coverage etc, actually `Publish.tsx` used `1+1+...`, we will match it. Let's compute precisely.
   const actualTotalPages = 1 + methodPages.length + tcPages.length; // From Publish: 1(요약) + methodPages + tcPages. Wait, earlier it was 1 + 1 + methodPages... + tcPages. `1 + 1` was Gapji + Eulji? Publish only output Eulji pages starting from pageNum = 2. Yes! Because page 1 is Gapji!
   
   // Actually, we use `actualTotalPages + 1` for total count

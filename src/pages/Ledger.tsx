@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { FileText, Download, Unlock } from 'lucide-react';
-import { StatusBadge } from '../components/StatusBadge';
 
 export const Ledger = () => {
   const { user } = useAuth();

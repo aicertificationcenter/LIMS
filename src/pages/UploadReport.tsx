@@ -16,6 +16,7 @@ export const UploadReport = () => {
   }, [user]);
 
   const fetchMyTasks = async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const data = await apiClient.tests.listMyTasks(user.id);
