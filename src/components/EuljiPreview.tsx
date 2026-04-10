@@ -314,7 +314,7 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
               }
               if (block.type === 'tcDetailItem') {
                 return (
-                  <div key={bIdx} style={{ border: '1px solid #cbd5e1', padding: '12px', borderRadius: '6px', background: '#f8fafc' }}>
+                  <div key={bIdx} style={{ border: '1px solid #cbd5e1', padding: '12px', borderRadius: '6px', background: '#f8fafc', pageBreakInside: 'avoid' }}>
                     <div style={{ fontWeight: 800, marginBottom: '10px', fontSize: '10pt', color: 'var(--kaic-blue)' }}>[TC {block.data.index+1}] {block.data.original?.category || ''}</div>
                     <div style={{ display: 'flex', marginBottom: '10px' }}>
                       <span style={{ fontWeight: 700, width: '70px' }}>목 적 :</span>
