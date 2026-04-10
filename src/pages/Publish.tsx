@@ -237,11 +237,31 @@ export const Publish = () => {
     blocks.push({ type: 'summary', weight: 12, data: tc });
 
     tc.evidences?.slice(0, tc.evidenceCount).forEach((ev: any, evIdx: number) => {
-      const descLen = (ev.description || '').length;
-      const titleWeight = 12 + Math.ceil(descLen / 50);
-      const rowCount = ev.images ? Math.ceil(ev.images.length / 2) : 0;
-      const imagesWeight = rowCount * 36;
-      blocks.push({ type: 'evidence_group', weight: titleWeight + imagesWeight, data: { ev, evIdx } });
+      const allImages = ev.images || [];
+      
+      if (allImages.length === 0) {
+        blocks.push({ type: 'evidence_group', weight: 45, data: { ev, evIdx, images: [] } });
+        return;
+      }
+
+      // Chunk images into sets of 4 max per box
+      const imageChunks = [];
+      for (let i = 0; i < allImages.length; i += 4) {
+        imageChunks.push(allImages.slice(i, i + 4));
+      }
+
+      imageChunks.forEach((imgChunk, chunkIdx) => {
+        blocks.push({ 
+          type: 'evidence_group', 
+          weight: 45, 
+          data: { 
+            ev, 
+            evIdx, 
+            images: imgChunk,
+            isContinued: chunkIdx > 0
+          } 
+        });
+      });
     });
     blocks.push({ type: 'evaluation', weight: 20, data: tc });
 
@@ -568,24 +588,37 @@ export const Publish = () => {
                         );
                       }
                       if (block.type === 'evidence_group') {
+                        const hasImages = block.data.images && block.data.images.length > 0;
+                        const numImages = hasImages ? block.data.images.length : 0;
+                        const gridCols = numImages > 1 ? '1fr 1fr' : '1fr';
+                        const gridRows = numImages > 2 ? '1fr 1fr' : '1fr';
+
                         return (
-                          <div key={bIdx} style={{ border: '1.5pt solid #475569', marginBottom: '6px', background: '#fff' }}>
+                          <div key={bIdx} style={{ border: '1.5pt solid #475569', marginBottom: '8px', background: '#fff', boxSizing: 'border-box' }}>
                             <div style={{ fontWeight: 800, padding: '6px 10px', background: '#f1f5f9', borderBottom: '1.5pt solid #475569', display: 'flex', alignItems: 'center' }}>
-                              <span style={{ color: 'var(--kaic-blue)', marginRight: '8px' }}>세부시험 {block.data.evIdx + 1}</span> : {block.data.ev.title || '-'}
+                              <span style={{ color: 'var(--kaic-blue)', marginRight: '8px' }}>세부시험 {block.data.evIdx + 1}{block.data.isContinued ? ' (계속)' : ''}</span> : {block.data.ev.title || '-'}
                             </div>
                             <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                              {block.data.ev.description && (
+                              {block.data.ev.description && !block.data.isContinued && (
                                 <div style={{ fontSize: '8.5pt', color: '#1e293b', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
                                   {block.data.ev.description}
                                 </div>
                               )}
                               
-                              {block.data.ev.images?.length > 0 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: block.data.ev.images.length > 1 ? '1fr 1fr' : '1fr', gap: '10px' }}>
-                                  {block.data.ev.images.map((img: any, iIdx: number) => (
-                                    <div key={iIdx} style={{ textAlign: 'center' }}>
-                                      <img src={img.url} alt="증적" style={{ width: '100%', maxHeight: block.data.ev.images.length > 1 ? '150px' : '240px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
-                                      {img.caption && <div style={{ fontSize: '8pt', marginTop: '6px', color: '#334155', fontWeight: 600 }}>{img.caption}</div>}
+                              {hasImages && (
+                                <div style={{ 
+                                  display: 'grid', 
+                                  gridTemplateColumns: gridCols, 
+                                  gridTemplateRows: gridRows,
+                                  gap: '10px',
+                                  height: '320px' // 고정 높이 지정 
+                                }}>
+                                  {block.data.images.map((img: any, iIdx: number) => (
+                                    <div key={iIdx} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                                      <div style={{ flex: 1, border: '1px solid #cbd5e1', backgroundColor: '#fdfdfd', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                        <img src={img.url} alt="증적" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                      </div>
+                                      {img.caption && <div style={{ fontSize: '8pt', marginTop: '4px', color: '#334155', fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.caption}</div>}
                                     </div>
                                   ))}
                                 </div>
