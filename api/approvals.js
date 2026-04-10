@@ -107,7 +107,8 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json(updatedSample);
+    const { reportPdfUrl: _, ...safeResponse } = updatedSample;
+    return res.status(200).json(safeResponse);
   } catch (error) {
     console.error('Approval Error:', error);
     return res.status(500).json({ message: '결재 처리 중 오류 발생', error: error.message });

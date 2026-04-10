@@ -54,7 +54,8 @@ export default async function handler(req, res) {
             status: 'RECEIVED'
           }
         });
-        return res.status(201).json(newSample);
+        const { reportPdfUrl: _, ...safeResponse } = newSample;
+        return res.status(201).json(safeResponse);
       } catch (error) {
         return res.status(500).json({ message: '등록 중 오류 발생', error: error.message });
       }
@@ -155,7 +156,8 @@ export default async function handler(req, res) {
           });
         }
 
-        return res.status(200).json(updatedSample);
+        const { reportPdfUrl: _, ...safeResponse } = updatedSample;
+        return res.status(200).json(safeResponse);
       } catch (error) {
         return res.status(500).json({ message: '배정 중 오류 발생', error: error.message });
       }
