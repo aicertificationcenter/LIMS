@@ -18,14 +18,10 @@ export default async function handler(req, res) {
     
     try {
       const result = await prisma.$transaction(async (tx) => {
-        // 1. Generate new Invoice Number (견적_YYYYMMDD_seq)
-        const today = new Date();
-        const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
-        const count = await tx.invoice.count({
-          where: { invoiceNo: { startsWith: `견적_${dateStr}` } }
-        });
-        const seq = String(count + 1).padStart(3, '0');
-        const generatedInvoiceNo = `견적_${dateStr}_${seq}`;
+        // 1. Generate new Invoice Number (접수번호_견적)
+        const sample = await tx.sample.findUnique({ where: { id: sampleId } });
+        if (!sample) throw new Error("Sample not found for invoice creation.");
+        const generatedInvoiceNo = `${sample.barcode}_견적`;
 
         // 2. Get existing invoice to manage previousNos history
         const existingInvoice = await tx.invoice.findUnique({ where: { sampleId } });
