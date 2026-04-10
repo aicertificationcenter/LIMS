@@ -105,7 +105,7 @@ export const AdminAuth = () => {
   };
 
   const pendingUsers = users.filter(u => u.role === 'PENDING');
-  const activeUsers = users.filter(u => u.role !== 'PENDING' && u.role !== 'RESIGNED');
+  const activeUsers = users.filter(u => u.role !== 'PENDING');
 
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}>데이터를 불러오는 중...</div>;
 
@@ -170,8 +170,8 @@ export const AdminAuth = () => {
                 <td>{u.email}</td>
                 <td>{u.phone || '-'}</td>
                 <td>
-                   <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : undefined, padding: '4px 10px' }}>
-                     {u.role === 'ADMIN' ? '최고 관리자' : u.role}
+                   <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : u.role === 'RESIGNED' ? 'error' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : u.role === 'RESIGNED' ? '#ef4444' : undefined, padding: '4px 10px' }}>
+                     {u.role === 'ADMIN' ? '최고 관리자' : u.role === 'RESIGNED' ? '퇴사자 (정지)' : u.role}
                    </span>
                 </td>
                 <td>
@@ -201,6 +201,7 @@ export const AdminAuth = () => {
                     <option value="TECH_MGR">기술책임자</option>
                     <option value="QUAL_MGR">품질책임자</option>
                     <option value="ADMIN">관리자 전용</option>
+                    <option value="RESIGNED">퇴사처리 (정지)</option>
                   </select>
                 </td>
                 <td style={{ textAlign: 'center' }}>

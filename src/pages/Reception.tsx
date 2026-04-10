@@ -216,7 +216,7 @@ export const Reception = () => {
               <select className="input-field" value={filterTesterId} onChange={e => { setFilterTesterId(e.target.value); setCurrentPage(1); }} style={{ paddingLeft: '35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
                 <option value="">모든 시험원 (전체)</option>
                 <option value="UNASSIGNED">미배정</option>
-                {users.map(u => (
+                {users.filter(u => u.role !== 'RESIGNED').map(u => (
                    <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
                 ))}
               </select>
@@ -299,7 +299,7 @@ export const Reception = () => {
                           value={selectedTesters[r.id] ?? r.tests?.[0]?.testerId ?? ''}
                         >
                           <option value="" disabled>시험원 선택</option>
-                          {users.filter(u => u.role !== 'ADMIN').map(u => (
+                          {users.filter(u => u.role !== 'ADMIN' && u.role !== 'RESIGNED').map(u => (
                             <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
                           ))}
                         </select>
