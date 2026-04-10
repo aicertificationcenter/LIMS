@@ -215,12 +215,15 @@ export const Clients = () => {
   /** 상태 코드별 한글 라벨 변환 */
   const getStatusLabel = (status: string) => {
     switch(status) {
-      case 'RECEIVED': return '시험의뢰';
+      case 'RECEIVED': return '접수';
       case 'QUOTED': return '견적발송';
-      case 'ASSIGNED': return '시험원배정';
+      case 'ASSIGNED': return '시험배정';
       case 'IN_PROGRESS': return '시험진행';
-      case 'COMPLETED': return '발행완료';
-      case 'DISPOSED': return '폐기완료';
+      case 'APPROVAL_REQUESTED': return '결재중';
+      case 'REVISING': return '반려';
+      case 'APPROVED': return '결재완료';
+      case 'COMPLETED': return '완료';
+      case 'DISPOSED': return '폐기 완료';
       default: return status;
     }
   };

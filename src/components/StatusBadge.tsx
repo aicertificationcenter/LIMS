@@ -16,12 +16,15 @@ interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
   // 상태별 스타일 및 한글 라벨 매핑
   const map: Record<string, { bg: string, label: string }> = {
-    'RECEIVED': { bg: '#3b82f6', label: '시험의뢰' },
+    'RECEIVED': { bg: '#3b82f6', label: '접수' },
     'QUOTED': { bg: '#6366f1', label: '견적발송' },
-    'ASSIGNED': { bg: '#8b5cf6', label: '시험원배정' },
+    'ASSIGNED': { bg: '#8b5cf6', label: '시험배정' },
     'IN_PROGRESS': { bg: '#f59e0b', label: '시험진행' },
-    'COMPLETED': { bg: '#10b981', label: '발행 완료' },
-    'DISPOSED': { bg: '#ef4444', label: '폐기 완료' }
+    'APPROVAL_REQUESTED': { bg: '#ec4899', label: '결재중' },
+    'REVISING': { bg: '#ef4444', label: '반려' },
+    'APPROVED': { bg: '#14b8a6', label: '결재완료' },
+    'COMPLETED': { bg: '#10b981', label: '완료' },
+    'DISPOSED': { bg: '#94a3b8', label: '폐기 완료' }
   };
 
   const info = map[status] || { bg: '#64748b', label: status };

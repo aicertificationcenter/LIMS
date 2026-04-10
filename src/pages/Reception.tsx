@@ -258,9 +258,9 @@ export const Reception = () => {
               {/* 워크플로우 진행 단계 표시 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                  {[
-                   { id: 'RECEIVED', label: '시험의뢰', isDone: true },
+                   { id: 'RECEIVED', label: '접수', isDone: true },
                    { id: 'QUOTED', label: '견적발송', isDone: !!r.invoice },
-                   { id: 'ASSIGNED', label: '시험원배정', isDone: !!r.tests?.[0]?.testerId },
+                   { id: 'ASSIGNED', label: '시험배정', isDone: !!r.tests?.[0]?.testerId },
                    { id: 'IN_PROGRESS', label: '시험진행', isDone: !!(r.testStartDate && r.testLocation) },
                    { id: 'COMPLETED', label: '완료', isDone: r.status === 'COMPLETED' || !!r.reportPdfUrl }
                  ].map((step, idx, arr) => {
