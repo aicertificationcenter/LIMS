@@ -71,7 +71,10 @@ export const Reception = () => {
     return receptions.filter(r => {
       const companyMatch = r.clientId?.toLowerCase().includes(searchQuery.toLowerCase());
       const personMatch = r.clientName?.toLowerCase().includes(searchQuery.toLowerCase());
-      const testerIdMatch = !filterTesterId || r.tests?.[0]?.testerId === filterTesterId;
+      const testerIdMatch = 
+        filterTesterId === 'UNASSIGNED' 
+          ? !r.tests?.length 
+          : (!filterTesterId || r.tests?.[0]?.testerId === filterTesterId);
       return (companyMatch || personMatch) && testerIdMatch;
     });
   }, [receptions, searchQuery, filterTesterId]);
@@ -212,6 +215,7 @@ export const Reception = () => {
               <Filter size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
               <select className="input-field" value={filterTesterId} onChange={e => { setFilterTesterId(e.target.value); setCurrentPage(1); }} style={{ paddingLeft: '35px', margin: 0, minHeight: '36px', fontSize: '0.85rem', width: '180px' }}>
                 <option value="">모든 시험원 (전체)</option>
+                <option value="UNASSIGNED">미배정</option>
                 {users.map(u => (
                    <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
                 ))}
