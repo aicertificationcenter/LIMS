@@ -200,9 +200,16 @@ export const Approvals = () => {
                    </div>
                  </div>
                ) : (
-                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-                   <button className="btn" style={{ background: '#ef4444', color: 'white', padding: '12px 30px', fontWeight: 700 }} onClick={() => setRejectMode('GAPJI')}><XCircle size={18} style={{ marginRight: '6px' }}/> 반려</button>
-                   <button className="btn btn-primary" style={{ padding: '12px 30px', fontWeight: 700, background: '#10b981' }} onClick={() => handleAction(viewingGapji.id, 'GAPJI', true)}><CheckCircle size={18} style={{ marginRight: '6px' }}/> 승인</button>
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                   {viewingGapji.gapjiRejection && (
+                     <div style={{ background: '#fef2f2', border: '1px solid #ef4444', padding: '12px 20px', borderRadius: '8px', color: '#b91c1c', fontWeight: 700, width: '100%', maxWidth: '800px' }}>
+                       🚨 [이전 반려 내용] {viewingGapji.gapjiRejection}
+                     </div>
+                   )}
+                   <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                     <button className="btn" style={{ background: '#ef4444', color: 'white', padding: '12px 30px', fontWeight: 700 }} onClick={() => setRejectMode('GAPJI')}><XCircle size={18} style={{ marginRight: '6px' }}/> 반려</button>
+                     <button className="btn btn-primary" style={{ padding: '12px 30px', fontWeight: 700, background: '#10b981' }} onClick={() => handleAction(viewingGapji.id, 'GAPJI', true)}><CheckCircle size={18} style={{ marginRight: '6px' }}/> 승인</button>
+                   </div>
                  </div>
                )}
              </div>
@@ -233,9 +240,16 @@ export const Approvals = () => {
                    </div>
                  </div>
                ) : (
-                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-                   <button className="btn" style={{ background: '#ef4444', color: 'white', padding: '12px 30px', fontWeight: 700 }} onClick={() => setRejectMode('EULJI')}><XCircle size={18} style={{ marginRight: '6px' }}/> 반려</button>
-                   <button className="btn btn-primary" style={{ padding: '12px 30px', fontWeight: 700, background: '#10b981' }} onClick={() => handleAction(viewingEulji.id, 'EULJI', true)}><CheckCircle size={18} style={{ marginRight: '6px' }}/> 승인</button>
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                   {viewingEulji.euljiRejection && (
+                     <div style={{ background: '#fef2f2', border: '1px solid #ef4444', padding: '12px 20px', borderRadius: '8px', color: '#b91c1c', fontWeight: 700, width: '100%', maxWidth: '800px' }}>
+                       🚨 [이전 반려 내용] {viewingEulji.euljiRejection}
+                     </div>
+                   )}
+                   <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                     <button className="btn" style={{ background: '#ef4444', color: 'white', padding: '12px 30px', fontWeight: 700 }} onClick={() => setRejectMode('EULJI')}><XCircle size={18} style={{ marginRight: '6px' }}/> 반려</button>
+                     <button className="btn btn-primary" style={{ padding: '12px 30px', fontWeight: 700, background: '#10b981' }} onClick={() => handleAction(viewingEulji.id, 'EULJI', true)}><CheckCircle size={18} style={{ marginRight: '6px' }}/> 승인</button>
+                   </div>
                  </div>
                )}
              </div>
