@@ -1,4 +1,4 @@
-const EuljiPageWrapper = ({ pageNum, totalPages, barcode, testerBarcode, sectionMainTitle, subTitle, children, isLastPage }: any) => {
+const EuljiPageWrapper = ({ pageNum, totalPages, formalBarcode, sectionMainTitle, subTitle, children, isLastPage }: any) => {
   return (
     <div className="document-frame" style={{ width: '210mm', height: '297mm', position: 'relative', background: 'white', boxSizing: 'border-box', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', margin: '0 auto 2rem auto', overflow: 'hidden', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
       <div className="outer-border" style={{ position: 'absolute', top: '10mm', left: '10mm', right: '10mm', bottom: '10mm', border: '0.3pt solid #000', pointerEvents: 'none' }}></div>
@@ -10,7 +10,11 @@ const EuljiPageWrapper = ({ pageNum, totalPages, barcode, testerBarcode, section
             <img src="/kaic-logo.png" alt="KAIC" style={{ height: '30px' }} />
           </div>
           <div style={{ textAlign: 'right', fontSize: '9pt', fontWeight: 600 }}>
-            <div>성적서 번호 : {testerBarcode || barcode}</div>
+            {formalBarcode ? (
+              <div>성적서 번호 : {formalBarcode}</div>
+            ) : (
+              <div style={{ minHeight: '16px' }}></div>
+            )}
             <div style={{ color: '#475569', marginTop: '4px', fontSize: '8pt' }}>페이지: {pageNum} / {totalPages}</div>
           </div>
         </div>
@@ -46,6 +50,8 @@ const EuljiPageWrapper = ({ pageNum, totalPages, barcode, testerBarcode, section
 
 export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   if (!test) return null;
+
+  const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
 
   // 파싱
   const extraData = test.extra ? JSON.parse(test.extra) : {};
@@ -359,8 +365,7 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
             key={`tc-${pIdx}`} 
             pageNum={++currentPageCount} 
             totalPages={allTotalPages}
-            barcode={test.barcode}
-            testerBarcode={displayBarcode}
+            formalBarcode={isApproved ? test.formalBarcode : null}
             sectionMainTitle={pIdx === 0 ? "시험결과" : null}
             subTitle={pIdx === 0 ? null : `시험결과 (TC ${pageChunk.tcIndex + 1})`} 
             isLastPage={isAbsoluteLast}

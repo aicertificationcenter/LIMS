@@ -18,14 +18,12 @@ export const GapjiPreview = ({
     const year = startDateStr ? startDateStr.substring(0, 4) : new Date().getFullYear().toString();
     const yy = year.substring(2);
     const typeChar = test.testType === '일반시험' ? 'T' : 'K';
-    const seq = (test.testerBarcode || '').split('_').pop() || '000';
+    const seqBarcode = (test.barcode || '').split('-').pop() || '000';
     
     // 승인 완료된 경우만 정식 발급번호 사용, 그 외에는 접수번호 사용
     const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
     const hasFormal = isApproved && !!test.formalBarcode;
-    const issueNoLabel = hasFormal ? '성적서 번호' : '접수번호';
-    const issueNo = hasFormal ? test.formalBarcode : test.barcode;
-    const productId = `${yy}-${typeChar}-${seq}-S1`;
+    const productId = `${yy}-${typeChar}-${seqBarcode}-S1`;
     const testerName = test.tests?.[0]?.tester?.name || '-';
     const techMgr = users.find(u => u.role === 'TECH_MGR');
     
@@ -58,9 +56,15 @@ export const GapjiPreview = ({
                     </div>
                   </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '7pt', color: '#64748b' }}>{issueNoLabel}</div>
-                  <div style={{ fontSize: '9pt', fontWeight: 700 }}>{issueNo}</div>
-                  <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / 1 ]</div>
+                  {hasFormal ? (
+                    <>
+                      <div style={{ fontSize: '7pt', color: '#64748b' }}>성적서 번호</div>
+                      <div style={{ fontSize: '9pt', fontWeight: 700 }}>{test.formalBarcode}</div>
+                      <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / 1 ]</div>
+                    </>
+                  ) : (
+                    <div style={{ minHeight: '35px' }}></div>
+                  )}
                 </div>
               </div>
 

@@ -58,8 +58,8 @@ export default async function handler(req, res) {
         // Barcode Generation logic sequence
         if (!sample.formalBarcode) {
           const now = new Date();
-          const yyyy = now.getFullYear();
-          const prefix = sample.testType === 'KOLAS 시험' ? `KAIC-${yyyy}-K` : `KAIC-${yyyy}-T`;
+          const yy = String(now.getFullYear()).slice(2);
+          const prefix = sample.testType === 'KOLAS 시험' ? `KAIC-${yy}-K` : `KAIC-${yy}-T`;
           
           const count = await prisma.sample.count({
             where: { formalBarcode: { startsWith: prefix } }
