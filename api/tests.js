@@ -47,7 +47,12 @@ export default async function handler(req, res) {
         testPurpose: t.sample.testPurpose,
         testMethod: t.sample.testMethod,
         reportPdfUrl: t.sample.reportPdfUrl,
-        assignedAt: t.startTime
+        assignedAt: t.startTime,
+        gapjiRejection: t.sample.gapjiRejection,
+        euljiRejection: t.sample.euljiRejection,
+        formalBarcode: t.sample.formalBarcode,
+        gapjiApproved: t.sample.gapjiApproved,
+        euljiApproved: t.sample.euljiApproved
       }));
 
       return res.status(200).json(result);

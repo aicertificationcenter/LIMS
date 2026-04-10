@@ -346,12 +346,12 @@ export const Publish = () => {
            </div>
         </header>
 
-        {selectedTest.gapjiRejection && selectedTest.status === 'REVISING' && (
+        {selectedTest.gapjiRejection && (
           <div style={{ gridColumn: '1 / -1', padding: '1.25rem', background: '#fef2f2', border: '1.5px solid #ef4444', borderRadius: '12px', color: '#b91c1c', marginTop: '-1rem', marginBottom: '0.5rem', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)' }}>
             🚨 [갑지 반려사항] {selectedTest.gapjiRejection}
           </div>
         )}
-        {selectedTest.euljiRejection && selectedTest.status === 'REVISING' && (
+        {selectedTest.euljiRejection && (
           <div style={{ gridColumn: '1 / -1', padding: '1.25rem', background: '#fef2f2', border: '1.5px solid #ef4444', borderRadius: '12px', color: '#b91c1c', marginTop: selectedTest.gapjiRejection ? '0' : '-1rem', marginBottom: '0.5rem', fontWeight: 700, fontSize: '1.05rem', boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)' }}>
             🚨 [을지 반려사항] {selectedTest.euljiRejection}
           </div>
