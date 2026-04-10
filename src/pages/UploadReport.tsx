@@ -10,7 +10,7 @@ export const UploadReport = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && ['TESTER', 'TECH_MGR'].includes(user.role)) {
+    if (user && user.role !== 'ADMIN') {
       fetchMyTasks();
     }
   }, [user]);
