@@ -80,6 +80,7 @@ export const MyTests = () => {
   const [testProduct, setTestProduct] = useState('');   // 시험 대상 품목
   const [testPurpose, setTestPurpose] = useState('');   // 시험 목적
   const [testMethod, setTestMethod] = useState('');     // 시험 방법
+  const [clientAddress, setClientAddress] = useState(''); // 현장 주소와 별개인 의뢰처 회사 주소 (갑지 연동용)
 
   /** 
    * 선택된 시험이 변경될 때 양식 데이터 동기화
@@ -95,6 +96,12 @@ export const MyTests = () => {
       setTestProduct(selectedTest.testProduct || '');
       setTestPurpose(selectedTest.testPurpose || '');
       setTestMethod(selectedTest.testMethod || '');
+
+      let parsedExtra: any = {};
+      try {
+        if (selectedTest.extra) parsedExtra = JSON.parse(selectedTest.extra);
+      } catch (e) {}
+      setClientAddress(parsedExtra.clientAddress || '');
     }
   }, [selectedId, selectedTest]);
 
@@ -164,6 +171,12 @@ export const MyTests = () => {
       return;
     }
     try {
+      let currentExtra: any = {};
+      try {
+        if (selectedTest.extra) currentExtra = JSON.parse(selectedTest.extra);
+      } catch (e) {}
+      currentExtra.clientAddress = clientAddress;
+
       // 상태를 'IN_PROGRESS'로 변경하고 입력된 필드들을 업데이트
       await fetch('/api/receptions', {
         method: 'PATCH',
@@ -179,7 +192,8 @@ export const MyTests = () => {
           testAddress,
           testProduct,
           testPurpose,
-          testMethod
+          testMethod,
+          extra: JSON.stringify(currentExtra)
         })
       });
       alert(selectedTest.status === 'RECEIVED' ? '시험이 시작되었습니다.' : '시험 정보가 업데이트되었습니다.');
@@ -349,6 +363,20 @@ export const MyTests = () => {
                 
                 {/* 1. Technical Info Section (Full Width Textareas) */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem', marginBottom: '2.5rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                       <PackageCheck size={16} color="#64748b" /> 1. 의뢰처 주소 (갑지 연동)
+                    </label>
+                    <input 
+                      type="text"
+                      className="input-field" 
+                      placeholder="예: 서울특별시 강남구 역삼동 123-45" 
+                      value={clientAddress} 
+                      onChange={e => setClientAddress(e.target.value)} 
+                      style={{ height: '48px', width: '100%', resize: 'none' }}
+                      disabled={isLocked}
+                    />
+                  </div>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.7rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                        <Package size={16} color="#64748b" /> 2. 시험대상 품목
