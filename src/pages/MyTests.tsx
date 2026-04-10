@@ -530,11 +530,7 @@ export const MyTests = () => {
                       const printContent = document.getElementById('cover-page-content');
                       if (!printContent) return;
 
-                      const startDateStr = testStartDate ? String(testStartDate) : '';
-                      const yearStr = startDateStr ? startDateStr.substring(0, 4) : new Date().getFullYear().toString();
-                      const typeCharStr = testType === '일반시험' ? 'T' : 'K';
-                      const seqStr = (selectedTest.testerBarcode || '').split('_').pop() || '000';
-                      const currentIssueNoVal = `KAIC-${yearStr}-${typeCharStr}${seqStr}-0`;
+                      const currentIssueNoVal = selectedTest.formalBarcode || selectedTest.barcode;
 
                       const windowUrl = 'about:blank';
                       const uniqueName = new Date().getTime();

@@ -154,12 +154,8 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   const allTotalPages = actualTotalPages + 1; 
   let currentPageCount = 1;
 
-  // Temporary barcode rendering
-  const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
-  const issueSeq = (test.testerBarcode || '').split('_').pop() || '000';
-  const typeCharStr = test.testType === '일반시험' ? 'T' : 'K';
-  const yearStr = test.testStartDate ? test.testStartDate.substring(0, 4) : new Date().getFullYear().toString();
-  const displayBarcode = test.formalBarcode || `KAIC-${yearStr}-${typeCharStr}${issueSeq}-X`;
+  // 정식 발급번호가 있으면 우선 사용, 없으면 시험원 접수번호(testerBarcode), 없으면 접수번호(barcode) 사용
+  const displayBarcode = test.formalBarcode || test.testerBarcode || test.barcode;
 
   return (
     <div id="report-pdf-preview" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>

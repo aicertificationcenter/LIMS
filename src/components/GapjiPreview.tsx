@@ -20,8 +20,8 @@ export const GapjiPreview = ({
     const typeChar = test.testType === '일반시험' ? 'T' : 'K';
     const seq = (test.testerBarcode || '').split('_').pop() || '000';
     
-    // 정식 발급번호가 있으면 우선 사용, 없으면 임시 폼
-    const issueNo = test.formalBarcode || `KAIC-${year}-${typeChar}${seq}-X`;
+    // 정식 발급번호가 있으면 우선 사용, 없으면 접수번호 사용
+    const issueNo = test.formalBarcode || test.barcode;
     const productId = `${yy}-${typeChar}-${seq}-S1`;
     const testerName = test.tests?.[0]?.tester?.name || '-';
     const techMgr = users.find(u => u.role === 'TECH_MGR');

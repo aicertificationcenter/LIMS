@@ -296,7 +296,7 @@ export const Publish = () => {
               <img src="/kaic-logo.png" alt="KAIC" style={{ height: '30px' }} />
             </div>
             <div style={{ textAlign: 'right', fontSize: '9pt', fontWeight: 600 }}>
-              <div>성적서 번호 : {selectedTest?.formalBarcode || `KAIC-${new Date().getFullYear()}-${selectedTest?.testType === '일반시험' ? 'T' : 'K'}${(selectedTest?.testerBarcode || '').split('_').pop() || '000'}-X`}</div>
+              <div>성적서 번호 : {selectedTest?.formalBarcode || selectedTest?.testerBarcode || selectedTest?.barcode}</div>
               <div style={{ color: '#475569', marginTop: '4px', fontSize: '8pt' }}>페이지: {pageNum} / {totalPages}</div>
             </div>
           </div>
