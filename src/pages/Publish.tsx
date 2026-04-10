@@ -296,8 +296,16 @@ export const Publish = () => {
               <img src="/kaic-logo.png" alt="KAIC" style={{ height: '30px' }} />
             </div>
             <div style={{ textAlign: 'right', fontSize: '9pt', fontWeight: 600 }}>
-              <div>성적서 번호 : {((selectedTest?.status === 'APPROVED' || selectedTest?.status === 'COMPLETED') && selectedTest?.formalBarcode) ? selectedTest.formalBarcode : (selectedTest?.testerBarcode || selectedTest?.barcode)}</div>
-              <div style={{ color: '#475569', marginTop: '4px', fontSize: '8pt' }}>페이지: {pageNum} / {totalPages}</div>
+              {(() => {
+                const isApproved = selectedTest?.status === 'APPROVED' || selectedTest?.status === 'COMPLETED';
+                const showFormal = isApproved && selectedTest?.formalBarcode;
+                return showFormal ? (
+                  <div>성적서 번호 : {selectedTest.formalBarcode}</div>
+                ) : (
+                  <div style={{ minHeight: '16px' }}></div>
+                );
+              })()}
+              <div style={{ color: '#475569', marginTop: '4px', fontSize: '8pt', fontWeight: 400 }}>페이지: {pageNum} / {totalPages}</div>
             </div>
           </div>
 
