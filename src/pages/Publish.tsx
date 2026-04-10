@@ -238,11 +238,10 @@ export const Publish = () => {
 
     tc.evidences?.slice(0, tc.evidenceCount).forEach((ev: any, evIdx: number) => {
       const descLen = (ev.description || '').length;
-      const titleWeight = 10 + Math.ceil(descLen / 50);
-      blocks.push({ type: 'ev_title', weight: titleWeight, data: { ev, evIdx } });
-      ev.images?.forEach((img: any) => {
-        blocks.push({ type: 'ev_img', weight: 36, data: img });
-      });
+      const titleWeight = 12 + Math.ceil(descLen / 50);
+      const rowCount = ev.images ? Math.ceil(ev.images.length / 2) : 0;
+      const imagesWeight = rowCount * 36;
+      blocks.push({ type: 'evidence_group', weight: titleWeight + imagesWeight, data: { ev, evIdx } });
     });
     blocks.push({ type: 'evaluation', weight: 20, data: tc });
 
@@ -487,23 +486,23 @@ export const Publish = () => {
                     }
                     if (block.type === 'tcDetailItem') {
                       return (
-                        <div key={bIdx} style={{ border: '1px solid #cbd5e1', padding: '8px', borderRadius: '4px', background: '#f8fafc' }}>
-                          <div style={{ fontWeight: 800, marginBottom: '4px', fontSize: '9pt', color: 'var(--kaic-blue)' }}>[TC {block.data.index+1}] {block.data.original?.category || ''}</div>
-                          <div style={{ display: 'flex', marginBottom: '2px' }}>
-                            <span style={{ fontWeight: 700, width: '60px' }}>목 적 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.td.method || '-'}</span>
+                        <div key={bIdx} style={{ border: '1px solid #cbd5e1', padding: '12px', borderRadius: '6px', background: '#f8fafc' }}>
+                          <div style={{ fontWeight: 800, marginBottom: '10px', fontSize: '10pt', color: 'var(--kaic-blue)' }}>[TC {block.data.index+1}] {block.data.original?.category || ''}</div>
+                          <div style={{ display: 'flex', marginBottom: '10px' }}>
+                            <span style={{ fontWeight: 700, width: '70px' }}>목 적 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.td.method || '-'}</span>
                           </div>
-                          <div style={{ display: 'flex', marginBottom: '2px' }}>
-                            <span style={{ fontWeight: 700, width: '60px' }}>규 격 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.original?.standard || '-'}</span>
+                          <div style={{ display: 'flex', marginBottom: '10px' }}>
+                            <span style={{ fontWeight: 700, width: '70px' }}>규 격 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.original?.standard || '-'}</span>
                           </div>
-                          <div style={{ display: 'flex', marginBottom: '2px' }}>
-                            <span style={{ fontWeight: 700, width: '60px' }}>방 법 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.td.procedure || '-'}</span>
+                          <div style={{ display: 'flex', marginBottom: '10px' }}>
+                            <span style={{ fontWeight: 700, width: '70px' }}>방 법 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.td.procedure || '-'}</span>
                           </div>
                           <div style={{ display: 'flex' }}>
-                            <span style={{ fontWeight: 700, width: '60px' }}>특이사항 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.td.note || '-'}</span>
+                            <span style={{ fontWeight: 700, width: '70px' }}>특이사항 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.td.note || '-'}</span>
                           </div>
                         </div>
                       );
@@ -568,19 +567,30 @@ export const Publish = () => {
                           </div>
                         );
                       }
-                      if (block.type === 'ev_title') {
+                      if (block.type === 'evidence_group') {
                         return (
-                          <div key={bIdx} style={{ fontWeight: 700, marginTop: '2px', padding: '5px', color: 'var(--kaic-blue)', background: '#f1f5f9', borderLeft: '3px solid var(--kaic-blue)' }}>
-                            세부시험 {block.data.evIdx + 1} : {block.data.ev.title || '-'}
-                            {block.data.ev.description && <div style={{ fontSize: '8pt', marginTop: '2px', color: '#475569', fontWeight: 400, whiteSpace: 'pre-wrap' }}>{block.data.ev.description}</div>}
-                          </div>
-                        );
-                      }
-                      if (block.type === 'ev_img') {
-                        return (
-                          <div key={bIdx} style={{ border: '1px solid #e2e8f0', padding: '4px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', marginBottom: '2px' }}>
-                            <img src={block.data.url} alt="증적" style={{ width: '100%', height: 'auto', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
-                            <div style={{ fontSize: '8pt', marginTop: '4px', color: '#334155', fontWeight: 600 }}>{block.data.caption}</div>
+                          <div key={bIdx} style={{ border: '1.5pt solid #475569', marginBottom: '6px', background: '#fff' }}>
+                            <div style={{ fontWeight: 800, padding: '6px 10px', background: '#f1f5f9', borderBottom: '1.5pt solid #475569', display: 'flex', alignItems: 'center' }}>
+                              <span style={{ color: 'var(--kaic-blue)', marginRight: '8px' }}>세부시험 {block.data.evIdx + 1}</span> : {block.data.ev.title || '-'}
+                            </div>
+                            <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {block.data.ev.description && (
+                                <div style={{ fontSize: '8.5pt', color: '#1e293b', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                  {block.data.ev.description}
+                                </div>
+                              )}
+                              
+                              {block.data.ev.images?.length > 0 && (
+                                <div style={{ display: 'grid', gridTemplateColumns: block.data.ev.images.length > 1 ? '1fr 1fr' : '1fr', gap: '10px' }}>
+                                  {block.data.ev.images.map((img: any, iIdx: number) => (
+                                    <div key={iIdx} style={{ textAlign: 'center' }}>
+                                      <img src={img.url} alt="증적" style={{ width: '100%', maxHeight: block.data.ev.images.length > 1 ? '150px' : '240px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
+                                      {img.caption && <div style={{ fontSize: '8pt', marginTop: '6px', color: '#334155', fontWeight: 600 }}>{img.caption}</div>}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         );
                       }
