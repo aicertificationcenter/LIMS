@@ -160,10 +160,6 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   const allTotalPages = actualTotalPages + 1; 
   let currentPageCount = 1;
 
-  const isApproved = test.status === 'APPROVED' || test.status === 'COMPLETED';
-  // 승인 완료된 경우만 정식 발급번호 사용, 그 외에는 시험원 접수번호(testerBarcode) 또는 접수번호(barcode) 사용
-  const displayBarcode = (isApproved && test.formalBarcode) ? test.formalBarcode : (test.testerBarcode || test.barcode);
-
   return (
     <div id="report-pdf-preview" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
       
@@ -175,7 +171,7 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
       )}
 
       {/* Page 2: 시험결과 요약 */}
-      <EuljiPageWrapper pageNum={++currentPageCount} totalPages={allTotalPages} barcode={test.barcode} testerBarcode={displayBarcode} sectionMainTitle="시험결과 요약" isLastPage={false}>
+      <EuljiPageWrapper pageNum={++currentPageCount} totalPages={allTotalPages} formalBarcode={isApproved ? test.formalBarcode : null} sectionMainTitle="시험결과 요약" isLastPage={false}>
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5pt solid black', marginBottom: '25px', fontSize: '9pt', textAlign: 'center' }}>
           <tbody>
             <tr>
@@ -218,7 +214,7 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
 
       {/* Methods Pages */}
       {methodPages.map((chunk, cIdx) => (
-        <EuljiPageWrapper key={`method-${cIdx}`} pageNum={++currentPageCount} totalPages={allTotalPages} barcode={test.barcode} testerBarcode={displayBarcode} sectionMainTitle={cIdx === 0 ? "시험방법" : null} subTitle={cIdx === 0 ? null : "시험방법 (계속)"} isLastPage={false}>
+        <EuljiPageWrapper key={`method-${cIdx}`} pageNum={++currentPageCount} totalPages={allTotalPages} formalBarcode={isApproved ? test.formalBarcode : null} sectionMainTitle={cIdx === 0 ? "시험방법" : null} subTitle={cIdx === 0 ? null : "시험방법 (계속)"} isLastPage={false}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {chunk.map((block: any, bIdx: number) => {
               if (block.type === 'envDiagram') {
