@@ -98,6 +98,16 @@ export const Layout = () => {
               <UserCheck size={18} /> 시험원관리
             </Link>
           )}
+          {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
+            <Link to="/approvals" style={{ color: location.pathname==='/approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <CheckSquare size={18} /> 결재
+            </Link>
+          )}
+          {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
+            <Link to="/ledger" style={{ color: location.pathname==='/ledger' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={18} /> 발급대장
+            </Link>
+          )}
 
           {user.role !== 'ADMIN' && (
             <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -112,6 +122,11 @@ export const Layout = () => {
           {user.role !== 'ADMIN' && (
             <Link to="/publish" style={{ color: location.pathname==='/publish' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckSquare size={18} /> 발행
+            </Link>
+          )}
+          {user.role !== 'ADMIN' && (
+            <Link to="/upload-report" style={{ color: location.pathname==='/upload-report' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={18} /> 최종제출
             </Link>
           )}
         </nav>

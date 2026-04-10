@@ -139,5 +139,14 @@ export const apiClient = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+  },
+
+  /** 관리자 결재 처리 API */
+  approvals: {
+    process: (data: { id: string; actionType: 'GAPJI' | 'EULJI'; isApproved: boolean; rejectionReason?: string }) =>
+      apiClient.fetch('/approvals', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
   }
 };

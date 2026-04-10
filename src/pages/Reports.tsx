@@ -68,6 +68,8 @@ export const Reports = () => {
   
   /** 현재 선택된 시험 객체 */
   const selectedTest = myTests.find((t: any) => t.id === selectedId);
+  const isLocked = selectedTest && ['APPROVAL_REQUESTED', 'APPROVED', 'COMPLETED'].includes(selectedTest.status);
+
 
   // --- 시험 결과 요약(Test Case) 상태 관리 ---
   const [tcCount, setTcCount] = useState(1);
@@ -407,9 +409,26 @@ export const Reports = () => {
            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>시험번호: {selectedTest.testerBarcode || selectedTest.barcode}</p>
         </header>
 
+        {selectedTest.gapjiRejection && selectedTest.status === 'REVISING' && (
+          <div style={{ gridColumn: '1 / -1', padding: '1rem', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#b91c1c', marginBottom: '-1rem', fontWeight: 600 }}>
+            [갑지 반려사항] {selectedTest.gapjiRejection}
+          </div>
+        )}
+        {selectedTest.euljiRejection && selectedTest.status === 'REVISING' && (
+          <div style={{ gridColumn: '1 / -1', padding: '1rem', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#b91c1c', marginBottom: '-1rem', fontWeight: 600 }}>
+            [을지 반려사항] {selectedTest.euljiRejection}
+          </div>
+        )}
+        {isLocked && (
+           <div style={{ gridColumn: '1 / -1', padding: '1rem', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', color: '#d97706', marginBottom: '-1rem', fontWeight: 600 }}>
+             현재 결재 진행 중이거나 승인 완료된 건으로 내용을 수정할 수 없습니다.
+           </div>
+        )}
+
         {/* 0. 시험 결과 요약 입력 섹션 */}
         <section className="card" style={{ gridColumn: '1 / -1', border: '1px solid #cbd5e1', background: '#fff', padding: '1.5rem', borderRadius: '12px' }}>
-          <SectionHeader title="시험 결과 요약">
+          <fieldset disabled={isLocked} style={{ border: 'none', padding: 0, margin: 0 }}>
+            <SectionHeader title="시험 결과 요약">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>Test Case 개수 선택 (최대 15개):</span>
               <select 
@@ -1059,11 +1078,13 @@ export const Reports = () => {
             <button 
               className="btn btn-primary" 
               onClick={handleSaveTCResults}
-              style={{ padding: '1rem 4rem', fontSize: '1.2rem', fontWeight: 800, background: 'var(--kaic-navy)', borderRadius: '40px', boxShadow: '0 4px 12px rgba(29, 42, 120, 0.3)', display: 'flex', alignItems: 'center', gap: '12px' }}
+              disabled={isLocked}
+              style={{ padding: '1rem 4rem', fontSize: '1.2rem', fontWeight: 800, background: isLocked ? '#94a3b8' : 'var(--kaic-navy)', borderRadius: '40px', boxShadow: isLocked ? 'none' : '0 4px 12px rgba(29, 42, 120, 0.3)', display: 'flex', alignItems: 'center', gap: '12px', cursor: isLocked ? 'not-allowed' : 'pointer' }}
             >
               <Save size={24} /> 모든 시험 정보 저장 (Save All Information)
             </button>
           </div>
+          </fieldset>
         </section>
 
         </main>

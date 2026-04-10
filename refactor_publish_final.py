@@ -1,3 +1,7 @@
+import textwrap
+
+def generate_publish():
+    content = """
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
@@ -6,11 +10,11 @@ import { StatusBadge } from '../components/StatusBadge';
 
 export const Publish = () => {
   const { user } = useAuth();
-
+  
   const [myTests, setMyTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
+  
   const selectedTest = myTests.find((t: any) => t.id === selectedId);
 
   // Parsed JSON Extra States
@@ -18,7 +22,7 @@ export const Publish = () => {
   const [tcMethods, setTcMethods] = useState<any[]>([]);
   const [tcDetails, setTcDetails] = useState<any[]>([]);
   const [tcOutputs, setTcOutputs] = useState<any[]>([]);
-
+  
   // 누락된 신규 State 추가
   const [envDiagramUrl, setEnvDiagramUrl] = useState<string | null>(null);
   const [pcSpec, setPcSpec] = useState('');
@@ -54,11 +58,11 @@ export const Publish = () => {
         setTcMethods(extraData.tcMethods || []);
         setTcDetails(extraData.tcDetails || []);
         setTcOutputs(extraData.tcOutputs || []);
-
+        
         setEnvDiagramUrl(extraData.envDiagramUrl || null);
         setPcSpec(extraData.pcSpec || '');
         setEnvDescription(extraData.envDescription || '');
-
+        
         if (extraData.venueImages && Array.isArray(extraData.venueImages)) {
           setVenueImages(extraData.venueImages);
           setVenueImageCount(extraData.venueImageCount || 1);
@@ -70,7 +74,7 @@ export const Publish = () => {
           setVenueImageCount(1);
         }
         setVenueDescription(extraData.venueDescription || '');
-
+        
       } catch (e) {
         setTcResults([]); setTcMethods([]); setTcDetails([]); setTcOutputs([]);
         setEnvDiagramUrl(null); setPcSpec(''); setEnvDescription(''); setVenueImages([]); setVenueDescription('');
@@ -164,9 +168,9 @@ export const Publish = () => {
       await fetch('/api/receptions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId, status: 'APPROVAL_REQUESTED' })
+        body: JSON.stringify({ id: selectedId, status: 'COMPLETED' })
       });
-      alert('결재요청이 완료되었습니다.');
+      alert('결재요청이 완료되었습니다.\\n[참고: 결재 완료 후 출력 기능 활성화]');
       fetchMyTasks();
       setSelectedId(null);
     } catch (err: any) {
@@ -180,9 +184,9 @@ export const Publish = () => {
   const methodPages: any[] = [];
   let currentMethodChunk: any[] = [];
   let currentMethodWeight = 0;
-
+  
   const pushMethodBlock = (block: any) => {
-    if (currentMethodWeight + block.weight > 92 && currentMethodChunk.length > 0) {
+    if (currentMethodWeight + block.weight > 100 && currentMethodChunk.length > 0) {
       methodPages.push(currentMethodChunk);
       currentMethodChunk = [];
       currentMethodWeight = 0;
@@ -191,10 +195,9 @@ export const Publish = () => {
     currentMethodWeight += block.weight;
   };
 
-
-    // [블록 A: 시험 세부항목 및 방법 테이블 (기본 개요 대체)]
-  if (tcMethods && tcMethods.length > 0) {
-    pushMethodBlock({ type: 'tcMethodsTable', weight: Math.min(25 + tcMethods.length * 8, 80), data: { methods: tcMethods, product: selectedTest?.testProduct || '(나의시험에서 입력한 품목명이 자동 연동됩니다)' } });
+  // [블록 A: 기본 시험방법 (원문)]
+  if (selectedTest?.testMethod) {
+    pushMethodBlock({ type: 'testMethodSrc', weight: 15, data: selectedTest.testMethod });
   }
 
   // [블록 B: 시험환경]
@@ -202,11 +205,10 @@ export const Publish = () => {
     pushMethodBlock({ type: 'envDiagram', weight: envDiagramUrl ? 40 : 25, data: { envDiagramUrl, pcSpec, envDescription } });
   }
 
-  // [블록 B2: 시험 세부항목 및 방법 (테이블2)]
-  if (tcDetails && tcDetails.length > 0) {
-    pushMethodBlock({ type: 'tcDetailsTable', weight: Math.min(25 + tcDetails.length * 8, 80), data: { details: tcDetails, methods: tcMethods, product: selectedTest?.testProduct || '(나의시험에서 입력한 품목명이 자동 연동됩니다)' } });
+  // [블록 C: 시험 세부항목 및 방법 테이블]
+  if (tcMethods && tcMethods.length > 0) {
+    pushMethodBlock({ type: 'tcMethodsTable', weight: Math.min(20 + tcMethods.length * 6, 80), data: tcMethods });
   }
-
 
   // [블록 D: 시험장 환경 상세 (다중사진과 설명)]
   if (venueImages.slice(0, venueImageCount).some((v:any) => v.url)) {
@@ -218,7 +220,7 @@ export const Publish = () => {
     pushMethodBlock({ type: 'tcDetailHeader', weight: 10, data: null });
     tcDetails.forEach((td, i) => {
       const textLen = (td.method || '').length + (td.procedure || '').length + (td.note || '').length;
-      let weight = 15 + Math.ceil(textLen / 50); 
+      let weight = 15 + Math.ceil(textLen / 60); 
       if (weight > 80) weight = 80;
       pushMethodBlock({ type: 'tcDetailItem', weight, data: { td, original: tcMethods[i], index: i } });
     });
@@ -232,35 +234,13 @@ export const Publish = () => {
   const tcPages: any[] = [];
   tcOutputs.forEach((tc, idx) => {
     const blocks: any[] = [];
-    blocks.push({ type: 'tc_objective', weight: 15, data: { purpose: tcDetails[idx]?.method, standard: tcMethods[idx]?.standard } });
     blocks.push({ type: 'metric', weight: tc.metricFormulaImg ? 20 : 12, data: tc });
     blocks.push({ type: 'summary', weight: 12, data: tc });
-
+    
     tc.evidences?.slice(0, tc.evidenceCount).forEach((ev: any, evIdx: number) => {
-      const allImages = ev.images || [];
-      
-      if (allImages.length === 0) {
-        blocks.push({ type: 'evidence_group', weight: 45, data: { ev, evIdx, images: [] } });
-        return;
-      }
-
-      // Chunk images into sets of 4 max per box
-      const imageChunks = [];
-      for (let i = 0; i < allImages.length; i += 4) {
-        imageChunks.push(allImages.slice(i, i + 4));
-      }
-
-      imageChunks.forEach((imgChunk, chunkIdx) => {
-        blocks.push({ 
-          type: 'evidence_group', 
-          weight: 45, 
-          data: { 
-            ev, 
-            evIdx, 
-            images: imgChunk,
-            isContinued: chunkIdx > 0
-          } 
-        });
+      blocks.push({ type: 'ev_title', weight: 10, data: { ev, evIdx } });
+      ev.images?.forEach((img: any) => {
+        blocks.push({ type: 'ev_img', weight: 26, data: img });
       });
     });
     blocks.push({ type: 'evaluation', weight: 20, data: tc });
@@ -269,7 +249,7 @@ export const Publish = () => {
     let currentTcWeight = 0;
 
     blocks.forEach(block => {
-      if (currentTcWeight + block.weight > 92 && currentTcChunk.length > 0) {
+      if (currentTcWeight + block.weight > 100 && currentTcChunk.length > 0) {
         tcPages.push({ tcIndex: idx, blocks: currentTcChunk });
         currentTcChunk = [];
         currentTcWeight = 0;
@@ -289,14 +269,14 @@ export const Publish = () => {
       <div className="document-frame" style={{ width: '210mm', height: '297mm', position: 'relative', background: 'white', boxSizing: 'border-box', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', margin: '0 auto 2rem auto', overflow: 'hidden', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
         <div className="outer-border" style={{ position: 'absolute', top: '10mm', left: '10mm', right: '10mm', bottom: '10mm', border: '0.3pt solid #000', pointerEvents: 'none' }}></div>
         <img src="/Back.png" className="watermark" alt="" style={{ position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '120mm', opacity: 0.08, zIndex: 0, pointerEvents: 'none' }} />
-
-        <div className="document-content" style={{ padding: '12mm 15mm', display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', zIndex: 1 }}>
+        
+        <div className="document-content" style={{ padding: '15mm 20mm', display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1.5pt solid black', paddingBottom: '10px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <img src="/kaic-logo.png" alt="KAIC" style={{ height: '30px' }} />
             </div>
             <div style={{ textAlign: 'right', fontSize: '9pt', fontWeight: 600 }}>
-              <div>성적서 번호 : {selectedTest?.formalBarcode || `KAIC-${new Date().getFullYear()}-${selectedTest?.testType === '일반시험' ? 'T' : 'K'}${(selectedTest?.testerBarcode || '').split('_').pop() || '000'}-X`}</div>
+              <div>발급(접수)번호 : {selectedTest?.testerBarcode || selectedTest?.barcode}</div>
               <div style={{ color: '#475569', marginTop: '4px', fontSize: '8pt' }}>페이지: {pageNum} / {totalPages}</div>
             </div>
           </div>
@@ -346,17 +326,12 @@ export const Publish = () => {
            </div>
         </header>
 
-        <section style={{ gridColumn: '1 / -1', background: '#94a3b8', padding: '3rem 1rem', borderRadius: '12px', position: 'relative' }}>
-          {selectedTest.status !== 'APPROVED' && selectedTest.status !== 'COMPLETED' && (
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)', fontSize: '150pt', color: 'rgba(255,0,0,0.2)', fontWeight: 900, pointerEvents: 'none', zIndex: 100 }}>
-              DRAFT
-            </div>
-          )}
+        <section style={{ gridColumn: '1 / -1', background: '#94a3b8', padding: '3rem 1rem', borderRadius: '12px' }}>
           <div id="report-pdf-preview" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
+            
             {/* Page 2: 시험결과 요약 */}
             <EuljiPageWrapper pageNum={++currentPageCount} sectionMainTitle="시험결과 요약" isLastPage={false}>
-
+              
               <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5pt solid black', marginBottom: '25px', fontSize: '9pt', textAlign: 'center' }}>
                 <tbody>
                   <tr>
@@ -396,6 +371,14 @@ export const Publish = () => {
               <EuljiPageWrapper key={`method-${cIdx}`} pageNum={++currentPageCount} sectionMainTitle={cIdx === 0 ? "시험방법" : null} subTitle={cIdx === 0 ? null : "시험방법 (계속)"} isLastPage={false}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {chunk.map((block: any, bIdx: number) => {
+                    if (block.type === 'testMethodSrc') {
+                      return (
+                        <div key={bIdx}>
+                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt' }}>▶ 일반 시험방법 (개요)</div>
+                          <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data}</div>
+                        </div>
+                      );
+                    }
                     if (block.type === 'envDiagram') {
                        return (
                         <div key={bIdx} style={{ border: '1px solid black', padding: '8px' }}>
@@ -421,68 +404,27 @@ export const Publish = () => {
                     if (block.type === 'tcMethodsTable') {
                       return (
                         <div key={bIdx}>
-                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt' }}>▶ 시험방법</div>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black', fontSize: '8.5pt' }}>
+                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt' }}>▶ 시험 세부항목 및 방법</div>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black' }}>
                             <thead style={{ background: '#f1f5f9' }}>
                               <tr>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '25%' }}>시험대상품목의 명칭</th>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '35%' }}>시험대상 항목</th>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '20%' }}>시험대상 품목의 형태</th>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '20%' }}>시험규격</th>
+                                <th style={{ border: '1px solid black', padding: '6px' }}>TC 번호</th>
+                                <th style={{ border: '1px solid black', padding: '6px' }}>시험대상 항목</th>
+                                <th style={{ border: '1px solid black', padding: '6px' }}>시험방법 부문</th>
+                                <th style={{ border: '1px solid black', padding: '6px' }}>시험규격</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {block.data.methods.map((tm: any, tIdx: number) => (
+                              {block.data.map((tm: any, tIdx: number) => (
                                 <tr key={tIdx}>
-                                  {tIdx === 0 && (
-                                    <td rowSpan={block.data.methods.length} style={{ border: '1px solid black', padding: '6px', fontWeight: 600, color: 'var(--kaic-blue)', wordBreak: 'break-all' }}>
-                                      {block.data.product}
-                                    </td>
-                                  )}
-                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left' }}>
-                                    <span style={{ fontWeight: 800 }}>[TC{tIdx+1}]</span> {tm.category || '-'}
-                                  </td>
-                                  <td style={{ border: '1px solid black', padding: '6px' }}>{tm.type || '-'}</td>
-                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left' }}>{tm.standard || '-'}</td>
+                                  <td style={{ border: '1px solid black', padding: '4px' }}>TC {tIdx+1}</td>
+                                  <td style={{ border: '1px solid black', padding: '4px' }}>{tm.category || '-'}</td>
+                                  <td style={{ border: '1px solid black', padding: '4px' }}>{tm.type || '-'}</td>
+                                  <td style={{ border: '1px solid black', padding: '4px', textAlign: 'left' }}>{tm.standard || '-'}</td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
-                          <div style={{ marginTop: '6px', fontSize: '8pt', color: '#475569', lineHeight: 1.4 }}>
-                            ○ 위 각 시험항목의 대상이 되는 시험대상 목적물(소프트웨어 모델 및 데이터셋)은 ISO/IEC 17025 및 측정불확도 추정 요건과 무관하게 시험 의뢰기관에 의해 제공되었으며, 본 시험기관은 제공된 데이터셋과 모델을 사용하여 성능 평가를 수행함.
-                          </div>
-                        </div>
-                      );
-                    }
-                    if (block.type === 'tcDetailsTable') {
-                      return (
-                        <div key={bIdx}>
-                          <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '9.5pt', color: '#1e293b' }}>▶ 시험 세부항목 및 방법</div>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid black', fontSize: '8.5pt' }}>
-                            <thead style={{ background: '#f1f5f9' }}>
-                              <tr>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '15%' }}>시험항목</th>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '45%' }}>시험 세부항목/기준</th>
-                                <th style={{ border: '1px solid black', padding: '6px', width: '40%' }}>시험 방법</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {block.data.details.map((tc: any, tIdx: number) => (
-                                <tr key={tIdx}>
-                                  <td style={{ border: '1px solid black', padding: '6px', fontWeight: 800 }}>TC{tIdx+1}</td>
-                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left', whiteSpace: 'pre-wrap', color: '#334155' }}>
-                                    {block.data.methods[tIdx]?.standard || '-'}
-                                  </td>
-                                  <td style={{ border: '1px solid black', padding: '6px', textAlign: 'left', whiteSpace: 'pre-wrap', color: '#334155' }}>
-                                    {tc.method || '-'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                          <div style={{ marginTop: '6px', fontSize: '8pt', color: '#475569', lineHeight: 1.4 }}>
-                            ○ 소프트웨어 성능시험 시험대상품목 "{block.data.product}"을(를) 대상으로 주어진 시험 방법에 따라 시험을 수행한다.
-                          </div>
                         </div>
                       );
                     }
@@ -511,23 +453,23 @@ export const Publish = () => {
                     }
                     if (block.type === 'tcDetailItem') {
                       return (
-                        <div key={bIdx} style={{ border: '1px solid #cbd5e1', padding: '12px', borderRadius: '6px', background: '#f8fafc' }}>
-                          <div style={{ fontWeight: 800, marginBottom: '10px', fontSize: '10pt', color: 'var(--kaic-blue)' }}>[TC {block.data.index+1}] {block.data.original?.category || ''}</div>
-                          <div style={{ display: 'flex', marginBottom: '10px' }}>
-                            <span style={{ fontWeight: 700, width: '70px' }}>목 적 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.td.method || '-'}</span>
+                        <div key={bIdx} style={{ border: '1px solid #cbd5e1', padding: '8px', borderRadius: '4px', background: '#f8fafc' }}>
+                          <div style={{ fontWeight: 800, marginBottom: '4px', fontSize: '9pt', color: 'var(--kaic-blue)' }}>[TC {block.data.index+1}] {block.data.original?.category || ''}</div>
+                          <div style={{ display: 'flex', marginBottom: '2px' }}>
+                            <span style={{ fontWeight: 700, width: '60px' }}>목 적 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.td.method || '-'}</span>
                           </div>
-                          <div style={{ display: 'flex', marginBottom: '10px' }}>
-                            <span style={{ fontWeight: 700, width: '70px' }}>규 격 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.original?.standard || '-'}</span>
+                          <div style={{ display: 'flex', marginBottom: '2px' }}>
+                            <span style={{ fontWeight: 700, width: '60px' }}>규 격 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.original?.standard || '-'}</span>
                           </div>
-                          <div style={{ display: 'flex', marginBottom: '10px' }}>
-                            <span style={{ fontWeight: 700, width: '70px' }}>방 법 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.td.procedure || '-'}</span>
+                          <div style={{ display: 'flex', marginBottom: '2px' }}>
+                            <span style={{ fontWeight: 700, width: '60px' }}>방 법 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.td.procedure || '-'}</span>
                           </div>
                           <div style={{ display: 'flex' }}>
-                            <span style={{ fontWeight: 700, width: '70px' }}>특이사항 :</span>
-                            <span style={{ flex: 1, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{block.data.td.note || '-'}</span>
+                            <span style={{ fontWeight: 700, width: '60px' }}>특이사항 :</span>
+                            <span style={{ flex: 1, whiteSpace: 'pre-wrap' }}>{block.data.td.note || '-'}</span>
                           </div>
                         </div>
                       );
@@ -550,7 +492,7 @@ export const Publish = () => {
                   isLastPage={isAbsoluteLast}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
+                    
                     {pIdx === 0 && (
                       <div style={{ marginBottom: '5px', color: '#1e293b' }}>
                          <span style={{ fontSize: '11pt', fontWeight: 800, padding: '4px 10px', background: '#f1f5f9', borderRadius: '4px' }}>시험결과 (TC {pageChunk.tcIndex + 1} - {tcMethods[pageChunk.tcIndex]?.category || ''})</span>
@@ -558,20 +500,6 @@ export const Publish = () => {
                     )}
 
                     {pageChunk.blocks.map((block: any, bIdx: number) => {
-                      if (block.type === 'tc_objective') {
-                        return (
-                          <div key={bIdx} style={{ background: '#f8fafc', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '4px', marginBottom: '2px' }}>
-                            <div style={{ display: 'flex', marginBottom: '6px' }}>
-                              <span style={{ fontWeight: 800, width: '50px', color: '#334155', fontSize: '9pt' }}>1) 목적 :</span>
-                              <span style={{ flex: 1, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '9pt' }}>{block.data.purpose || '-'}</span>
-                            </div>
-                            <div style={{ display: 'flex' }}>
-                              <span style={{ fontWeight: 800, width: '50px', color: '#334155', fontSize: '9pt' }}>2) 규격 :</span>
-                              <span style={{ flex: 1, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '9pt' }}>{block.data.standard || '-'}</span>
-                            </div>
-                          </div>
-                        );
-                      }
                       if (block.type === 'metric') {
                         return (
                           <div key={bIdx} style={{ border: '1px solid black', padding: '6px', background: '#fff' }}>
@@ -592,43 +520,19 @@ export const Publish = () => {
                           </div>
                         );
                       }
-                      if (block.type === 'evidence_group') {
-                        const hasImages = block.data.images && block.data.images.length > 0;
-                        const numImages = hasImages ? block.data.images.length : 0;
-                        const gridCols = numImages > 1 ? '1fr 1fr' : '1fr';
-                        const gridRows = numImages > 2 ? '1fr 1fr' : '1fr';
-
+                      if (block.type === 'ev_title') {
                         return (
-                          <div key={bIdx} style={{ border: '1.5pt solid #475569', marginBottom: '8px', background: '#fff', boxSizing: 'border-box' }}>
-                            <div style={{ fontWeight: 800, padding: '6px 10px', background: '#f1f5f9', borderBottom: '1.5pt solid #475569', display: 'flex', alignItems: 'center' }}>
-                              <span style={{ color: 'var(--kaic-blue)', marginRight: '8px' }}>세부시험 {block.data.evIdx + 1}{block.data.isContinued ? ' (계속)' : ''}</span> : {block.data.ev.title || '-'}
-                            </div>
-                            <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                              {block.data.ev.description && !block.data.isContinued && (
-                                <div style={{ fontSize: '8.5pt', color: '#1e293b', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-                                  {block.data.ev.description}
-                                </div>
-                              )}
-                              
-                              {hasImages && (
-                                <div style={{ 
-                                  display: 'grid', 
-                                  gridTemplateColumns: gridCols, 
-                                  gridTemplateRows: gridRows,
-                                  gap: '10px',
-                                  height: '320px' // 고정 높이 지정 
-                                }}>
-                                  {block.data.images.map((img: any, iIdx: number) => (
-                                    <div key={iIdx} style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-                                      <div style={{ flex: 1, border: '1px solid #cbd5e1', backgroundColor: '#fdfdfd', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                        <img src={img.url} alt="증적" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                      </div>
-                                      {img.caption && <div style={{ fontSize: '8pt', marginTop: '4px', color: '#334155', fontWeight: 600, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{img.caption}</div>}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                          <div key={bIdx} style={{ fontWeight: 700, marginTop: '2px', padding: '5px', color: 'var(--kaic-blue)', background: '#f1f5f9', borderLeft: '3px solid var(--kaic-blue)' }}>
+                            세부시험 {block.data.evIdx + 1} : {block.data.ev.title || '-'}
+                            {block.data.ev.description && <div style={{ fontSize: '8pt', marginTop: '2px', color: '#475569', fontWeight: 400, whiteSpace: 'pre-wrap' }}>{block.data.ev.description}</div>}
+                          </div>
+                        );
+                      }
+                      if (block.type === 'ev_img') {
+                        return (
+                          <div key={bIdx} style={{ border: '1px solid #e2e8f0', padding: '4px', textAlign: 'center', width: '100%', background: '#f8fafc', borderRadius: '4px', marginBottom: '2px' }}>
+                            <img src={block.data.url} alt="증적" style={{ maxWidth: '100%', maxHeight: '250px', objectFit: 'contain', backgroundColor: 'white', border: '1px solid #cbd5e1' }} />
+                            <div style={{ fontSize: '8pt', marginTop: '4px', color: '#334155', fontWeight: 600 }}>{block.data.caption}</div>
                           </div>
                         );
                       }
@@ -701,7 +605,7 @@ export const Publish = () => {
         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <CheckCircle size={24} color="var(--kaic-blue)" /> 발행 대상 목록 (Publish Tasks)
         </h2>
-
+        
         {myTests.length > 0 ? (
           <table className="data-table" style={{ marginTop: '1rem' }}>
             <thead>
@@ -734,3 +638,10 @@ export const Publish = () => {
     </main>
   );
 };
+"""
+    
+    with open('src/pages/Publish.tsx', 'w', encoding='utf-8') as f:
+        f.write(textwrap.dedent(content).strip())
+
+if __name__ == "__main__":
+    generate_publish()

@@ -139,6 +139,19 @@ export const MyTests = () => {
    * 기존 상담 내역 수정 
    * @param id 상담 기록 ID
    */
+  const handleEditConsult = async (id: string) => {
+    if (!editText.trim()) return;
+    try {
+      await apiClient.consultations.update(id, editText);
+      setEditingId(null);
+      fetchMyTasks();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const isLocked = selectedTest && ['APPROVAL_REQUESTED', 'APPROVED', 'COMPLETED'].includes(selectedTest.status);
+
   const handleUpdateConsult = async (id: string) => {
     if (!editText.trim() || !user) return;
     try {
@@ -306,6 +319,21 @@ export const MyTests = () => {
               {(!selectedTest.consultations || selectedTest.consultations.length === 0) && (
                 <div style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', padding: '1rem 0' }}>등록된 협의 내역이 없습니다.</div>
               )}
+              {selectedTest.gapjiRejection && selectedTest.status === 'REVISING' && (
+                <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#b91c1c', marginBottom: '1.5rem', fontWeight: 600 }}>
+                  [갑지 반려사항] {selectedTest.gapjiRejection}
+                </div>
+              )}
+              {selectedTest.euljiRejection && selectedTest.status === 'REVISING' && (
+                <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#b91c1c', marginBottom: '1.5rem', fontWeight: 600 }}>
+                  [을지 반려사항] {selectedTest.euljiRejection}
+                </div>
+              )}
+              {isLocked && (
+                 <div style={{ padding: '1rem', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', color: '#d97706', marginBottom: '1.5rem', fontWeight: 600 }}>
+                   현재 결재 진행 중이거나 승인 완료된 건으로 내용을 수정할 수 없습니다.
+                 </div>
+              )}
               
               {selectedTest.status !== 'COMPLETED' && (
                 <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -345,6 +373,7 @@ export const MyTests = () => {
                       value={testProduct} 
                       onChange={e => setTestProduct(e.target.value)} 
                       style={{ minHeight: '90px', resize: 'vertical' }}
+                      disabled={isLocked}
                     />
                   </div>
                   <div className="form-group" style={{ margin: 0 }}>
@@ -358,6 +387,7 @@ export const MyTests = () => {
                       value={testPurpose} 
                       onChange={e => setTestPurpose(e.target.value)} 
                       style={{ minHeight: '70px', resize: 'vertical' }}
+                      disabled={isLocked}
                     />
                   </div>
                   <div className="form-group" style={{ margin: 0 }}>
@@ -371,6 +401,7 @@ export const MyTests = () => {
                       value={testMethod} 
                       onChange={e => setTestMethod(e.target.value)} 
                       style={{ minHeight: '120px', resize: 'vertical' }}
+                      disabled={isLocked}
                     />
                   </div>
                 </div>
@@ -379,15 +410,15 @@ export const MyTests = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', padding: '2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #eef2f6' }}>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>📅 시험 시작 일자</label>
-                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} style={{ width: '100%', height: '48px' }} />
+                    <input type="date" className="input-field" value={testStartDate} onChange={e => setTestStartDate(e.target.value)} style={{ width: '100%', height: '48px' }} disabled={isLocked} />
                   </div>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🏁 시험 종료 일자</label>
-                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} style={{ width: '100%', height: '48px' }} />
+                    <input type="date" className="input-field" value={testEndDate} onChange={e => setTestEndDate(e.target.value)} style={{ width: '100%', height: '48px' }} disabled={isLocked} />
                   </div>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🏢 시험 예정 장소</label>
-                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)} style={{ width: '100%', height: '48px' }}>
+                    <select className="input-field" value={testLocation} onChange={e => setTestLocation(e.target.value)} style={{ width: '100%', height: '48px' }} disabled={isLocked}>
                       <option value="">장소 선택</option>
                       <option value="고정시험실">고정시험실</option>
                       <option value="현장시험">현장시험</option>
@@ -396,7 +427,7 @@ export const MyTests = () => {
                   </div>
                   <div className="form-group">
                     <label className="label" style={{ color: '#334155', fontWeight: 700, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '6px' }}>🧪 시험 구분</label>
-                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)} style={{ height: '48px' }}>
+                    <select className="input-field" value={testType} onChange={e => setTestType(e.target.value)} style={{ height: '48px' }} disabled={isLocked}>
                       <option value="">구분 선택</option>
                       <option value="일반시험">일반시험</option>
                       <option value="KOLAS 시험">KOLAS 시험</option>
@@ -412,23 +443,26 @@ export const MyTests = () => {
                         style={{ height: '48px', flex: 1 }}
                         value={testAddress} 
                         onChange={e => setTestAddress(e.target.value)} 
+                        disabled={isLocked}
                       />
                       <button 
                         className="btn" 
                         onClick={handleStartTest}
+                        disabled={isLocked}
                         style={{ 
-                          background: 'linear-gradient(135deg, var(--kaic-navy) 0%, #2e3b8e 100%)', 
+                          background: isLocked ? '#94a3b8' : 'linear-gradient(135deg, var(--kaic-navy) 0%, #2e3b8e 100%)', 
                           color: 'white', 
                           padding: '0 24px', 
                           borderRadius: '8px', 
                           fontWeight: 600, 
-                          boxShadow: '0 4px 6px rgba(29, 42, 120, 0.2)',
+                          boxShadow: isLocked ? 'none' : '0 4px 6px rgba(29, 42, 120, 0.2)',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '8px',
                           whiteSpace: 'nowrap',
                           height: '48px',
-                          margin: 0
+                          margin: 0,
+                          cursor: isLocked ? 'not-allowed' : 'pointer'
                         }}
                       >
                         <Save size={18} /> 정보 업데이트

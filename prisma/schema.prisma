@@ -66,6 +66,11 @@ model Sample {
   testMethod    String?
   extra         String?
   testerBarcode String?
+  formalBarcode String?
+  gapjiApproved Boolean @default(false)
+  euljiApproved Boolean @default(false)
+  gapjiRejection String?
+  euljiRejection String?
   receivedAt   DateTime @default(now())
   tests        Test[]
   consultations Consultation[]
@@ -80,6 +85,9 @@ enum SampleStatus {
   IN_PROGRESS
   COMPLETED
   DISPOSED
+  APPROVAL_REQUESTED
+  REVISING
+  APPROVED
 }
 
 model Test {
