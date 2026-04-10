@@ -58,6 +58,37 @@ export const Ledger = () => {
 
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>발급대장 데이터를 불러오는 중...</div>;
 
+  const exportToCSV = () => {
+    if (filteredData.length === 0) {
+      alert("출력할 데이터가 없습니다.");
+      return;
+    }
+
+    const headers = ['정식 발급번호', '의뢰 기관명', '시험대상 품목', '접수 일자', '시작 일자', '담당 시험원'];
+    const rows = filteredData.map(r => [
+      r.formalBarcode || r.barcode || '-',
+      r.client || r.clientId || '-',
+      r.testProduct || r.target || '-',
+      new Date(r.receivedAt).toLocaleDateString(),
+      r.testStartDate || '-',
+      r.tests?.[0]?.tester?.name || '-'
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // \uFEFF is BOM to ensure Excel reads UTF-8 correctly
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); 
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.download = `KAIC_성적서_발급대장_${dateStr}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
       <section className="card" style={{ gridColumn: '1 / -1' }}>
@@ -65,22 +96,30 @@ export const Ledger = () => {
           <h2 className="card-title" style={{ margin: 0, border: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
              <FileText size={24} color="var(--kaic-blue)" /> 성적서 발급대장
           </h2>
-          <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
-            {(['ALL', 'KOLAS', 'GENERAL'] as const).map(tab => (
-              <button 
-                key={tab}
-                onClick={() => setFilterType(tab)}
-                style={{
-                  padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700,
-                  background: filterType === tab ? 'white' : 'transparent',
-                  color: filterType === tab ? 'var(--kaic-navy)' : '#64748b',
-                  boxShadow: filterType === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  border: 'none', cursor: 'pointer'
-                }}
-              >
-                {tab === 'ALL' ? '전체 내역' : tab === 'KOLAS' ? 'KOLAS 시험' : '일반 시험'}
-              </button>
-            ))}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
+              {(['ALL', 'KOLAS', 'GENERAL'] as const).map(tab => (
+                <button 
+                  key={tab}
+                  onClick={() => setFilterType(tab)}
+                  style={{
+                    padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700,
+                    background: filterType === tab ? 'white' : 'transparent',
+                    color: filterType === tab ? 'var(--kaic-navy)' : '#64748b',
+                    boxShadow: filterType === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    border: 'none', cursor: 'pointer'
+                  }}
+                >
+                  {tab === 'ALL' ? '전체 내역' : tab === 'KOLAS' ? 'KOLAS 시험' : '일반 시험'}
+                </button>
+              ))}
+            </div>
+            <button 
+              onClick={exportToCSV}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--kaic-navy)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}
+            >
+              <Download size={16} /> CSV 내보내기
+            </button>
           </div>
         </div>
 
