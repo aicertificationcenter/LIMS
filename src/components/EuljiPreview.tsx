@@ -62,6 +62,12 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
                       : (extraData.envImages && Array.isArray(extraData.envImages) ? extraData.envImages : []);
   const venueDescription = extraData.venueDescription || '';
 
+  const calcTextWeight = (text: string) => {
+    if (!text) return 0;
+    const lineBreaks = (text.match(/\n/g) || []).length;
+    return (lineBreaks + Math.ceil(text.length / 45)) * 1.5;
+  };
+
   // 페이지네이션 엔진
   const methodPages: any[] = [];
   let currentMethodChunk: any[] = [];
@@ -92,9 +98,9 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   if (tcDetails.length > 0) {
     pushMethodBlock({ type: 'tcDetailHeader', weight: 10, data: null });
     tcDetails.forEach((td: any, i: number) => {
-      const textLen = (td.method || '').length + (td.procedure || '').length + (td.note || '').length;
-      let weight = 15 + Math.ceil(textLen / 50); 
-      if (weight > 80) weight = 80;
+      const combinedText = (td.method || '') + '\n' + (td.procedure || '') + '\n' + (td.note || '') + '\n' + (tcMethods[i]?.standard || '');
+      let weight = 15 + calcTextWeight(combinedText); 
+      if (weight > 92) weight = 92;
       pushMethodBlock({ type: 'tcDetailItem', weight, data: { td, original: tcMethods[i], index: i } });
     });
   }
@@ -103,9 +109,14 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
   const tcPages: any[] = [];
   tcOutputs.forEach((tc: any, idx: number) => {
     const blocks: any[] = [];
-    blocks.push({ type: 'tc_objective', weight: 15, data: { purpose: tcDetails[idx]?.method, standard: tcMethods[idx]?.standard } });
-    blocks.push({ type: 'metric', weight: tc.metricFormulaImg ? 20 : 12, data: tc });
-    blocks.push({ type: 'summary', weight: 12, data: tc });
+    
+    const objWeight = 12 + calcTextWeight(tcDetails[idx]?.method) + calcTextWeight(tcMethods[idx]?.standard);
+    blocks.push({ type: 'tc_objective', weight: Math.min(objWeight, 60), data: { purpose: tcDetails[idx]?.method, standard: tcMethods[idx]?.standard } });
+    
+    blocks.push({ type: 'metric', weight: tc.metricFormulaImg ? 20 : 12 + calcTextWeight(tc.metricName), data: tc });
+    
+    const sumWeight = 12 + calcTextWeight(tc.resultSummary);
+    blocks.push({ type: 'summary', weight: Math.min(sumWeight, 60), data: tc });
 
     tc.evidences?.slice(0, tc.evidenceCount).forEach((ev: any, evIdx: number) => {
       const allImages = ev.images || [];
@@ -119,7 +130,9 @@ export const EuljiPreview = ({ test }: { test: any, user?: any }) => {
         blocks.push({ type: 'evidence_group', weight: 45, data: { ev, evIdx, images: imgChunk, isContinued: chunkIdx > 0 } });
       });
     });
-    blocks.push({ type: 'evaluation', weight: 20, data: tc });
+    
+    const evalWeight = 15 + calcTextWeight(tc.opinion);
+    blocks.push({ type: 'evaluation', weight: Math.min(evalWeight, 60), data: tc });
 
     let currentTcChunk: any[] = [];
     let currentTcWeight = 0;
