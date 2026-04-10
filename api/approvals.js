@@ -95,7 +95,8 @@ export default async function handler(req, res) {
 
     const updatedSample = await prisma.sample.update({
       where: { id },
-      data: updateData
+      data: updateData,
+      select: { id: true, status: true, barcode: true }
     });
 
     if (testerId) {

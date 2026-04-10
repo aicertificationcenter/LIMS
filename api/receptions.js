@@ -60,7 +60,8 @@ export default async function handler(req, res) {
             target,
             extra,
             status: 'RECEIVED'
-          }
+          },
+          select: { id: true, barcode: true, clientId: true, status: true }
         });
         const { reportPdfUrl: _, ...safeResponse } = newSample;
         return res.status(201).json(safeResponse);
@@ -112,7 +113,8 @@ export default async function handler(req, res) {
              testPurpose,
              testMethod,
              extra
-          }
+          },
+          select: { id: true, barcode: true, clientId: true, status: true }
         });
 
         // Create or update Test record for the assignment
