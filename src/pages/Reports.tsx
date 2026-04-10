@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
+import { StatusBadge } from '../components/StatusBadge';
 import { UploadCloud, Image as ImageIcon, Monitor, Save, ChevronDown, ChevronRight, PlusCircle, Trash2 } from 'lucide-react';
 
 /**
@@ -1120,7 +1121,7 @@ export const Reports = () => {
                   <td>{t.client}</td>
                   <td><span style={{ fontSize: '0.8rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>{t.testType || '-'}</span></td>
                   <td>
-                    <span className={`badge badge-${t.status.toLowerCase()}`}>{t.status === 'COMPLETED' ? '완료' : '시험 중'}</span>
+                    <StatusBadge status={t.status} />
                   </td>
                   <td>
                     <button className="btn btn-secondary" onClick={() => setSelectedId(t.id)} style={{ padding: '4px 12px', minHeight: '32px', fontSize: '0.85rem' }}>성적서 작성</button>
