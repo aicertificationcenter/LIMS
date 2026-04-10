@@ -42,15 +42,21 @@ export const UploadReport = () => {
     reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
       try {
-        await fetch('/api/receptions', {
+        const res = await fetch('/api/receptions', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, reportPdfUrl: dataUrl }) // Upload as DataURL for now
         });
+        
+        if (!res.ok) {
+           const errData = await res.json().catch(() => null);
+           throw new Error(errData?.message || `서버 응답 오류: ${res.status}`);
+        }
+        
         alert('파일이 문서 서버에 업로드되었습니다. 완료 버튼을 눌러 확정해주세요.');
         fetchMyTasks();
-      } catch (err) {
-        alert('업로드 중 오류가 발생했습니다.');
+      } catch (err: any) {
+        alert(`업로드 중 오류가 발생했습니다: ${err.message}`);
       }
     };
     reader.readAsDataURL(file);

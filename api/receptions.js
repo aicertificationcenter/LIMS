@@ -175,3 +175,11 @@ export default async function handler(req, res) {
       return res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+  },
+};
