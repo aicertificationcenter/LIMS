@@ -620,10 +620,11 @@ export const MyTests = () => {
                       const year = startDateStr ? startDateStr.substring(0, 4) : new Date().getFullYear().toString();
                       const yy = year.substring(2);
                       const typeChar = testType === '일반시험' ? 'T' : 'K';
-                      const seq = (selectedTest.testerBarcode || '').split('_').pop() || '000';
-                      const issueNo = `KAIC-${year}-${typeChar}${seq}-0`;
-                      const productId = `${yy}-${typeChar}-${seq}-S1`;
-                      const techMgr = users.find(u => u.role === 'TECH_MGR');
+                      const seqBarcode = (selectedTest.barcode || '').split('-').pop() || '000';
+                      const isApproved = selectedTest.status === 'APPROVED' || selectedTest.status === 'COMPLETED';
+                      const hasFormal = isApproved && !!selectedTest.formalBarcode;
+                      const productId = `${yy}-${typeChar}-${seqBarcode}-S1`;
+                      const techMgr = users.find((u:any) => u.role === 'TECH_MGR');
                       
                       // 공통 스타일 정의
                       const itemTitleStyle: React.CSSProperties = { fontFamily: '"Malgun Gothic", sans-serif', fontWeight: 'bold', fontSize: '11pt', marginBottom: '6px', color: 'black' };
@@ -648,9 +649,15 @@ export const MyTests = () => {
                                    </div>
                                  </div>
                                 <div style={{ textAlign: 'right' }}>
-                                  <div style={{ fontSize: '7pt', color: '#64748b' }}>성적서 번호</div>
-                                  <div style={{ fontSize: '9pt', fontWeight: 700 }}>{issueNo}</div>
-                                  <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / 1 ]</div>
+                                  {hasFormal ? (
+                                    <>
+                                      <div style={{ fontSize: '7pt', color: '#64748b' }}>성적서 번호</div>
+                                      <div style={{ fontSize: '9pt', fontWeight: 700 }}>{selectedTest.formalBarcode}</div>
+                                      <div style={{ fontSize: '7pt', color: '#64748b', marginTop: '2px' }}>[ 1 / 1 ]</div>
+                                    </>
+                                  ) : (
+                                    <div style={{ minHeight: '35px' }}></div>
+                                  )}
                                 </div>
                               </div>
 
