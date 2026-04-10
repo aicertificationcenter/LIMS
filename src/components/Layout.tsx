@@ -95,26 +95,34 @@ export const Layout = () => {
             </Link>
           )}
           {['ADMIN', 'TECH_MGR'].includes(user.role) && (
-            <Link to="/ledger" style={{ color: location.pathname==='/ledger' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={18} /> 발급대장
-            </Link>
-          )}
-          {user.role === 'ADMIN' && (
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }} onMouseLeave={() => setShowManageDropdown(false)}>
+            <div 
+              style={{ position: 'relative', display: 'flex', alignItems: 'center' }} 
+              onMouseEnter={() => setShowManageDropdown(true)}
+              onMouseLeave={() => setShowManageDropdown(false)}
+            >
               <button 
                 onClick={() => setShowManageDropdown(!showManageDropdown)} 
-                style={{ background: 'transparent', border: 'none', color: (location.pathname==='/admin' || location.pathname==='/clients') ? '#0066B3' : 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, fontSize: '1rem', fontFamily: 'inherit', outline: 'none' }}
+                style={{ background: 'transparent', border: 'none', color: ['/admin', '/clients', '/ledger'].includes(location.pathname) ? '#0066B3' : 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 0', fontSize: '1rem', fontFamily: 'inherit', outline: 'none' }}
               >
                 <Settings size={18} /> 관리하기
               </button>
               {showManageDropdown && (
-                <div style={{ position: 'absolute', top: '100%', left: '0', marginTop: '10px', background: 'white', display: 'flex', flexDirection: 'column', padding: '0.5rem', borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 15px rgba(0,0,0,0.15)', border: '1px solid #e2e8f0', minWidth: '160px' }}>
-                  <Link to="/admin" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/admin' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <UserCheck size={16} /> 시험원관리
-                  </Link>
-                  <Link to="/clients" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/clients' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <Users size={16} /> 의뢰처관리
-                  </Link>
+                <div style={{ position: 'absolute', top: '100%', left: '0', paddingTop: '10px', zIndex: 100 }}>
+                  <div style={{ background: 'white', display: 'flex', flexDirection: 'column', padding: '0.5rem', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.15)', border: '1px solid #e2e8f0', minWidth: '160px' }}>
+                    <Link to="/ledger" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/ledger' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <FileText size={16} /> 발급대장
+                    </Link>
+                    {user.role === 'ADMIN' && (
+                      <>
+                        <Link to="/admin" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/admin' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          <UserCheck size={16} /> 시험원관리
+                        </Link>
+                        <Link to="/clients" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/clients' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          <Users size={16} /> 의뢰처관리
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
