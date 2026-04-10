@@ -843,7 +843,7 @@ export const MyTests = () => {
                   </td>
                   <td>
                     <button className="btn btn-primary" onClick={() => handleOpenDetail(t.id)} style={{ width: 'auto', minHeight: '36px', padding: '0 20px', marginBottom: 0, borderRadius: '8px', fontWeight: 700 }}>
-                      접수하기
+                      {['APPROVED', 'COMPLETED'].includes(t.status) ? '확인하기' : '접수하기'}
                     </button>
                   </td>
                 </tr>
