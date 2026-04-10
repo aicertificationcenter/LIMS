@@ -1124,7 +1124,11 @@ export const Reports = () => {
                     <StatusBadge status={t.status} />
                   </td>
                   <td>
-                    <button className="btn btn-secondary" onClick={() => setSelectedId(t.id)} style={{ padding: '4px 12px', minHeight: '32px', fontSize: '0.85rem' }}>성적서 작성</button>
+                    {t.status === 'COMPLETED' ? (
+                      <button className="btn" onClick={() => setSelectedId(t.id)} style={{ padding: '4px 12px', minHeight: '32px', fontSize: '0.85rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600 }}>성적서 확인</button>
+                    ) : (
+                      <button className="btn btn-secondary" onClick={() => setSelectedId(t.id)} style={{ padding: '4px 12px', minHeight: '32px', fontSize: '0.85rem' }}>성적서 작성</button>
+                    )}
                   </td>
                 </tr>
               ))}
