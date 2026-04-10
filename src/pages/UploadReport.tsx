@@ -29,7 +29,7 @@ export const UploadReport = () => {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -38,28 +38,50 @@ export const UploadReport = () => {
        return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const dataUrl = event.target?.result as string;
-      try {
-        const res = await fetch('/api/receptions', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, reportPdfUrl: dataUrl }) // Upload as DataURL for now
-        });
-        
-        if (!res.ok) {
-           const errData = await res.json().catch(() => null);
-           throw new Error(errData?.message || `서버 응답 오류: ${res.status}`);
-        }
-        
-        alert('파일이 문서 서버에 업로드되었습니다. 완료 버튼을 눌러 확정해주세요.');
-        fetchMyTasks();
-      } catch (err: any) {
-        alert(`업로드 중 오류가 발생했습니다: ${err.message}`);
+    try {
+      // 1. Get temporary upload link from backend
+      const linkRes = await fetch('/api/dropbox-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      
+      if (!linkRes.ok) {
+        const dropErr = await linkRes.json().catch(() => null);
+        throw new Error(dropErr?.message || '업로드 세션 생성 실패');
       }
-    };
-    reader.readAsDataURL(file);
+      
+      const { link, path } = await linkRes.json();
+
+      // 2. Upload directly from Browser to Dropbox via Temporary Link
+      const uploadRes = await fetch(link, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        },
+        body: file // Sending actual File binary directly
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Dropbox 파일 직접 전송 실패 (${uploadRes.status})`);
+      }
+
+      // 3. Inform backend to create a shared link and map it to DB
+      const finalizeRes = await fetch('/api/dropbox-finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, path })
+      });
+
+      if (!finalizeRes.ok) {
+        throw new Error('Dropbox 링크 활성화 실패');
+      }
+
+      alert('성적서가 Dropbox 클라우드에 성공적으로 업로드 및 연동되었습니다. 완료 버튼을 눌러 확정해주세요.');
+      fetchMyTasks();
+    } catch (err: any) {
+      alert(`Dropbox 연동 중 오류가 발생했습니다: ${err.message}`);
+    }
   };
 
   const handleCompleteTest = async (id: string, barcode: string) => {

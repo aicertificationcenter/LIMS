@@ -19,6 +19,10 @@ export default async function handler(req, res) {
         return res.status(404).send('PDF not found');
       }
 
+      if (sample.reportPdfUrl.startsWith('http')) {
+        return res.redirect(302, sample.reportPdfUrl);
+      }
+
       // If it's a data URL, strip the prefix and decode base64
       let base64Data = sample.reportPdfUrl;
       const dataUrlPrefix = 'data:application/pdf;base64,';
