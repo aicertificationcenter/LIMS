@@ -82,6 +82,15 @@ export default async function handler(req, res) {
         notificationMessage = `[을지 반려] ${sample.barcode} 접수 건의 을지가 반려되었습니다. 사유를 확인해주세요.`;
       }
       updateData.status = 'REVISING';
+
+      // 반려 내역을 협의 기록으로 남겨서 영구히 히스토리 보존 처리
+      await prisma.consultation.create({
+        data: {
+          sampleId: id,
+          authorId: '관리자 (Admin)',
+          message: `${actionType === 'GAPJI' ? '[갑지 반려]' : '[을지 반려]'} ${rejectionReason}`
+        }
+      });
     }
 
     const updatedSample = await prisma.sample.update({

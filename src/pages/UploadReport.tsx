@@ -20,8 +20,8 @@ export const UploadReport = () => {
     setLoading(true);
     try {
       const data = await apiClient.tests.listMyTasks(user.id);
-      // Only APPROVED tests can be uploaded to complete
-      setMyTests(data.filter((t: any) => ['APPROVED', 'COMPLETED'].includes(t.status)));
+      // Show APPROVED tests (need upload) and COMPLETE/DISPOSED tests (history)
+      setMyTests(data.filter((t: any) => ['APPROVED', 'COMPLETED', 'DISPOSED'].includes(t.status)));
     } catch (err) {
       console.error('업무 목록 조회 실패:', err);
     } finally {
@@ -108,7 +108,7 @@ export const UploadReport = () => {
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
                       {t.reportPdfUrl ? (
-                         <span style={{ color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={16}/> 등록완료</span>
+                         <a href={t.reportPdfUrl} target="_blank" rel="noreferrer" style={{ color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'underline' }}><CheckCircle size={16}/> 등록완료 (조회)</a>
                       ) : (
                          <span style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.8rem' }}>미등록</span>
                       )}
