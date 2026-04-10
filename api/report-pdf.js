@@ -25,7 +25,6 @@ export default async function handler(req, res) {
       if (base64Data.startsWith(dataUrlPrefix)) {
         base64Data = base64Data.replace(dataUrlPrefix, '');
       } else if (base64Data.startsWith('data:')) {
-        // Just in case it's another type, though it shouldn't be
         base64Data = base64Data.split(',')[1];
       }
 
@@ -36,6 +35,33 @@ export default async function handler(req, res) {
       return res.status(200).send(buffer);
     } catch (error) {
       return res.status(500).send('Error retrieving PDF');
+    }
+  }
+
+  if (method === 'PATCH') {
+    const { id: bodyId, chunk, isFirst } = req.body;
+    const targetId = bodyId || id;
+    
+    if (!targetId || !chunk) {
+      return res.status(400).send('Invalid payload: id and chunk are required');
+    }
+
+    try {
+      if (isFirst) {
+        await prisma.sample.update({
+          where: { id: targetId },
+          data: { reportPdfUrl: chunk }
+        });
+      } else {
+        const sample = await prisma.sample.findUnique({ where: { id: targetId }, select: { reportPdfUrl: true } });
+        await prisma.sample.update({
+          where: { id: targetId },
+          data: { reportPdfUrl: (sample.reportPdfUrl || '') + chunk }
+        });
+      }
+      return res.status(200).json({ success: true });
+    } catch (e) {
+      return res.status(500).json({ message: 'Chunk upload failed', error: e.message });
     }
   }
 
