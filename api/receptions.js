@@ -81,18 +81,7 @@ export default async function handler(req, res) {
         if (testerId && !testerBarcode) {
           const user = await prisma.user.findUnique({ where: { id: testerId } });
           if (user) {
-            const now = new Date();
-            const yy = String(now.getFullYear()).slice(2);
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const datePrefix = `${yy}${mm}${dd}`;
-            
-            const baseId = `${user.id}_${datePrefix}`;
-            const count = await prisma.sample.count({
-              where: { testerBarcode: { startsWith: baseId } }
-            });
-            const seq = String(count + 1).padStart(3, '0');
-            testerBarcode = `${baseId}_${seq}`;
+            testerBarcode = `${sample.barcode}_${user.id}`;
           } else {
             console.error(`[API Error] User not found during testerBarcode generation: ${testerId}`);
           }
