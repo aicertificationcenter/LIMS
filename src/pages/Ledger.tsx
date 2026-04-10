@@ -142,7 +142,7 @@ export const Ledger = () => {
                 {filteredData.map((r: any) => (
                   <tr key={r.id}>
                     <td style={{ fontWeight: 800, color: 'var(--kaic-navy)' }}>{r.formalBarcode || r.barcode}</td>
-                    <td style={{ fontWeight: 700 }}>{r.client}</td>
+                    <td style={{ fontWeight: 700 }}>{r.clientId}</td>
                     <td>{r.testProduct || '-'}</td>
                     <td>{new Date(r.receivedAt).toLocaleDateString()}</td>
                     <td>{r.testStartDate || '-'}</td>

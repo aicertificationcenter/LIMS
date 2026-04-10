@@ -150,7 +150,7 @@ export const Approvals = () => {
                     <div>{r.barcode}</div>
                     {r.formalBarcode && <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '2px' }}>{r.formalBarcode}</div>}
                   </td>
-                  <td style={{ fontWeight: 700 }}>{r.client}</td>
+                  <td style={{ fontWeight: 700 }}>{r.clientId}</td>
                   <td style={{ fontSize: '0.85rem' }}>{r.testProduct || '-'}</td>
                   <td style={{ color: '#047857', fontWeight: 600 }}>{r.tests?.[0]?.tester?.name || '-'}</td>
                   <td><StatusBadge status={r.status} /></td>
