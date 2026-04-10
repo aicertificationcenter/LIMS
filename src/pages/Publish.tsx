@@ -739,7 +739,7 @@ export const Publish = () => {
                   <td><StatusBadge status={t.status} /></td>
                   <td>
                     <button className="btn btn-primary" onClick={() => setSelectedId(t.id)} style={{ width: 'auto', padding: '6px 20px', borderRadius: '6px', margin: 0 }}>
-                      미리보기
+                      {['APPROVED', 'COMPLETED'].includes(t.status) ? '확인하기' : '미리보기'}
                     </button>
                   </td>
                 </tr>
