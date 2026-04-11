@@ -179,6 +179,9 @@ export const Invoices = () => {
         vat,
         total
       });
+      if (!savedInvoice) {
+        throw new Error('견적서 저장에 실패했습니다.');
+      }
 
       // UI 상태 즉시 반영 (낙관적 업데이트)
       setSelectedSample({ ...selectedSample, invoice: savedInvoice, status: 'QUOTED' });
@@ -192,22 +195,14 @@ export const Invoices = () => {
       reader.readAsDataURL(blob);
       reader.onloadend = async () => {
         const base64data = (reader.result as string).split(',')[1];
-        const res = await fetch('/api/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subject: `[견적서] ${selectedSample.clientId} 귀하 - 한국인공지능검증원`,
-            content: `안녕하세요, ${selectedSample.clientName} 담당자님.\n요청하신 시험에 대한 견적서(${savedInvoice.invoiceNo})를 첨부하여 보내드립니다.\n확인 부탁드립니다.\n\n감사합니다.\n한국인공지능검증원 드림.`,
-            recipients: [selectedSample.email],
-            attachments: [{ filename: `견적서_${savedInvoice.invoiceNo}.pdf`, content: base64data }]
-          })
+        await apiClient.email.send({
+          subject: `[견적서] ${selectedSample.clientId} 귀하 - 한국인공지능검증원`,
+          content: `안녕하세요, ${selectedSample.clientName} 담당자님.\n요청하신 시험에 대한 견적서(${savedInvoice.invoiceNo})를 첨부하여 보내드립니다.\n확인 부탁드립니다.\n\n감사합니다.\n한국인공지능검증원 드림.`,
+          recipients: [selectedSample.email],
+          attachments: [{ filename: `견적서_${savedInvoice.invoiceNo}.pdf`, content: base64data }]
         });
-        if (res.ok) {
-           alert('✅ 견적서 저장 및 메일 발송이 모두 완료되었습니다.');
-           fetchData(); 
-        } else {
-           alert(`❌ 견적서는 저장되었으나 메일 발송에 실패했습니다.`);
-        }
+        alert('✅ 견적서 저장 및 메일 발송이 모두 완료되었습니다.');
+        fetchData();
       };
     } catch (err: any) {
       alert('오류: ' + err.message);

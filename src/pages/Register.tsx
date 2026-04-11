@@ -25,7 +25,6 @@ export const Register = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // API를 호출하여 가입 요청 생성 (기본 역할은 PENDING)
       await apiClient.auth.register({ id, pw, email, phone, name });
       alert('회원가입이 요청되었습니다. 관리자 승인을 기다려주세요.');
       navigate('/login'); // 완료 후 로그인 페이지로 리다이렉트
@@ -47,7 +46,7 @@ export const Register = () => {
         
         <form onSubmit={handleRegister}>
           <div className="form-group">
-            <label className="form-label">아이디</label>
+            <label className="form-label">기존 아이디</label>
             <input className="input-field" value={id} onChange={e => setId(e.target.value)} required />
           </div>
           <div className="form-group">
@@ -55,7 +54,7 @@ export const Register = () => {
             <input className="input-field" type="password" value={pw} onChange={e => setPw(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label className="form-label">메일 주소</label>
+            <label className="form-label">메일 주소 (로그인 ID)</label>
             <input className="input-field" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
           </div>
           <div className="form-group">

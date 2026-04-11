@@ -40,18 +40,7 @@ export const UploadReport = () => {
 
     try {
       // 1. Get temporary upload link from backend
-      const linkRes = await fetch('/api/dropbox-upload-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      
-      if (!linkRes.ok) {
-        const dropErr = await linkRes.json().catch(() => null);
-        throw new Error(dropErr?.message || '업로드 세션 생성 실패');
-      }
-      
-      const { link, path } = await linkRes.json();
+      const { link, path } = await apiClient.files.generateDropboxUploadLink(id);
 
       // 2. Upload directly from Browser to Dropbox via Temporary Link
       const uploadRes = await fetch(link, {
@@ -67,15 +56,7 @@ export const UploadReport = () => {
       }
 
       // 3. Inform backend to create a shared link and map it to DB
-      const finalizeRes = await fetch('/api/dropbox-finalize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, path })
-      });
-
-      if (!finalizeRes.ok) {
-        throw new Error('Dropbox 링크 활성화 실패');
-      }
+      await apiClient.files.finalizeDropboxUpload(id, path);
 
       alert('성적서가 Dropbox 클라우드에 성공적으로 업로드 및 연동되었습니다. 완료 버튼을 눌러 확정해주세요.');
       fetchMyTasks();
@@ -87,11 +68,7 @@ export const UploadReport = () => {
   const handleCompleteTest = async (id: string, barcode: string) => {
     if (!window.confirm(`[${barcode}] 건의 시험을 최종 완료(제출) 처리하시겠습니까?\n완료 후에는 내용을 더 이상 수정할 수 없습니다.`)) return;
     try {
-      await fetch('/api/receptions', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'COMPLETED' })
-      });
+      await apiClient.receptions.update({ id, status: 'COMPLETED' });
       alert('최종 제출이 완료되어 수정이 잠금 처리되었습니다.');
       fetchMyTasks();
     } catch (err) {

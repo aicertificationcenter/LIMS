@@ -51,12 +51,8 @@ export const AdminAuth = () => {
    */
   const handleRoleChange = async (id: string, newRole: string) => {
     try {
-      const res = await fetch('/api/users', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, role: newRole }),
-      });
-      if (res.ok) fetchData();
+      await apiClient.users.updateRole({ id, role: newRole });
+      fetchData();
     } catch (_error: any) {
       alert('오류: ' + (_error.message || '알 수 없는 오류'));
     }
@@ -66,19 +62,15 @@ export const AdminAuth = () => {
   const handleUpdateUser = async () => {
     if (!editUser) return;
     try {
-      const res = await fetch('/api/users', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editUser),
+      await apiClient.users.updateProfile({
+        id: editUser.id,
+        name: editUser.name,
+        email: editUser.email,
+        phone: editUser.phone,
       });
-      if (res.ok) {
-        setEditUser(null);
-        fetchData();
-        alert('사용자 정보가 업데이트되었습니다.');
-      } else {
-        const err = await res.json();
-        alert('수정 실패: ' + err.message);
-      }
+      setEditUser(null);
+      fetchData();
+      alert('사용자 정보가 업데이트되었습니다.');
     } catch (_error: any) {
       alert('오류: ' + (_error.message || '알 수 없는 오류'));
     }
@@ -87,18 +79,20 @@ export const AdminAuth = () => {
   const handleDeleteUser = async (id: string) => {
     if (!window.confirm(`사용자 [${id}]를 영구적으로 삭제하시겠습니까?`)) return;
     try {
-      const res = await fetch('/api/users', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) {
-        fetchData();
-        alert('사용자가 삭제되었습니다.');
-      } else {
-        const err = await res.json();
-        alert('삭제 실패: ' + err.message);
-      }
+      await apiClient.users.delete(id);
+      fetchData();
+      alert('사용자가 삭제되었습니다.');
+    } catch (_error: any) {
+      alert('오류: ' + (_error.message || '알 수 없는 오류'));
+    }
+  };
+
+  const handleResetPassword = async (id: string) => {
+    const newPassword = window.prompt('새 비밀번호를 입력하세요.');
+    if (!newPassword) return;
+    try {
+      await apiClient.users.adminResetPassword(id, newPassword);
+      alert('비밀번호가 재설정되었습니다.');
     } catch (_error: any) {
       alert('오류: ' + (_error.message || '알 수 없는 오류'));
     }
@@ -129,7 +123,7 @@ export const AdminAuth = () => {
               {pendingUsers.map(u => (
                 <div key={u.id} style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #fed7aa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontWeight: 700 }}>{u.name} <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>({u.id} / {u.passwordHash})</span></div>
+                    <div style={{ fontWeight: 700 }}>{u.name} <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>({u.legacyUsername || u.id})</span></div>
                     <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{u.email}</div>
                   </div>
                   <button className="btn btn-primary" onClick={() => handleRoleChange(u.id, 'TESTER')} style={{ minHeight: '36px', padding: '0 12px', fontSize: '0.85rem' }}>승인(시험원)</button>
@@ -143,7 +137,7 @@ export const AdminAuth = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>성명 (ID / 비밀번호)</th>
+              <th>성명 (기존 ID)</th>
               <th>이메일</th>
               <th>연락처</th>
               <th>현재 권한</th>
@@ -157,7 +151,7 @@ export const AdminAuth = () => {
                 <td style={{ fontWeight: 600 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {u.name} 
-                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500 }}>({u.id} / {u.passwordHash})</span>
+                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500 }}>({u.legacyUsername || u.id})</span>
                     <button 
                       onClick={() => setEditUser({ ...u })} 
                       style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '2px', display: 'flex' }}
@@ -205,9 +199,14 @@ export const AdminAuth = () => {
                   </select>
                 </td>
                 <td style={{ textAlign: 'center' }}>
-                  <button onClick={() => handleDeleteUser(u.id)} disabled={u.id === user?.id} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="영구 삭제">
-                     <Trash2 size={20} />
-                  </button>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                    <button onClick={() => handleResetPassword(u.id)} style={{ background: 'none', border: '1px solid #cbd5e1', color: '#1e3a8a', cursor: 'pointer', borderRadius: '6px', padding: '4px 8px', fontSize: '0.75rem' }} title="비밀번호 재설정">
+                      초기화
+                    </button>
+                    <button onClick={() => handleDeleteUser(u.id)} disabled={u.id === user?.id} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="영구 삭제">
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -254,15 +253,8 @@ export const AdminAuth = () => {
                    style={{ margin: 0 }}
                 />
               </div>
-              <div style={{ background: '#fef2f2', padding: '1rem', borderRadius: '8px', border: '1px solid #fee2e2' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 900, marginBottom: '6px', color: '#b91c1c' }}>비밀번호 초기화/수정</label>
-                <input 
-                   className="input-field" 
-                   value={editUser.passwordHash} 
-                   onChange={e => setEditUser({ ...editUser, passwordHash: e.target.value })} 
-                   style={{ margin: 0 }}
-                />
-                <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>* 저장 시 해당 비밀번호로 즉시 변경됩니다.</p>
+              <div style={{ background: '#eff6ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bfdbfe', color: '#1d4ed8', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                비밀번호는 더 이상 화면에 표시하거나 직접 편집하지 않습니다. 사용자 비밀번호 재설정은 목록의 "초기화" 버튼으로 처리합니다.
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>

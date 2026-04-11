@@ -184,27 +184,17 @@ export const Clients = () => {
       );
 
       // 백엔드 이메일 API 호출
-      const res = await fetch('/api/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: emailSubject,
-          content: emailBody,
-          recipients: Array.from(selectedEmails),
-          attachments
-        })
+      await apiClient.email.send({
+        subject: emailSubject,
+        content: emailBody,
+        recipients: Array.from(selectedEmails),
+        attachments,
       });
-      
-      if (res.ok) {
-        alert(`${selectedEmails.size}명의 의뢰처에 공지 메일을 발송했습니다.`);
-        setShowEmailModal(false);
-        setEmailSubject('');
-        setEmailBody('');
-        setFiles([]);
-      } else {
-        const err = await res.json();
-        alert('메일 발송 실패: ' + err.message);
-      }
+      alert(`${selectedEmails.size}명의 의뢰처에 공지 메일을 발송했습니다.`);
+      setShowEmailModal(false);
+      setEmailSubject('');
+      setEmailBody('');
+      setFiles([]);
     } catch (err: any) {
       alert('오류 발생: ' + err.message);
     } finally {

@@ -83,10 +83,7 @@ export const Reception = () => {
   const handleUpdateConsultation = async (id: string) => {
     const consultation = consultationDrafts[id];
     try {
-      await apiClient.fetch('/receptions', { 
-        method: 'PATCH',
-        body: JSON.stringify({ id, consultation })
-      });
+      await apiClient.receptions.update({ id, consultation });
       alert('상담내용이 성공적으로 저장되었습니다.');
       // 변경 사항 반영을 위해 목록 다시 불러오기
       const data = await apiClient.receptions.list();
@@ -102,11 +99,6 @@ export const Reception = () => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredReceptions.slice(start, start + itemsPerPage);
   }, [filteredReceptions, currentPage, itemsPerPage]);
-
-  // 관리 권한 체크 (레이아웃 보호)
-  if (user?.role !== 'ADMIN') {
-    return <Navigate to="/stats" replace />;
-  }
 
   // --- 신규 접수 입력 폼 상태 ---
   const [client, setClient] = useState('');           // 의뢰 기관
@@ -153,6 +145,11 @@ export const Reception = () => {
       }
     }
   };
+
+  // 관리 권한 체크 (레이아웃 보호)
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to="/stats" replace />;
+  }
 
   if (loading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>데이터를 불러오는 중...</div>;
