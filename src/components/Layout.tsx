@@ -4,7 +4,7 @@
  * 상단 네비게이션 바(GNB), 사용자 역할에 따른 메뉴 필터링, 실시간 알림 시스템을 포함합니다.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
@@ -12,7 +12,7 @@ import { ClipboardList, FileText, LayoutDashboard, UserCheck, PlusCircle, Users,
 
 export const Layout = () => {
   // 인증 및 라우팅 정보
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,17 +21,8 @@ export const Layout = () => {
   const [notifications, setNotifications] = useState<any[]>([]); // 미확인 알림 목록
   const [showManageDropdown, setShowManageDropdown] = useState(false);
 
-  // 알림 폴링 주입 (30초 주기)
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
-
   /** 서버에서 새로운 알림 목록을 가져옵니다. */
-  const fetchNotifications = async () => {
+  const fetchNotifications = useEffectEvent(async () => {
     if (!user) return;
     try {
       const data = await apiClient.notifications.list(user.id);
@@ -39,11 +30,21 @@ export const Layout = () => {
     } catch (err) {
       console.error('알림 조회 실패:', err);
     }
-  };
+  });
+
+  // 알림 폴링 주입 (30초 주기)
+  useEffect(() => {
+    if (!user) return;
+    void fetchNotifications();
+    const interval = setInterval(() => {
+      void fetchNotifications();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   /** 로그아웃 처리 */
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
@@ -59,6 +60,10 @@ export const Layout = () => {
     }
     setShowNoti(false);
   };
+
+  if (loading) {
+    return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>인증 정보를 불러오는 중...</div>;
+  }
 
   if (!user) {
     if (location.pathname !== '/login' && location.pathname !== '/register') {
@@ -89,7 +94,7 @@ export const Layout = () => {
               <FileText size={18} /> 견적서발행
             </Link>
           )}
-          {['ADMIN', 'TECH_MGR'].includes(user.role) && (
+          {['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role) && (
             <Link to="/approvals" style={{ color: location.pathname==='/approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckSquare size={18} /> 결재하기
             </Link>
@@ -193,7 +198,7 @@ export const Layout = () => {
           )}
 
           <span style={{ marginRight: '1rem', fontWeight: 600 }}>{user.name || user.id} ({user.role})</span>
-          <button onClick={handleLogout} className="btn btn-secondary" style={{ width: 'auto', minHeight: '40px', padding: '0 1rem', marginBottom: 0 }}>로그아웃</button>
+          <button onClick={() => void handleLogout()} className="btn btn-secondary" style={{ width: 'auto', minHeight: '40px', padding: '0 1rem', marginBottom: 0 }}>로그아웃</button>
         </div>
       </header>
 

@@ -40,11 +40,7 @@ export const Ledger = () => {
   const handleUnlock = async (id: string, barcode: string) => {
     if (!window.confirm(`[${barcode}] 건에 대해 모든 승인을 취소하고 시험원이 내용을 수정할 수 있도록 잠금 해제하시겠습니까?`)) return;
     try {
-      await fetch('/api/receptions', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'REVISING' })
-      });
+      await apiClient.receptions.update({ id, status: 'REVISING' });
       alert('잠금 해제(수정승인) 되었습니다.');
       fetchData();
     } catch (err: any) {

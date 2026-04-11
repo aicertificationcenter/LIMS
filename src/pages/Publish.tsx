@@ -49,7 +49,7 @@ export const Publish = () => {
   };
 
   useEffect(() => {
-    fetch('/api/users').then(res => res.json()).then(data => {
+    apiClient.users.list().then(data => {
       if (Array.isArray(data)) setUsers(data);
     }).catch(() => {});
   }, []);
@@ -172,11 +172,7 @@ export const Publish = () => {
   const handleApprovalRequest = async () => {
     if (!selectedId) return;
     try {
-      await fetch('/api/receptions', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId, status: 'APPROVAL_REQUESTED' })
-      });
+      await apiClient.receptions.update({ id: selectedId, status: 'APPROVAL_REQUESTED' });
       alert('결재요청이 완료되었습니다.');
       fetchMyTasks();
       setSelectedId(null);

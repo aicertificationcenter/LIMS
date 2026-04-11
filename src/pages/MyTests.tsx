@@ -178,23 +178,19 @@ export const MyTests = () => {
       currentExtra.clientAddress = clientAddress;
 
       // 상태를 'IN_PROGRESS'로 변경하고 입력된 필드들을 업데이트
-      await fetch('/api/receptions', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id: selectedId, 
-          testerId: user!.id,
-          status: 'IN_PROGRESS',
-          testStartDate,
-          testEndDate,
-          testLocation,
-          testType,
-          testAddress,
-          testProduct,
-          testPurpose,
-          testMethod,
-          extra: JSON.stringify(currentExtra)
-        })
+      await apiClient.receptions.update({
+        id: selectedId,
+        testerId: user!.id,
+        status: 'IN_PROGRESS',
+        testStartDate,
+        testEndDate,
+        testLocation,
+        testType,
+        testAddress,
+        testProduct,
+        testPurpose,
+        testMethod,
+        extra: JSON.stringify(currentExtra),
       });
       alert(selectedTest.status === 'RECEIVED' ? '시험이 시작되었습니다.' : '시험 정보가 업데이트되었습니다.');
       fetchMyTasks();

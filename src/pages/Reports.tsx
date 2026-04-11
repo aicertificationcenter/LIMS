@@ -279,11 +279,7 @@ export const Reports = () => {
       extraData.tcDetails = tcDetails;
       extraData.tcOutputs = tcOutputs;
 
-      await fetch('/api/receptions', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId, extra: JSON.stringify(extraData) })
-      });
+      await apiClient.receptions.update({ id: selectedId, extra: JSON.stringify(extraData) });
       alert('시험 정보(결과, 방법, 환경)가 저장되었습니다.');
       fetchMyTasks();
     } catch (err: any) {

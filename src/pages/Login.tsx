@@ -4,10 +4,10 @@
  * 아이디와 비밀번호를 입력받아 AuthContext의 로그인 상태를 갱신하고 메인 페이지로 이동합니다.
  */
 
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { jwtStorageKey } from '../convexClient';
 
 export const Login = () => {
   // 입력 필드 상태
@@ -19,8 +19,11 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
   
   // 인증 및 네비게이션 훅
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (window.localStorage.getItem(jwtStorageKey)) {
+      window.location.replace('/stats');
+    }
+  }, [jwtStorageKey]);
 
   /** 로그인 폼 제출 처리 */
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,10 +31,8 @@ export const Login = () => {
     setLoading(true);
     setError('');
     try {
-      // API를 호출하여 로그인 검증
-      const user = await apiClient.auth.login(id, pw);
-      login(user); // 글로벌 인증 상태 업데이트
-      navigate('/stats'); // 기본 페이지로 이동
+      await apiClient.auth.login(id, pw);
+      window.location.assign('/stats');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -55,8 +56,8 @@ export const Login = () => {
           {error && <div style={{ background: '#fef2f2', borderLeft: '4px solid #ef4444', color: '#b91c1c', padding: '0.875rem 1rem', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{error}</div>}
           
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <label className="form-label" style={{ width: '80px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>아이디</label>
-            <input className="input-field" style={{ flex: 1, transition: 'border-color 0.2s, box-shadow 0.2s' }} value={id} onChange={e => setId(e.target.value)} placeholder="아이디를 입력하세요" required autoFocus />
+            <label className="form-label" style={{ width: '110px', marginBottom: 0, fontWeight: 600, color: '#475569' }}>아이디 / 이메일</label>
+            <input className="input-field" style={{ flex: 1, transition: 'border-color 0.2s, box-shadow 0.2s' }} value={id} onChange={e => setId(e.target.value)} placeholder="아이디 또는 이메일을 입력하세요" required autoFocus />
           </div>
           
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -76,8 +77,8 @@ export const Login = () => {
         <div style={{ borderTop: '1px dashed #cbd5e1', marginTop: '2rem', paddingTop: '1.5rem', fontSize: '0.8rem', color: '#64748b', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
           <strong style={{ color: '#475569', display: 'block', marginBottom: '0.5rem' }}>[테스트 전용 계정]</strong>
           <ul style={{ paddingLeft: '1.25rem', margin: 0, lineHeight: 1.6 }}>
-            <li>관리자 접속: id <b>admin</b> / pw <b>admin</b></li>
-            <li>시험원 접속: id <b>tester1</b> / pw <b>1234</b></li>
+            <li>기존 계정은 등록된 이메일과 기존 비밀번호로 로그인합니다.</li>
+            <li>새 계정은 가입 후 관리자 승인 전까지 로그인은 가능하지만 업무 화면은 제한됩니다.</li>
           </ul>
         </div>
       </div>
