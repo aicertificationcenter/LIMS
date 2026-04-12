@@ -16,7 +16,8 @@ import {
   Package, 
   Target, 
   FileText, 
-  Calendar 
+  Calendar,
+  FileUp
 } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
 
@@ -125,6 +126,8 @@ export const MyTests = () => {
    * 상세 보기 창 열기 및 자동 시험번호 생성
    * @param id 시험 ID
    */
+  const currentEstFees = selectedTest?.estFees || selectedTest?.invoice?.total || 0;
+
   const handleOpenDetail = async (id: string) => {
     setSelectedId(id);
     const test = myTests.find((t: any) => t.id === id);
@@ -187,7 +190,7 @@ export const MyTests = () => {
       return;
     }
 
-    const estFeesThousand = (selectedTest?.estFees || 0) / 1000;
+    const estFeesThousand = currentEstFees / 1000;
     const sumPlan = (Number(advAmt) || 0) + (Number(interimAmt) || 0) + (Number(finalAmt) || 0);
     // 견적금액이 존재할 경우만 검증
     if (estFeesThousand > 0 && sumPlan !== estFeesThousand) {
@@ -218,6 +221,7 @@ export const MyTests = () => {
           testProduct,
           testPurpose,
           testMethod,
+          estFees: currentEstFees,
           advAmt: (Number(advAmt) || 0) * 1000,
           advDate,
           interimAmt: (Number(interimAmt) || 0) * 1000,
@@ -234,6 +238,49 @@ export const MyTests = () => {
     }
   };
 
+  /** 사업자등록증명 업로드 핸들러 */
+  const handleBizLicenseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedTest) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일 크기가 너무 큽니다. 10MB 이하의 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    try {
+      const linkRes = await fetch('/api/dropbox-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedTest.id })
+      });
+      if (!linkRes.ok) throw new Error('업로드 세션 생성 실패');
+      const { link, path } = await linkRes.json();
+
+      const uploadRes = await fetch(link, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: file
+      });
+      if (!uploadRes.ok) throw new Error('파일 저장 실패');
+
+      const finalRes = await fetch('/api/dropbox-finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedTest.id, path, targetField: 'bizLicenseUrl' })
+      });
+      if (!finalRes.ok) throw new Error('업로드 완료 처리 실패');
+      
+      await finalRes.json();
+      
+      alert('사업자등록증이 성공적으로 업로드 및 등록되었습니다.');
+      // 전체 목록 새로고침을 통해 bizLicenseUrl 강제 업데이트
+      fetchMyTasks();
+
+    } catch (err: any) {
+      alert(`업로드 중 오류가 발생했습니다: ${err.message}`);
+    }
+  };
 
   if (loading) {
     return <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>데이터를 불러오는 중...</div>;
@@ -523,44 +570,55 @@ export const MyTests = () => {
                          💳 결재 일정 정보 (천원 단위)
                       </label>
                       <div style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', fontWeight: 600, color: '#0f172a' }}>
-                        총 견적금액: <span style={{ color: 'var(--kaic-navy)', fontSize: '1.1rem', fontWeight: 800, marginLeft: '6px' }}>{selectedTest.estFees ? (selectedTest.estFees / 1000).toLocaleString() : 0} 천원</span>
+                        총 견적금액: <span style={{ color: 'var(--kaic-navy)', fontSize: '1.1rem', fontWeight: 800, marginLeft: '6px' }}>{currentEstFees ? (currentEstFees / 1000).toLocaleString() : 0} 천원</span>
                       </div>
                     </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '1.5rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '150px 150px 150px', gap: '1rem' }}>
                       {/* 선금 */}
-                      <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <h4 style={{ margin: 0, marginBottom: '12px', fontSize: '0.9rem', color: '#1e293b' }}>1. 착수금</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <input type="number" placeholder="금액(천원)" className="input-field" value={advAmt} onChange={e => setAdvAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0 }} />
-                          <input type="date" className="input-field" value={advDate} onChange={e => setAdvDate(e.target.value)} disabled={isLocked} style={{ margin: 0 }} />
+                      <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <h4 style={{ margin: 0, marginBottom: '8px', fontSize: '0.85rem', color: '#1e293b' }}>1. 착수금</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={advAmt} onChange={e => setAdvAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
+                          <input type="date" className="input-field" value={advDate} onChange={e => setAdvDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
                         </div>
                       </div>
                       
                       {/* 중도금 */}
-                      <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <h4 style={{ margin: 0, marginBottom: '12px', fontSize: '0.9rem', color: '#1e293b' }}>2. 중도금</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <input type="number" placeholder="금액(천원)" className="input-field" value={interimAmt} onChange={e => setInterimAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0 }} />
-                          <input type="date" className="input-field" value={interimDate} onChange={e => setInterimDate(e.target.value)} disabled={isLocked} style={{ margin: 0 }} />
+                      <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <h4 style={{ margin: 0, marginBottom: '8px', fontSize: '0.85rem', color: '#1e293b' }}>2. 중도금</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={interimAmt} onChange={e => setInterimAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
+                          <input type="date" className="input-field" value={interimDate} onChange={e => setInterimDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
                         </div>
                       </div>
                       
                       {/* 잔금 */}
-                      <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <h4 style={{ margin: 0, marginBottom: '12px', fontSize: '0.9rem', color: '#1e293b' }}>3. 잔금</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <input type="number" placeholder="금액(천원)" className="input-field" value={finalAmt} onChange={e => setFinalAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0 }} />
-                          <input type="date" className="input-field" value={finalDate} onChange={e => setFinalDate(e.target.value)} disabled={isLocked} style={{ margin: 0 }} />
+                      <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <h4 style={{ margin: 0, marginBottom: '8px', fontSize: '0.85rem', color: '#1e293b' }}>3. 잔금</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={finalAmt} onChange={e => setFinalAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
+                          <input type="date" className="input-field" value={finalDate} onChange={e => setFinalDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
                         </div>
                       </div>
                     </div>
-                    
-                    {isLocked && (
-                      <div style={{ marginTop: '1rem', textAlign: 'right' }}>
-                        <button className="btn btn-secondary" onClick={() => alert('결재일정 변경요청 기능은 현재 준비 중입니다.')}>결재일정 변경요청</button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {selectedTest.bizLicenseUrl ? (
+                          <a href={selectedTest.bizLicenseUrl} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #cbd5e1', color: 'var(--kaic-navy)' }}>사업자등록증명 확인</a>
+                        ) : (
+                          <label className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #cbd5e1', color: '#475569', cursor: isLocked ? 'not-allowed' : 'pointer', margin: 0 }}>
+                            <FileUp size={16} /> 사업자등록증명 첨부
+                            <input type="file" style={{ display: 'none' }} accept="application/pdf,image/*" onChange={handleBizLicenseUpload} disabled={isLocked} />
+                          </label>
+                        )}
                       </div>
-                    )}
+                      {isLocked && (
+                        <div style={{ textAlign: 'right' }}>
+                          <button className="btn btn-secondary" onClick={() => alert('결재일정 변경요청 기능은 현재 준비 중입니다.')}>결재일정 변경요청</button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

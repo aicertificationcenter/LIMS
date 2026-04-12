@@ -21,6 +21,7 @@ export default async function handler(req, res) {
             testLocation: true, testType: true, testAddress: true, bizNo: true,
             target: true, testProduct: true, testPurpose: true, testMethod: true,
             extra: true, testerBarcode: true, formalBarcode: true,
+            bizLicenseUrl: true,
             gapjiApproved: true, euljiApproved: true,
             gapjiRejection: true, euljiRejection: true, receivedAt: true,
             estFees: true, advAmt: true, advDate: true, interimAmt: true, interimDate: true, finalAmt: true, finalDate: true,
@@ -78,7 +79,7 @@ export default async function handler(req, res) {
 
     case 'PATCH':
       try {
-        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation, testProduct, testPurpose, testMethod, extra,
+        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, bizLicenseUrl, consultation, testProduct, testPurpose, testMethod, extra,
           estFees, advAmt, advDate, interimAmt, interimDate, finalAmt, finalDate,
           advPaidAmt, advPaidDate, interimPaidAmt, interimPaidDate, finalPaidAmt, finalPaidDate, isDepositCompleted
         } = req.body;
@@ -104,6 +105,7 @@ export default async function handler(req, res) {
              testType,
              testAddress,
              reportPdfUrl,
+             bizLicenseUrl,
              consultation,
              testProduct,
              testPurpose,

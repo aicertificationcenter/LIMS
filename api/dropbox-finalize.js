@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).send('Method Not Allowed');
   }
 
-  const { id, path } = req.body;
+  const { id, path, targetField } = req.body;
   if (!id || !path) return res.status(400).json({ message: 'ID and Path are required' });
 
   try {
@@ -55,9 +55,11 @@ export default async function handler(req, res) {
     }
 
     // Save shared URL to DB
+    const field = targetField || 'reportPdfUrl';
+    
     await prisma.sample.update({
       where: { id },
-      data: { reportPdfUrl: sharedUrl }
+      data: { [field]: sharedUrl }
     });
 
     return res.status(200).json({ success: true, url: sharedUrl });

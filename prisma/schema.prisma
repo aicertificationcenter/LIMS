@@ -61,6 +61,7 @@ model Sample {
   testAddress   String?
   reportPdfUrl  String?
   bizNo         String?
+  bizLicenseUrl String?
   target        String?
   testProduct   String?
   testPurpose   String?
