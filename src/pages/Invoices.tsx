@@ -573,8 +573,9 @@ export const Invoices = () => {
                       alt="Company Stamp" 
                       style={{ 
                         position: 'absolute',
-                        right: '-16mm',
-                        top: '-12mm',
+                        right: '-28px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
                         height: '76px', 
                         opacity: 0.85,
                         zIndex: 2,
