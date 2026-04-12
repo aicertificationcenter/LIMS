@@ -11,7 +11,7 @@ import type { ReactNode } from 'react';
 export interface User {
   id: string;
   name: string;
-  role: 'ADMIN' | 'TESTER' | 'TECH_MGR';
+  role: 'ADMIN' | 'TESTER' | 'TECH_MGR' | 'QUAL_MGR';
   email?: string;
 }
 

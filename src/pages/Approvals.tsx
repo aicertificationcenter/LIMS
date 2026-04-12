@@ -23,7 +23,7 @@ export const Approvals = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
 
   useEffect(() => {
-    if (user && ['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role)) {
+    if (user && ['ADMIN', 'TECH_MGR'].includes(user.role)) {
       fetchData();
     }
   }, [user]);
@@ -79,7 +79,7 @@ export const Approvals = () => {
     }
   };
 
-  if (!user || !['ADMIN', 'TECH_MGR', 'QUAL_MGR'].includes(user.role)) {
+  if (!user || !['ADMIN', 'TECH_MGR'].includes(user.role)) {
     return <div style={{ padding: '4rem', textAlign: 'center' }}>접근 권한이 없습니다.</div>;
   }
 

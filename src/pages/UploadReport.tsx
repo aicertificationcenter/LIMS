@@ -10,7 +10,7 @@ export const UploadReport = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && user.role !== 'ADMIN') {
+    if (user && ['TESTER'].includes(user.role)) {
       fetchMyTasks();
     }
   }, [user]);
@@ -99,7 +99,7 @@ export const UploadReport = () => {
     }
   };
 
-  if (!user || user.role === 'ADMIN') {
+  if (!user || (!['TESTER'].includes(user.role))) {
     return <div style={{ padding: '4rem', textAlign: 'center' }}>접근 권한이 없습니다 (시험원 전용).</div>;
   }
 

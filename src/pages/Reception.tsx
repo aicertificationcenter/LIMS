@@ -104,7 +104,7 @@ export const Reception = () => {
   }, [filteredReceptions, currentPage, itemsPerPage]);
 
   // 관리 권한 체크 (레이아웃 보호)
-  if (user?.role !== 'ADMIN') {
+  if (!['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user?.role || '')) {
     return <Navigate to="/stats" replace />;
   }
 
@@ -290,7 +290,7 @@ export const Reception = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>현장 시험원 배정:</span>
-                    {user?.role === 'ADMIN' && r.status !== 'COMPLETED' ? (
+                    {['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user?.role || '') && r.status !== 'COMPLETED' ? (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <select 
                           className="input-field" 

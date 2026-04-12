@@ -228,11 +228,6 @@ export const Clients = () => {
     }
   };
 
-  // 권한 체크 (관리자 전용)
-  if (user?.role !== 'ADMIN') {
-    return <div style={{ padding: '4rem', textAlign: 'center' }}>접근 권한이 없습니다.</div>;
-  }
-
   return (
     <main className="dashboard-grid animate-fade-in">
       <header className="card" style={{ gridColumn: '1 / -1', background: 'var(--kaic-navy)', color: 'white', padding: '1.5rem 2rem' }}>

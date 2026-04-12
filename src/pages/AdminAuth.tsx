@@ -36,11 +36,11 @@ export const AdminAuth = () => {
 
   /** 컴포넌트 마운트 및 인증 정보 로드 시 실행 */
   useEffect(() => {
-    if (user?.role === 'ADMIN') fetchData();
+    if (['ADMIN', 'QUAL_MGR'].includes(user?.role || '')) fetchData();
   }, [user]);
 
   // 권한 체크 (관리자가 아니면 통계 페이지로 추방)
-  if (user?.role !== 'ADMIN') {
+  if (!['ADMIN', 'QUAL_MGR'].includes(user?.role || '')) {
     return <Navigate to="/stats" />;
   }
 

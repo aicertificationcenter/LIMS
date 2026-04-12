@@ -216,7 +216,7 @@ export const Invoices = () => {
     }
   };
 
-  if (user?.role !== 'ADMIN') return <div style={{ padding: '4rem', textAlign: 'center' }}>접근 권한이 없습니다.</div>;
+  if (!['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user?.role || '')) return <div style={{ padding: '4rem', textAlign: 'center' }}>접근 권한이 없습니다.</div>;
 
   return (
     <main className="dashboard-grid animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.5rem', height: 'calc(100vh - 100px)' }}>

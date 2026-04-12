@@ -79,22 +79,22 @@ export const Layout = () => {
             <LayoutDashboard size={18} /> 대시보드
           </Link>
           
-          {user.role === 'ADMIN' && (
+          {['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user.role) && (
             <Link to="/reception" style={{ color: location.pathname==='/reception' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <PlusCircle size={18} /> 접수하기
             </Link>
           )}
-          {user.role === 'ADMIN' && (
+          {['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user.role) && (
             <Link to="/invoices" style={{ color: location.pathname==='/invoices' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileText size={18} /> 견적서발행
             </Link>
           )}
-          {['ADMIN', 'TECH_MGR'].includes(user.role) && (
+          {['TECH_MGR'].includes(user.role) && (
             <Link to="/approvals" style={{ color: location.pathname==='/approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckSquare size={18} /> 결재하기
             </Link>
           )}
-          {['ADMIN', 'TECH_MGR'].includes(user.role) && (
+          {['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user.role) && (
             <div 
               style={{ position: 'relative', display: 'flex', alignItems: 'center' }} 
               onMouseEnter={() => setShowManageDropdown(true)}
@@ -112,15 +112,15 @@ export const Layout = () => {
                     <Link to="/ledger" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/ledger' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <FileText size={16} /> 발급대장
                     </Link>
-                    {user.role === 'ADMIN' && (
-                      <>
-                        <Link to="/admin" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/admin' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <UserCheck size={16} /> 시험원관리
-                        </Link>
-                        <Link to="/clients" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/clients' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          <Users size={16} /> 의뢰처관리
-                        </Link>
-                      </>
+                    {['ADMIN', 'QUAL_MGR'].includes(user.role) && (
+                      <Link to="/admin" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/admin' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <UserCheck size={16} /> 시험원관리
+                      </Link>
+                    )}
+                    {['ADMIN', 'QUAL_MGR', 'TECH_MGR'].includes(user.role) && (
+                      <Link to="/clients" onClick={() => setShowManageDropdown(false)} style={{ color: location.pathname==='/clients' ? '#0066B3' : '#1e293b', padding: '0.75rem 1rem', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <Users size={16} /> 의뢰처관리
+                      </Link>
                     )}
                   </div>
                 </div>
@@ -128,25 +128,24 @@ export const Layout = () => {
             </div>
           )}
 
-          {user.role !== 'ADMIN' && (
-            <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ClipboardList size={18} /> 나의시험
-            </Link>
-          )}
-          {user.role !== 'ADMIN' && (
-            <Link to="/reports" style={{ color: location.pathname==='/reports' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={18} /> 성적서 작성
-            </Link>
-          )}
-          {user.role !== 'ADMIN' && (
-            <Link to="/publish" style={{ color: location.pathname==='/publish' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CheckSquare size={18} /> 발행
-            </Link>
-          )}
-          {user.role !== 'ADMIN' && (
-            <Link to="/upload-report" style={{ color: location.pathname==='/upload-report' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={18} /> 최종제출
-            </Link>
+          {['TESTER'].includes(user.role) && (
+            <>
+              <Link to="/my-tests" style={{ color: location.pathname==='/my-tests' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ClipboardList size={18} /> 나의시험
+              </Link>
+              <Link to="/reports" style={{ color: location.pathname==='/reports' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <FileText size={18} /> 성적서 작성
+              </Link>
+              <Link to="/publish" style={{ color: location.pathname==='/publish' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckSquare size={18} /> 발행
+              </Link>
+              <Link to="/upload-report" style={{ color: location.pathname==='/upload-report' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <FileText size={18} /> 최종제출
+              </Link>
+              <Link to="/clients" style={{ color: location.pathname==='/clients' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={18} /> 의뢰처관리
+              </Link>
+            </>
           )}
         </nav>
 
