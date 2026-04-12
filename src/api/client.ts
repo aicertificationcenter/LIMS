@@ -153,5 +153,10 @@ export const apiClient = {
   /** KOLAS 기관 공지사항 조회 API (외부 파싱) */
   kolas: {
     listNotices: () => apiClient.fetch('/kolas'),
+  },
+
+  /** 인공지능 뉴스 피드 API */
+  news: {
+    list: () => apiClient.fetch('/news'),
   }
 };
