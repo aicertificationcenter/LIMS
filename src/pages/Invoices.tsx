@@ -460,13 +460,13 @@ export const Invoices = () => {
                 {/* Invoice Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '4px solid #1e3a8a', paddingBottom: '15px', marginBottom: '20px' }}>
                   <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 900, letterSpacing: '4px', whiteSpace: 'nowrap', paddingTop: '10px' }}>견 적 서</h1>
-                  <div style={{ textAlign: 'left', fontSize: '9px', color: '#1e293b', lineHeight: 1.4, maxWidth: '450px' }}>
-                    <div style={{ fontWeight: 900, fontSize: '12px', marginBottom: '8px' }}>KOLAS/ILAC 국제공인시험기관 한국인공지능검증원 (KT1177)</div>
-                    <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+                  <div style={{ textAlign: 'right', fontSize: '10px', color: '#1e293b', lineHeight: 1.4, maxWidth: '450px' }}>
+                    <div style={{ marginBottom: '8px' }}>
                       <img src="/KOLAS.jpg" alt="KOLAS/ILAC Logo" style={{ height: '60px' }} />
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: '10px' }}>KOREA Artificial Intrlligence Certification(EU NB ISO 17025 Accredited)</div>
-                    <div style={{ fontSize: '10px' }}>KS X ISO/IEC 25023:2016 / KS X ISO/IEC 25051:2014 / 과학기술정보통신부 고시 제 2024-41호</div>
+                    <div style={{ fontWeight: 900, fontSize: '12px', marginBottom: '4px' }}>KOLAS/ILAC 국제공인시험기관 한국인공지능검증원 (KT1177)</div>
+                    <div style={{ fontWeight: 700 }}>KOREA Artificial Intrlligence Certification(EU NB ISO 17025 Accredited)</div>
+                    <div>KS X ISO/IEC 25023:2016 / KS X ISO/IEC 25051:2014 / 과학기술정보통신부 고시 제 2024-41호</div>
                   </div>
                 </div>
 
@@ -550,17 +550,17 @@ export const Invoices = () => {
                   위와 같이 견적합니다.
                 </div>
 
-                <div style={{ position: 'absolute', bottom: '22mm', right: '15mm', textAlign: 'right' }}>
+                <div style={{ position: 'absolute', bottom: '22mm', left: '0', right: '0', textAlign: 'center' }}>
                   <div style={{ position: 'relative', display: 'inline-block' }}>
-                    <div style={{ fontSize: '19px', fontWeight: 900, position: 'relative', zIndex: 1, letterSpacing: '1px' }}>한국인공지능검증원장</div>
+                    <div style={{ fontSize: '26px', fontWeight: 900, position: 'relative', zIndex: 1, letterSpacing: '4px' }}>한국인공지능검증원장</div>
                     <img 
                       src="/stamp.png" 
                       alt="Company Stamp" 
                       style={{ 
                         position: 'absolute',
-                        right: '-8mm',
-                        top: '-5mm',
-                        height: '64px', 
+                        right: '-16mm',
+                        top: '-12mm',
+                        height: '76px', 
                         opacity: 0.85,
                         zIndex: 2,
                         pointerEvents: 'none'
