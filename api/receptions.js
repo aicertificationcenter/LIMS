@@ -143,6 +143,28 @@ export default async function handler(req, res) {
           select: { id: true, barcode: true, clientId: true, status: true }
         });
 
+        // 결재 일정 변경 이력 로깅 (금액 및 날짜 변경 시)
+        const finChanges = [];
+        if (advAmt !== undefined && advAmt !== sample.advAmt) finChanges.push(`착수금액: ${sample.advAmt || 0} -> ${advAmt}`);
+        if (advDate !== undefined && advDate !== sample.advDate) finChanges.push(`착수일자: ${sample.advDate || '-'} -> ${advDate}`);
+        if (interimAmt !== undefined && interimAmt !== sample.interimAmt) finChanges.push(`중도금액: ${sample.interimAmt || 0} -> ${interimAmt}`);
+        if (interimDate !== undefined && interimDate !== sample.interimDate) finChanges.push(`중도일자: ${sample.interimDate || '-'} -> ${interimDate}`);
+        if (finalAmt !== undefined && finalAmt !== sample.finalAmt) finChanges.push(`잔금금액: ${sample.finalAmt || 0} -> ${finalAmt}`);
+        if (finalDate !== undefined && finalDate !== sample.finalDate) finChanges.push(`잔금일자: ${sample.finalDate || '-'} -> ${finalDate}`);
+
+        if (finChanges.length > 0 && testerId) {
+          await prisma.auditLog.create({
+            data: {
+              tableName: 'Sample',
+              recordId: id,
+              action: 'PAYMENT_SCHEDULE_UPDATE',
+              newValue: finChanges.join(', '),
+              changedById: testerId,
+              reason: '테스터 일정 변경'
+            }
+          });
+        }
+
         // Create or update Test record for the assignment
         if (testerId) {
           // Check if test record already exists

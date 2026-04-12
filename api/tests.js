@@ -30,7 +30,9 @@ export default async function handler(req, res) {
               testPurpose: true, testMethod: true, gapjiRejection: true,
               euljiRejection: true, formalBarcode: true, gapjiApproved: true,
               euljiApproved: true, receivedAt: true,
-              consultations: true, evidences: true
+              estFees: true, advAmt: true, advDate: true, interimAmt: true, interimDate: true, finalAmt: true, finalDate: true,
+              bizNo: true, bizLicenseUrl: true,
+              consultations: true, evidences: true, invoice: true
             }
           }
         },
@@ -66,7 +68,17 @@ export default async function handler(req, res) {
         euljiRejection: t.sample.euljiRejection,
         formalBarcode: t.sample.formalBarcode,
         gapjiApproved: t.sample.gapjiApproved,
-        euljiApproved: t.sample.euljiApproved
+        euljiApproved: t.sample.euljiApproved,
+        estFees: t.sample.estFees,
+        advAmt: t.sample.advAmt,
+        advDate: t.sample.advDate,
+        interimAmt: t.sample.interimAmt,
+        interimDate: t.sample.interimDate,
+        finalAmt: t.sample.finalAmt,
+        finalDate: t.sample.finalDate,
+        bizNo: t.sample.bizNo,
+        bizLicenseUrl: t.sample.bizLicenseUrl,
+        invoice: t.sample.invoice
       }));
 
       return res.status(200).json(result);

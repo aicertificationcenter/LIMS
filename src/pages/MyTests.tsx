@@ -72,6 +72,10 @@ export const MyTests = () => {
   const [editText, setEditText] = useState('');                 // 상담 수정 텍스트
   const [showHistoryId, setShowHistoryId] = useState<string | null>(null); // 이력 표시 여부
   
+  // 결재 일정 변경 이력 상태
+  const [showPayHistory, setShowPayHistory] = useState(false);
+  const [payHistoryData, setPayHistoryData] = useState<any[]>([]);
+  
   // 시험 상세 정보 (성적서 기재용)
   const [testStartDate, setTestStartDate] = useState(''); // 시험 시작일
   const [testEndDate, setTestEndDate] = useState('');   // 시험 종료일
@@ -279,6 +283,20 @@ export const MyTests = () => {
 
     } catch (err: any) {
       alert(`업로드 중 오류가 발생했습니다: ${err.message}`);
+    }
+  };
+
+  /** 결재 일정 변경 이력 조회 */
+  const fetchPayHistory = async () => {
+    if (!selectedId) return;
+    try {
+      const res = await fetch(`/api/audit-logs?sampleId=${selectedId}`);
+      if (!res.ok) throw new Error('이력 조회 실패');
+      const logs = await res.json();
+      setPayHistoryData(logs.filter((l: any) => l.action === 'PAYMENT_SCHEDULE_UPDATE'));
+      setShowPayHistory(true);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -568,47 +586,59 @@ export const MyTests = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                       <label className="label" style={{ color: '#334155', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                          💳 결재 일정 정보 (천원 단위)
+                         <button 
+                           onClick={fetchPayHistory}
+                           style={{ fontSize: '0.75rem', color: 'var(--kaic-blue)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0, marginLeft: '8px' }}
+                         >
+                           [변경 이력 보기]
+                         </button>
                       </label>
                       <div style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', fontWeight: 600, color: '#0f172a' }}>
                         총 견적금액: <span style={{ color: 'var(--kaic-navy)', fontSize: '1.1rem', fontWeight: 800, marginLeft: '6px' }}>{currentEstFees ? (currentEstFees / 1000).toLocaleString() : 0} 천원</span>
                       </div>
                     </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '150px 150px 150px', gap: '1rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {/* 선금 */}
-                      <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <h4 style={{ margin: 0, marginBottom: '8px', fontSize: '0.85rem', color: '#1e293b' }}>1. 착수금</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <input type="number" placeholder="금액(천원)" className="input-field" value={advAmt} onChange={e => setAdvAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
-                          <input type="date" className="input-field" value={advDate} onChange={e => setAdvDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
+                      <div style={{ background: 'white', padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <h4 style={{ margin: 0, width: '80px', fontSize: '0.9rem', color: '#1e293b', fontWeight: 700 }}>1. 착수금</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap' }}>금액:</span>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={advAmt} onChange={e => setAdvAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem', width: '120px' }} />
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '1rem' }}>날짜:</span>
+                          <input type="date" className="input-field" value={advDate} onChange={e => setAdvDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem', width: '160px' }} />
                         </div>
                       </div>
                       
                       {/* 중도금 */}
-                      <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <h4 style={{ margin: 0, marginBottom: '8px', fontSize: '0.85rem', color: '#1e293b' }}>2. 중도금</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <input type="number" placeholder="금액(천원)" className="input-field" value={interimAmt} onChange={e => setInterimAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
-                          <input type="date" className="input-field" value={interimDate} onChange={e => setInterimDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
+                      <div style={{ background: 'white', padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <h4 style={{ margin: 0, width: '80px', fontSize: '0.9rem', color: '#1e293b', fontWeight: 700 }}>2. 중도금</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap' }}>금액:</span>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={interimAmt} onChange={e => setInterimAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem', width: '120px' }} />
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '1rem' }}>날짜:</span>
+                          <input type="date" className="input-field" value={interimDate} onChange={e => setInterimDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem', width: '160px' }} />
                         </div>
                       </div>
                       
                       {/* 잔금 */}
-                      <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                        <h4 style={{ margin: 0, marginBottom: '8px', fontSize: '0.85rem', color: '#1e293b' }}>3. 잔금</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <input type="number" placeholder="금액(천원)" className="input-field" value={finalAmt} onChange={e => setFinalAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
-                          <input type="date" className="input-field" value={finalDate} onChange={e => setFinalDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem' }} />
+                      <div style={{ background: 'white', padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <h4 style={{ margin: 0, width: '80px', fontSize: '0.9rem', color: '#1e293b', fontWeight: 700 }}>3. 잔금</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap' }}>금액:</span>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={finalAmt} onChange={e => setFinalAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem', width: '120px' }} />
+                          <span style={{ fontSize: '0.85rem', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '1rem' }}>날짜:</span>
+                          <input type="date" className="input-field" value={finalDate} onChange={e => setFinalDate(e.target.value)} disabled={isLocked} style={{ margin: 0, padding: '6px 10px', fontSize: '0.85rem', width: '160px' }} />
                         </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
                       <div style={{ display: 'flex', gap: '10px' }}>
                         {selectedTest.bizLicenseUrl ? (
-                          <a href={selectedTest.bizLicenseUrl} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #cbd5e1', color: 'var(--kaic-navy)' }}>사업자등록증명 확인</a>
+                          <a href={selectedTest.bizLicenseUrl} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #cbd5e1', color: 'var(--kaic-navy)' }}>사업자등록증 확인</a>
                         ) : (
                           <label className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #cbd5e1', color: '#475569', cursor: isLocked ? 'not-allowed' : 'pointer', margin: 0 }}>
-                            <FileUp size={16} /> 사업자등록증명 첨부
+                            <FileUp size={16} /> 사업자등록증 업로드
                             <input type="file" style={{ display: 'none' }} accept="application/pdf,image/*" onChange={handleBizLicenseUpload} disabled={isLocked} />
                           </label>
                         )}
@@ -945,6 +975,41 @@ export const MyTests = () => {
 
           </div>
         </section>
+
+        {/* 결재 일정 변경 이력 모달 */}
+        {showPayHistory && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '2rem' }}>
+            <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto', padding: 0 }}>
+              <div style={{ padding: '1.25rem 1.5rem', background: '#334155', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>결재 일정 변경 이력</h3>
+                <button style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }} onClick={() => setShowPayHistory(false)}>&times;</button>
+              </div>
+              <div style={{ padding: '1.5rem' }}>
+                {payHistoryData.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>변경 이력이 없습니다.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {payHistoryData.map((log: any) => (
+                      <div key={log.id} style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--kaic-navy)', fontSize: '0.9rem' }}>{log.changedBy?.name || '시스템'}</span>
+                          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{new Date(log.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.5 }}>
+                          {log.newValue}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: '1rem', textAlign: 'center', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                <button className="btn btn-secondary" onClick={() => setShowPayHistory(false)}>닫기</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     );
   }
