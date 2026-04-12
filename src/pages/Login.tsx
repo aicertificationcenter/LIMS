@@ -94,18 +94,10 @@ export const Login = () => {
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem' }}>
             계정이 없으신가요? <Link to="/register" style={{ color: 'var(--kaic-blue)', fontWeight: 600, textDecoration: 'none' }}>사용자 등록 요청</Link>
           </p>
-
-          <div style={{ borderTop: '1px dashed #cbd5e1', marginTop: '2rem', paddingTop: '1.5rem', fontSize: '0.8rem', color: '#64748b', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
-            <strong style={{ color: '#475569', display: 'block', marginBottom: '0.5rem' }}>[테스트 전용 계정]</strong>
-            <ul style={{ paddingLeft: '1.25rem', margin: 0, lineHeight: 1.6 }}>
-              <li>관리자 접속: id <b>admin</b> / pw <b>admin</b></li>
-              <li>시험원 접속: id <b>tester1</b> / pw <b>1234</b></li>
-            </ul>
-          </div>
         </div>
 
         {/* 우측: KOLAS 공지사항 영역 */}
-        <div className="card animate-fade-in" style={{ flex: '1 1 450px', padding: '2.5rem', borderRadius: '20px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', background: 'white', display: 'flex', flexDirection: 'column' }}>
+        <div className="card animate-fade-in" style={{ flex: '1 1 430px', padding: '2.5rem', borderRadius: '20px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', background: 'white', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ color: '#3b82f6', fontWeight: 800 }}>KOLAS</span> 기관 공지사항
           </h2>
@@ -115,10 +107,10 @@ export const Login = () => {
           ) : noticeError ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444', backgroundColor: '#fef2f2', borderRadius: '8px' }}>접속 지연으로 공지사항을 불러올 수 없습니다.</div>
           ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {notices.map((notice, i) => (
-                <li key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <a href={notice.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1e293b', fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'color 0.2s', lineHeight: 1.5 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--kaic-blue)'} onMouseLeave={e => e.currentTarget.style.color = '#1e293b'}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {notices.slice(0, 5).map((notice, i) => (
+                <li key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <a href={notice.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1e293b', fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'color 0.2s', lineHeight: '1.4' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--kaic-blue)'} onMouseLeave={e => e.currentTarget.style.color = '#1e293b'}>
                     {notice.title}
                   </a>
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{notice.date}</span>
