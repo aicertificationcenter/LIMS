@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
+import { ScheduleCalendar } from '../components/ScheduleCalendar';
 
 export const Login = () => {
   // 로그인 입력 필드 상태
@@ -23,12 +24,15 @@ export const Login = () => {
   const [loadingNotices, setLoadingNotices] = useState(true);
   const [noticeError, setNoticeError] = useState(false);
 
+  // 시스템 접수 현황 (달력용)
+  const [schedules, setSchedules] = useState<any[]>([]);
+
   // 인증 및 네비게이션 훅
   const { login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 컴포넌트 마운트 시 KOLAS 공지사항 스크래핑
+    // 1. KOLAS 공지사항 로드
     apiClient.kolas.listNotices()
       .then(data => {
         setNotices(data || []);
@@ -39,6 +43,11 @@ export const Login = () => {
         setNoticeError(true);
         setLoadingNotices(false);
       });
+
+    // 2. 사내 시험 접수 전체 목록 로드 (달력 연동용)
+    apiClient.receptions.list()
+      .then(data => setSchedules(data || []))
+      .catch(err => console.error("Schedules fetch error:", err));
   }, []);
 
   /** 로그인 폼 제출 처리 */
@@ -63,7 +72,7 @@ export const Login = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', padding: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', padding: '2rem' }}>
       <div style={{ display: 'flex', gap: '2rem', maxWidth: '1000px', width: '100%', flexWrap: 'wrap', justifyContent: 'center' }}>
         
         {/* 좌측: 로그인 폼 영역 */}
@@ -126,7 +135,11 @@ export const Login = () => {
              <a href="https://www.knab.go.kr/usr/inf/bbs/notice/List.do" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: '#64748b', textDecoration: 'none', fontWeight: 600 }}>KOLAS 홈페이지로 이동 &rarr;</a>
           </div>
         </div>
-
+      </div>
+      
+      {/* 하단: 월간 통합 시험일정 달력 영역 */}
+      <div className="animate-fade-in" style={{ width: '100%', maxWidth: '1000px', margin: '2rem auto 0 auto' }}>
+         <ScheduleCalendar data={schedules} />
       </div>
     </div>
   );
