@@ -198,7 +198,7 @@ export const Login = () => {
         </div>
 
         {/* 하단 캘린더 패널 */}
-        <div style={{ flex: 1, minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '600px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
            <ScheduleCalendar data={schedules} />
         </div>
 

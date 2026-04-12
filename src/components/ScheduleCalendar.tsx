@@ -33,15 +33,21 @@ export const ScheduleCalendar = ({ data }: ScheduleCalendarProps) => {
   // 현재 월에 필터링된 시험 데이터 배열 반환
   const schedules = useMemo(() => {
     // 1. 데이터에서 시험 시작 날짜가 있는 것들만 추출
-    const filtered = data.filter(d => d.testStartDate);
+    const filtered = data.filter(d => !!d.testStartDate);
     
     // 2. 날짜별로 그룹화
     const byDate: Record<string, any[]> = {};
     
     filtered.forEach(item => {
-      // testStartDate가 ISO 형식(2026-04-12T...)이거나 일반 문자열일 수 있으므로 앞 10자리(YYYY-MM-DD)만 추출
-      const rawDate = item.testStartDate || '';
-      const startDateStr = rawDate.slice(0, 10);
+      // testStartDate가 ISO 형식이거나(문자포함), YYYY.MM.DD 형식일 수 있으므로 정규식으로 안전하게 추출
+      const rawDate = String(item.testStartDate).trim();
+      const match = rawDate.match(/^(\d{4})[-./\s]+(\d{1,2})[-./\s]+(\d{1,2})/);
+      
+      let startDateStr = rawDate.slice(0, 10); // 기본값 fallback
+      if (match) {
+        startDateStr = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+      }
+
       const testerName = item.tests?.[0]?.tester?.name || '미배정';
       const clientName = item.clientName || item.clientId || '의뢰처 없음';
       
@@ -157,7 +163,7 @@ export const ScheduleCalendar = ({ data }: ScheduleCalendarProps) => {
       </div>
 
       {/* 날짜 그리드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', flex: 1, backgroundColor: 'white', borderLeft: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'white', borderLeft: '1px solid #e2e8f0' }}>
         {renderCells()}
       </div>
     </div>
