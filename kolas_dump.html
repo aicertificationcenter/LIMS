@@ -1,0 +1,1191 @@
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+                
+        
+                 
+
+<!DOCTYPE html>
+<html lang="ko"> 
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>한국인정기구-KOLAS</title>
+<link  rel="stylesheet" href="/css/usr/common.css">
+<link rel="stylesheet" href="/js/jquery-plugin/datepicker/jquery-ui.css">
+<script src="/js/jquery/jquery-3.7.1.js"></script>
+<script  src="/js/jquery-plugin/datepicker/jquery-ui.min.js"></script>
+<script  src="/js/common.js"></script>
+<script >
+	function search(){
+		if ($("input[name='searchStartDate']").val() == "" && $("input[name='searchEndDate']").val() != "") {
+			alert("검색 시작일자를 입력하십시오.");
+			return;
+		}
+		if ($("input[name='searchStartDate']").val() != "" && $("input[name='searchEndDate']").val() == "") {
+			alert("검색 종료일자를 입력하십시오.");
+			return;
+		}
+
+		document.frm.pageNo.value = "1";
+		document.frm.action = "/usr/inf/bbs/notice/List.do";
+		document.frm.submit();
+	}
+
+	function searchClear(){
+		document.frm.searchStartDate.value = "";
+		document.frm.searchEndDate.value = "";
+		document.frm.searchType.value = "A";
+		document.frm.searchKeyword.value = "";
+		document.frm.searchState.value = "";
+	}
+
+	function resetSearchDates() {
+		$("#searchStartDate").val("");
+		$("#searchEndDate").val("");
+	}
+
+	function list(pageNo){
+		document.frm.pageNo.value = pageNo;
+		document.frm.action = "/usr/inf/bbs/notice/List.do";
+		document.frm.submit();
+	}
+
+	function xlsDownload(){
+		var totalCount = parseInt(document.frm.totalCount.value);
+
+		if(totalCount <= 0){
+			alert("데이터가 존재하지 않아 엑셀다운로드가 불가능합니다.");
+			return;
+		}
+
+		if(totalCount >= 1000){
+			if(!confirm("데이터가 1000건이상입니다. 시스템에 부하를 줄 수도 있습니다.\n\n그래도 엑셀다운로드를 수행하시겠습니까?")){
+				return;
+			}
+		}
+
+		document.frm.xlsDownloadYn.value = "Y";
+		document.frm.action = "/usr/inf/bbs/notice/List.do";
+		document.frm.submit();
+
+		document.frm.xlsDownloadYn.value = "N";
+	}
+
+	function detail(boardSn){
+		document.frm.boardSn.value = boardSn;
+		document.frm.action = "/usr/inf/bbs/notice/Detail.do";
+		document.frm.submit();
+	}
+
+	function registForm(){
+		document.frm.action = "/develop/RegistForm.do";
+		document.frm.submit();
+	}
+
+	function multiRemove(){
+		if(getCheckboxCheckCount("boardSnArray") <= 0){
+			alert("선택된 게시글이 없습니다.");
+			return;
+		}
+
+		if(confirm("선택된 게시글을 삭제하시겠습니까?")){
+			document.frm.action = "/develop/MultiRemove.do";
+			document.frm.submit();
+		}
+	}
+
+	$(function(){
+		// jQuery달력 지정
+		$("#searchStartDate").datepicker();
+		$("#searchEndDate").datepicker();
+
+		$("#searchKeyword").keypress(function(event){
+			if(event.which == 13){
+				search();
+			}
+		});
+
+		$("#searchStartDate").click(function(){
+			resetSearchDates();
+		});
+
+		$("#searchEndDate").click(function(){
+			resetSearchDates();
+		});
+
+		$("a[id='searchNotice']").click(function($e) {
+            $e.preventDefault();
+            search();
+        });
+	});
+</script>
+</head>
+<body>
+
+
+<!-- 전체를 감싸는 DIVISION -->
+<div id="wrap">
+
+	<!-- HEADER str-->
+	
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+                
+        
+                 
+
+ 
+
+<script >
+	$(function(){
+		$('ul.tabs li').on("click", function(){
+			var tab_id = $(this).attr('data-tab');
+
+			$('ul.tabs li').removeClass('current');
+			$('.tab-content').removeClass('current');
+
+			$(this).addClass('current');
+			$("#"+tab_id).addClass('current');
+		});
+		$("#ko_nav").mouseenter(function(){
+			$("#ko_hd_wrapper").addClass("on");
+		 	$(".ko_nav_s").fadeIn(300);
+			$(".top_nav_bg").slideDown(200);	
+		}).mouseleave(function(){
+			$("#ko_hd_wrapper").removeClass("on");
+			$('.ko_nav_s').stop().fadeOut(200);
+		  	$('.top_nav_bg').stop().slideUp(300);
+		});
+		
+		$(".pf_cate ul li > a").hover(function(){
+			$(".pf_cate ul li > a").not(this).addClass("off");
+		}, function() {
+			$(".pf_cate ul li > a").removeClass("off");
+		});	
+	    
+	    
+	    /* 메뉴오픈 이미지 */
+	    $("#pfSlide>li").eq(0).show();
+	    var in_b = 0;
+	    function in01_loop(){
+	        if(in_b>$("#pfSlide>li").index()-1){
+	            in_b=0;	
+	        }else {
+	            in_b++;
+	        };
+	        $("#pfSlide>li").fadeOut(1000);
+	        $("#pfSlide>li").eq(in_b).stop().fadeIn(1000);
+	    };
+	    var in01 = setInterval(in01_loop,3000);	
+	    $(window).on("scroll",function(){
+	        if($(window).scrollTop() > 50) { 
+	            $('#ko_hd_wrapper').addClass("fixed");
+	        } else{
+	            $('#ko_hd_wrapper').removeClass("fixed");
+	         }
+	        return false;
+	    });
+	    
+	    pfBtn = $("#pfBtn");
+	    pfWrap = $("#pfWrap");
+	    $('.nav_deco').css({"right":"-30%"});
+	    $('.pf_cate ul li').css({"margin-left:":"100px","opacity:":"0"});
+	    m = 0;  
+
+	    /* 닫기 */
+	    function navClose() { 
+	        $("body").removeClass("open")
+	        pfBtn.addClass("no_pointer")					
+	        setTimeout(function() {pfBtn.removeClass("no_pointer")},1000); 
+	        if($(window).scrollTop() > 50) { 
+	            $("img",pfBtn).attr("src","img/common/t_btn.png");
+	        } else{
+	            $("img",pfBtn).attr("src","img/common/t_btn.png");
+	        }	
+	        $('.pf_cate').delay(0).animate({"width":"0%"},600,'easeInQuart').delay(350).animate({"width":"0"},0);	
+	        pfWrap.delay(700).fadeOut(250).animate({"right":"-100%"});
+	        $('.pf_cate ul li').delay(0).animate({"margin-left":"100px","opacity":"0"},300,'easeOutQuart');
+	        $("#pfVisual").delay(0).animate({"width":"0","opacity":"0"},600,'easeOutQuart');
+	        
+	    }
+
+	    pfBtn.click(function(){
+	        m++;
+	        if(m%2 == 1){
+	            /* 열기 */
+	            $("body").addClass("open")
+	            pfBtn.addClass("no_pointer")					
+	            setTimeout(function() {pfBtn.removeClass("no_pointer")}, 900);//클릭방지
+	            $("img",this).attr("src","img/common/close.png");
+	            $('.pf_cate').show().delay(300).animate({"width":"50%"},700,'easeOutQuart');
+	            pfWrap.show().delay(0).animate({"right":"0"},600,'easeOutQuart');	
+	            $('.pf_cate ul li:eq(0)').delay(400).animate({"margin-left":"0","opacity":"1"},600,'easeOutQuart');
+	            $('.pf_cate ul li:eq(1)').delay(500).animate({"margin-left":"0","opacity":"1"},600,'easeOutQuart');
+	            $('.pf_cate ul li:eq(2)').delay(600).animate({"margin-left":"0","opacity":"1"},600,'easeOutQuart');
+	            $('.pf_cate ul li:eq(3)').delay(700).animate({"margin-left":"0","opacity":"1"},600,'easeOutQuart');
+	            $('.pf_cate ul li:eq(4)').delay(800).animate({"margin-left":"0","opacity":"1"},600,'easeOutQuart');
+	            $("#pfVisual").delay(400).animate({"width":"500px","opacity":"1"},1000,'easeOutQuart');
+	        }else{
+	            navClose(); 
+	        }; 
+	    });
+	    
+	    $("#m_navBtn").click(function(){
+	        m++;
+	        if(m%2 == 1){
+	        $("#m_navBtn").addClass("on");
+	        $("#navWrap").fadeIn(300).addClass("on");	
+	        }else{
+	            navClose(); 
+	        }; 
+	    });	
+	    $("#topmenuM .m_bmenu").click(function(){
+	        $('.m_smenu').not($(this).next()).slideUp(200);
+	        $('.m_bmenu').removeClass('on');
+	        $(this).addClass('on')
+	        $(this).next().slideDown(200);
+	    });	
+	        m = 0;  
+	        function navClose() { 
+	        $("#m_navBtn").removeClass("on");
+	        $("#navWrap").fadeOut(300).removeClass("on");
+	    }
+	});	
+	window.onload = function () {
+
+	    var menuLine = document.querySelector('#menuLine');
+	    var activeMenu = document.querySelector('.menu-item.active');
+	    
+	    if(menuLine && activeMenu) {
+	    	var activeMenuCoords = activeMenu.getBoundingClientRect();
+	    	 menuLine.style.left = activeMenuCoords.left + 'px';
+	    	 menuLine.style.width = activeMenuCoords.width + 'px';
+	    }
+
+
+	    var menuItem = document.querySelectorAll('.menu-item');
+	    for (var i = 0; i < menuItem.length; i++) {
+	        menuItem[i].addEventListener("mouseenter", enter);
+	        menuItem[i].addEventListener('mouseleave', leave);
+	        menuItem[i].addEventListener('click', click);
+	    }
+
+	    function enter() {
+	        var coords = this.getBoundingClientRect();
+	        menuLine.style.left = coords.left + 'px';
+	        menuLine.style.width = coords.width + 'px';
+	    }
+	    function leave() {
+	    	 var coords = this.getBoundingClientRect();
+	        menuLine.style.left = coords.left + 'px';
+	        menuLine.style.width = coords.width + 'px';
+	    }
+	    function click() {
+	        for (var i = 0; i < menuItem.length; i++) {
+	            menuItem[i].classList.remove('active');
+	        }
+	        this.classList.add('active');
+	        var coords = this.getBoundingClientRect();
+	        menuLine.style.left = coords.left + 'px';
+	        menuLine.style.width = coords.width + 'px';
+	    }
+
+	    window.onresize = function () {
+	    	var activeMenu = document.querySelector('.menu-item.active');
+	    	if(activeMenu) {
+	    		var coords = activeMenu.getBoundingClientRect();
+	    		 menuLine.style.left = coords.left + 'px';
+	 	       	 menuLine.style.width = coords.width + 'px';
+	    	}
+	    
+	    };
+	};
+
+	
+	
+	function workmanshipPopup(val){
+		var programno      = val;	
+	 	var popupWidth      = 250;
+	 	var popupHeight     = 100;
+	 	var popupCenterLeft = (screen.width - popupWidth) / 2;
+	 	var popupCenterTop  = (screen.height - popupHeight) / 2;
+
+	 	var url = "/usr/workmanship/Popup1.do?programno="+programno;
+	 	
+	 	window.open(url, 'Popup1', 'scrollbars=no,resizable=no,width='+ popupWidth +',height='+ popupHeight +',left='+ popupCenterLeft +',top='+ popupCenterTop);
+	 }
+	 
+	 
+	function check1(password){
+		if(password== "") {
+			//document.frm1.action = "/usr/workmanship/ptpplanList.do";
+			//document.frm1.submit();
+			location.href = "/usr/workmanship/ptpplanList.do";
+		} else {
+			alert("비밀번호를 다시 확인해 주세요");
+			//document.frm1.action = "/usr/intr/mas/MainUserScrin.do";
+			//document.frm1.submit();
+			location.href = "/usr/intr/mas/MainUserScrin.do";
+		}
+		
+	}
+ 	function check2(password){
+		if(password== "") {
+			//document.frm1.action = "/usr/workmanship/ptpresultList.do";
+			//document.frm1.submit();
+			location.href = "/usr/workmanship/ptpresultList.do";
+		} else {
+			alert("비밀번호를 다시 확인해 주세요");
+			//document.frm1.action = "/usr/intr/mas/MainUserScrin.do";
+			//document.frm1.submit();
+			location.href = "/usr/intr/mas/MainUserScrin.do";
+		}
+		
+	}
+</script>
+
+
+
+
+
+
+
+<!-- ko_wrapper [s] -->
+<div id="ko_wrapper">
+
+<!-- ko_hd [s] -->
+    <div id="ko_hd">
+        <div class="top_nav_bg"></div>
+    	<div id="ko_hd_wrapper">
+    		<!-- ko_usr_wrapper [s] -->
+		    <div id="ko_usr_wrapper">
+		    	<div class="ko_usr_wrap">
+					<div id="language">
+						<ul>
+							<li class="on"><a href="/" title="현재탭 선택됨">KR</a></li>
+							<li><a href="/en/Enkolas.do">EN</a></li>
+						</ul>
+					</div>
+					<div id="global">
+						
+	<!-- 						<a href="/usr/intr/lgn/LoginUserForm.do" class="bu_ic">로그인</a>
+							<a href="/usr/rqm/RqinsInfoRegistMenu.do">회원가입</a>
+							<a href="/usr/rqm/RqinsInfoFindMenu.do">계정찾기</a> -->
+							<a href="/usr/intr/lgn/LoginUserForm.do" class="name">인정(신청기관)</a>
+							<a href="/mgr/intr/lgn/LoginMngEvlprForm.do" class="site_btn">평가사</a>
+							<a href="/mgr/intr/lgn/LoginMngRctmcForm.do" class="name">인정위원</a>
+							<a href="/usr/edu/yep/RqinsFyearEdcPlanList.do" class="name2">교육기관</a>
+							<a href="/usr/intr/mas/RqinsSbscrbAtCnfirm.do">사이트맵</a>
+						
+						
+					</div>
+		    	</div>
+		    </div>
+		    <!-- ko_usr_wrapper [e] -->
+		    
+            <!-- ko_nav_wrap [s] -->
+            <div id="ko_nav_wrap">	
+                <h1 id="ko_top_logo"><a href="/"><img src="/img/common/logo.png" alt="한국인정기구 KOLAS" /></a></h1>
+                <!-- ko_nav [s] -->
+                <ul id="ko_nav">
+					<li class="menu-item">
+						<a href="/usr/gud/abt/Introduce.do">KOLAS소개</a>
+						<ul class="ko_nav_s">
+							<li><a href="/usr/gud/abt/Introduce.do">소개</a></li>
+							<li><a href="/usr/gud/abt/Justice.do">공평성 선언</a></li>
+							<li><a href="/usr/gud/abt/QualityPolicy.do">품질방침</a></li>
+							<li><a href="/usr/gud/abt/History.do">연혁</a></li>
+							<li><a href="/usr/gud/abt/OrgCht.do">조직도</a></li>
+							<li><a href="/usr/gud/abt/Location.do">오시는길</a></li>
+						</ul>
+					</li>
+					<li class="menu-item">
+						<a href="/usr/gud/cri/CrrcInsttSumryInfo.do">인정스킴</a>
+						<ul class="ko_nav_s">
+							
+							<li><a href="/usr/gud/cri/CrrcInsttSumryInfo.do">교정기관</a></li>
+							<li><a href="/usr/gud/tei/TestInsttSumryInfo.do">시험기관</a></li>
+							<li><a href="/usr/gud/pri/PrsecInsttSumryInfo.do">검사기관</a></li>
+							<li><a href="/usr/gud/sri/StmrPrdctnSumryInfo.do">표준물질생산기관</a></li>
+							<li><a href="/usr/gud/mei/MedInsttSumryInfo.do">메디컬시험기관</a></li>
+							<li><a href="/usr/gud/eri/ErtgTestSumryInfo.do">숙련도시험운영기관</a></li>
+							<li><a href="/usr/gud/kas/KasSumryInfo.do">제품인증기관</a></li>
+							<li><a href="/usr/gud/bio/BiobankSumryInfo.do">생물자원은행</a></li>
+							<li><a href="/usr/gud/ver/VerificationSumryInfo.do">검증기관</a></li>
+						</ul>
+					</li>
+					<li class="menu-item">
+						<a href="/usr/gud/abt/ProcssInfo.do">인정업무</a>
+						<ul class="ko_nav_s">
+							<li><a href="/usr/gud/abt/ProcssInfo.do">인정절차</a></li>
+							<li><a href="/usr/gud/abt/RelateLawStdrInfo.do">관련법 및 기준 등</a></li>
+							<li><a href="/usr/rcj/rcd/RqinsRcognReqstSttusList.do">인정신청</a></li>
+							<li><a href="/usr/workmanship/accreditplanList.do">숙련도 운영계획</a></li>
+							<li><a href="/usr/gud/abt/DisContent.do">이의/불만 처리절차</a></li>
+							
+						</ul>
+					</li>
+					<li class="menu-item">
+						<a href="/usr/edu/inf/RqinsKolasEduSumryInfo.do">KOLAS교육</a>
+						<ul class="ko_nav_s">
+							<li><a href="/usr/edu/inf/RqinsKolasEduSumryInfo.do">교육정보</a></li>
+							<li><a href="/usr/edu/FyearEdcPlanList.do">연간교육계획</a></li>
+							<li><a href="/usr/edu/inf/EduInstitutionInfo.do">교육기관</a></li>
+							<!-- 
+							<li><a href="/usr/edu/yep/RqinsFyearEdcPlanList.do">연간교육계획제출</a></li>
+							<li><a href="/usr/edu/mea/RqinsMtEdcAcmsltList.do">월교육실적제출</a></li>
+							 -->
+						</ul>
+					</li>
+					<li class="menu-item">
+						<a href="/usr/inf/bbs/notice/List.do">정보마당</a>
+						<ul class="ko_nav_s">
+							<li><a href="/usr/inf/bbs/notice/List.do">공지사항</a></li>
+							<li><a href="/usr/inf/bbs/pblanc/List.do">인정공고</a></li>
+							<li><a href="/usr/inf/bbs/ntfc/List.do">고시</a></li>
+							<li><a href="/inf/bbs/lawrecsroom/LawRecsRoomList.do">KOLAS문서</a></li>
+							<li><a href="/inf/bbs/rocgnrecsroom/RocgnRecsRoomList.do">기타자료실</a></li>
+							<!-- 
+							<li><a href="/usr/gud/abt/SmnrnInfo.do">국제단위계</a></li>
+							<li><a href="/usr/gud/abt/MsrstnAcfdsesInfo.do">측정소급성</a></li>
+							<li><a href="/usr/srh/MesureWordSearchList.do">계량측정용어</a></li>
+							 -->
+							<li><a href="/usr/srh/CrrcCycleSearchList.do">교정주기검색</a></li>
+							
+							
+							<li><a href="/usr/inf/bbs/report/PressRelease.do">홍보자료</a></li>
+							<!-- 
+							<li><a href="/usr/inf/bbs/report/PressRelease.do">보도자료</a></li>
+							
+							<li><a href="/usr/inf/bbs/faq/List.do">FAQ</a></li>
+							 -->
+						</ul>
+					</li>
+					<li class="menu-item">
+						<a href="/usr/inf/srh/InfoCrrcInsttSearchList.do">공인기관검색</a>
+						<ul class="ko_nav_s">
+							<li><a href="/usr/inf/srh/InfoCrrcInsttSearchList.do">교정기관</a></li>
+							<li><a href="/usr/inf/srh/InfoTestInsttSearchList.do">시험기관</a></li>
+							<li><a href="/usr/inf/srh/InfoInspectInsttSearchList.do">검사기관</a></li>
+							<li><a href="/usr/inf/srh/InfoMeasureInsttSearchList.do">표준물질생산기관</a></li>
+							<li><a href="/usr/inf/srh/InfoMedicalInsttSearchList.do">메디컬시험기관</a></li>
+							<li><a href="/usr/inf/srh/InfoProfidencyInsttSearchList.do">숙련도시험운영기관</a></li>
+							<li><a href="/usr/inf/srh/InfoProductInsttSearchList.do">제품인증기관</a></li>
+							<li><a href="/usr/inf/srh/InfoBiobankInsttSearchList.do">생물자원은행</a></li>
+							<li><a href="/usr/inf/srh/InfoVerificationInsttSearchList.do">검증기관</a></li>
+							<li><a href="/usr/inf/srh/InfoSuspensionSearchList.do">정지,취소,휴업기관</a></li>
+						</ul>
+					</li>
+				</ul>
+                <div id="menuLine"></div>
+                <!-- ko_nav [e] -->
+                
+                <div id="pfWrap">
+                    <div class="pf_cate">
+                        <ul>
+                            <li><a href=""><span class="nav_num">01</span>KOLAS 소개</a></li>
+                            <li><a href=""><span class="nav_num">02</span>인정스킴</a></li>
+                            <li><a href=""><span class="nav_num">03</span>인정업무</a></li>
+                            <li><a href=""><span class="nav_num">04</span>KOLAS 교육</a></li>
+                            <li><a href=""><span class="nav_num">05</span>정보마당</a></li>
+							<li><a href=""><span class="nav_num">06</span>공인기관 검색</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- pfWrap [e] -->
+            </div>
+            <!-- ko_nav_wrap [e] -->
+            
+            <!-- 반응형메뉴 [s] -->
+            <div id="topmenuM">
+                <h1 id="m_logo"><a href="index.html"><img src="/img/common/logo.png" alt="한국인정기구 KOLAS" /></a></h1>
+                <!-- 메뉴 버튼 -->
+                <div id="m_navBtn"><span></span></div>
+                <!-- 오픈 메뉴 -->
+                <div id="navWrap">
+                    <div class="inner">
+                        <ul class="m_lnb">
+                            <li>
+                                <button class="m_bmenu" type="button">소개</button>
+                                <ul class="m_smenu">
+                                    <li><a href="sub1.html">소개</a></li>
+									<li><a href="sub2.html">공평성 선언</a></li>
+									<li><a href="">품질방침</a></li>
+									<li><a href="">연혁</a></li>
+									<li><a href="">조직도</a></li>
+									<li><a href="">오시는 길</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="m_bmenu" type="button">인정스킴</button>
+                                <ul class="m_smenu">
+                                    <li><a href="">인정절차</a></li>
+                                    <li><a href="">교정기관</a></li>
+                                    <li><a href="">시험기관</a></li>
+									<li><a href="">표준물질생산기관</a></li>
+                                    <li><a href="">메디컬시험기관</a></li>
+                                    <li><a href="">숙련도시험운영기관</a></li>
+									<li><a href="">제품인증기관</a></li>
+                                    <li><a href="">생물자원은행</a></li>
+                                    <li><a href="">검증기관</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="m_bmenu" type="button">인정업무</button>
+                                <ul class="m_smenu">
+                                    <li><a href="">인정신청</a></li>
+                                    <li><a href="">숙련도 운영계획</a></li>
+                                    <li><a href="">이의/불만 처리절차</a></li>
+									
+                                </ul>
+                            </li>
+							<li>
+                                <button class="m_bmenu" type="button">KOLAS 교육</button>
+                                <ul class="m_smenu">
+                                    <li><a href="">KOLAS교육</a></li>
+                                    <li><a href="">연간교육계획</a></li>
+                                    <li><a href="">연간교육계획제출</a></li>
+									<li><a href="">월교육실적제출</a></li>
+                                </ul>
+                            </li>
+							<li>
+                                <button class="m_bmenu" type="button">정보마당</button>
+                                <ul class="m_smenu">
+                                    <li><a href="">공지사항</a></li>
+                                    <li><a href="">공고</a></li>
+                                    <li><a href="">법령자료실</a></li>
+									<li><a href="">기타자료실</a></li>
+									<li><a href="">국제단위계</a></li>
+                                    <li><a href="">측정소급성</a></li>
+                                    <li><a href="">교정주기</a></li>
+									<li><a href="">계량측정용어</a></li>
+                                </ul>
+                            </li>
+							 <!--<li>
+                                <button class="m_bmenu" type="button">공인기관 검색</button>
+                                <ul class="m_smenu">
+                                    <li><a href="">교정기관</a></li>
+                                    <li><a href="">시험기관</a></li>
+                                    <li><a href="">검사기관</a></li>
+									<li><a href="">표준물질생산기관</a></li>
+									<li><a href="">메디컬시험기관</a></li>
+                                    <li><a href="">숙련도시험기관</a></li>
+                                    <li><a href="">제품인증기관</a></li>
+									<li><a href="">생산자원은행</a></li>
+									<li><a href="">검증기관</a></li>
+									<li><a href="">정지,취소,휴업기관</a></li>
+                                </ul>
+                            </li> -->
+                        </ul>   
+                        <p class="mo_hd_copy">ⓒ Sample</p>         
+                    </div>
+                </div>
+            </div>
+            <!-- 반응형메뉴 [e] --> 
+		</div>            
+		<script >Tmenu_setting("000000");</script>
+    </div>
+  </div>
+    <!-- ko_hd [e] -->
+   
+
+	<!-- HEADER end -->
+
+	<!-- CONTAINER str-->
+	<div id="container">
+	
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+                
+        
+                 
+
+
+ 
+ 
+ <script >
+ 
+	function workmanshipPopup(val){
+		var programno      = val;	
+	 	var popupWidth      = 250;
+	 	var popupHeight     = 100;
+	 	var popupCenterLeft = (screen.width - popupWidth) / 2;
+	 	var popupCenterTop  = (screen.height - popupHeight) / 2;
+
+	 	var url = "/usr/workmanship/Popup1.do?programno="+programno;
+	 	
+	 	window.open(url, 'Popup1', 'scrollbars=no,resizable=no,width='+ popupWidth +',height='+ popupHeight +',left='+ popupCenterLeft +',top='+ popupCenterTop);
+	 }
+	 
+	 
+	 function check1(password){
+			if(password== "") {
+				//document.frm1.action = "/usr/workmanship/ptpplanList.do";
+				//document.frm1.submit();
+				location.href = "/usr/workmanship/ptpplanList.do";
+			} else {
+				alert("비밀번호를 다시 확인해 주세요");
+				//document.frm1.action = "/usr/intr/mas/MainUserScrin.do";
+				//document.frm1.submit();
+				location.href = "/usr/intr/mas/MainUserScrin.do";
+			}
+			
+		}
+	 function check2(password){
+			if(password== "") {
+				//document.frm1.action = "/usr/workmanship/ptpresultList.do";
+				//document.frm1.submit();
+				location.href = "/usr/workmanship/ptpresultList.do";
+			} else {
+				alert("비밀번호를 다시 확인해 주세요");
+				//document.frm1.action = "/usr/intr/mas/MainUserScrin.do";
+				//document.frm1.submit();
+				location.href = "/usr/intr/mas/MainUserScrin.do";
+			}
+			
+		}
+
+	
+</script>
+
+	<script>
+		$(document).ready(function(){
+			$('ul.tabs li').click(function(){
+				var tab_id = $(this).attr('data-tab');
+
+				$('ul.tabs li').removeClass('current');
+				$('.tab-content').removeClass('current');
+
+				$(this).addClass('current');
+				$("#"+tab_id).addClass('current');
+			});
+		});
+	</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<div class="left">
+		<h2 class="mt15">정보<em>마당</em><span>Information</span></h2>
+		<ul id="sub_lnb">
+		<li id="lnb1" class="active"><a href="/usr/inf/bbs/notice/List.do">공지사항</a></li>
+		<li id="lnb2" ><a href="/usr/inf/bbs/pblanc/List.do">인정공고</a></li>
+		<li id="lnb3" ><a href="/usr/inf/bbs/ntfc/List.do">고시</a></li>
+		<li id="lnb4" ><a href="/inf/bbs/lawrecsroom/LawRecsRoomList.do">KOLAS문서</a></li>
+		<li id="lnb7" ><a href="/inf/bbs/rocgnrecsroom/RocgnRecsRoomList.do">기타자료실</a></li>
+		<!-- 
+		<li id="lnb5" ><a href="/usr/gud/abt/SmnrnInfo.do">국제단위계</a></li>
+		<li id="lnb6" ><a href="/usr/gud/abt/MsrstnAcfdsesInfo.do">측정소급성</a></li>
+		
+		<li id="lnb8" ><a href="/usr/srh/MesureWordSearchList.do">계량측정용어검색</a></li>
+		 -->
+		<li id="lnb6" ><a href="/usr/srh/CrrcCycleSearchList.do">교정주기검색</a></li>
+		<li id="lnb10" ><a href="/usr/inf/bbs/report/PressRelease.do">홍보자료</a></li>
+		
+		<!-- 
+		<li id="lnb9" ><a href="/usr/inf/bbs/report/PressRelease.do">보도자료</a></li>
+		
+		<li id="lnb5" ><a href="/usr/inf/bbs/faq/List.do">FAQ</a></li>
+		 -->
+		</ul>
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+	<!-- 주요컨텐츠 str -->
+	<div class="contentBody" id="contentBody">
+		<div class="content_head">
+			<p class="path"><img src="/img/usr/common/ic_h.gif" alt="home" title="home" /><span>정보마당</span>&gt;<em>공지사항</em></p>
+			<h1>공지사항<span>Notice</span></h1>
+		</div>
+
+		<div class="content">
+			<form id="frm" name="frm" action="/usr/inf/bbs/notice/List.do;jsessionid=WeUNlV1e3hMOJo1DSNczsgguImW4sg2I06e8oapBI98RxR4ztrqR8bmZlsqLGGRD.kolasap_servlet_kolasap" method="post">
+				<input id="pageNo" name="pageNo" type="hidden" value="1"/>
+				<input id="boardSn" name="boardSn" type="hidden" value=""/>
+				<input type="hidden" name="xlsDownloadYn" value="N" />
+				<input type="hidden" name="totalCount"    value="1146" />
+				
+				<!-- 검색박스 -->
+				<div class="round_box">
+					<!-- 라운딩 헤더 --><span class="round_top"></span>
+					<div class="box floatDiv">
+						<table class="fl schBoxGrid dash_line_rgt w80" summary="kolas 공지사항 검색 테이블">
+							<caption>공지사항 검색 테이블</caption>
+							<colgroup>
+								<col style="width:30%;">
+								<col>
+							</colgroup>
+				
+							<tbody>
+	
+								<tr>
+									<th scope="row"><label for="searchNo">구분</label></th>
+									<td>
+		
+										<select id="searchNo" name="searchNo" style="width: 80px;">
+											<option value="">전체</option>
+											<option value="CWS115">KOLAS</option>
+											<option value="CWS116">KAS</option>
+										</select>
+									</td>
+								</tr>
+								<tr>
+									<th scope="row">검색일자(작성일)</th>
+									<td>
+									<label for="searchStartDate" style="display:none;">검색 시작일자(작성일)</label>
+										<input id="searchStartDate" name="searchStartDate" style="width:80px;text-align:center;" readonly="readonly" type="text" value="" maxlength="10"/>
+										~
+										<label for="searchEndDate" style="display:none;">검색 종료일자(작성일)</label>
+										<input id="searchEndDate" name="searchEndDate" style="width:80px;text-align:center;" readonly="readonly" type="text" value="" maxlength="10"/>
+									</td>
+								</tr>
+								<tr>
+									<th scope="row">키워드 검색</th>
+									<td>
+									<label for="searchType" style="display:none;"></label>
+										<select id="searchType" name="searchType" style="width: 80px;">
+											<option value="A">제목</option>
+											<option value="C">내용</option>
+										</select>
+										<input id="searchKeyword" name="searchKeyword" style="width: 300px;" type="text" value="" maxlength="100"/>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="fl mt20"><span class="button small icon">
+						<a href="javascript:search()" ><span class="sch1"></span>검색</a></span></div>
+						</div>
+					<!-- 라운딩 푸터 --><span class="round_btm"></span>
+				</div>
+				<!-- //검색박스 -->
+			</form>
+			
+			<!-- AREA search //-->
+	
+			<p class="rgt p11 mb5">검색결과 : <strong class="orange">1,146</strong>건</p>
+			<table class="grid" summary="공지사항 리스트">
+			<caption>공지사항 리스트</caption>
+				<colgroup>
+					<col class="col-10">
+					<col class="col-10">
+					<col class="col-55">
+					<col class="col-15">
+					<col class="col-10">
+				</colgroup>
+				<thead>
+					<tr>
+						<th scope="col">번호</th>
+						<th scope="col">구분</th>
+						<th scope="col">제목</th>
+						<th scope="col">작성일</th>
+						<th scope="col">조회</th>
+					</tr>
+				</thead>
+				
+				<tbody>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1146</td>
+						<td class="ce">KOLAS</td>
+						
+						<td><a href="javascript:detail(26049);" style="font-weight: bold;">[2026년] KOLAS 공인기관 재평가 및 정기검사 일정 공지</a></td>
+						
+						
+						<td class="ce">
+							2026-01-09
+						</td>
+						<td class="ce">8839</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1145</td>
+						<td class="ce">KOLAS</td>
+						
+						<td><a href="javascript:detail(26040);" style="font-weight: bold;">[2026년] KOLAS 평가 비용 안내</a></td>
+						
+						
+						<td class="ce">
+							2026-01-05
+						</td>
+						<td class="ce">9019</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1144</td>
+						<td class="ce">KOLAS</td>
+						
+						<td><a href="javascript:detail(24987);" style="font-weight: bold;">[2025년]KOLAS 공인기관 운영을 위한 공지</a></td>
+						
+						
+						<td class="ce">
+							2025-02-11
+						</td>
+						<td class="ce">24022</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1143</td>
+						<td class="ce">KOLAS</td>
+						
+						<td><a href="javascript:detail(22680);" style="font-weight: bold;">공인기관 대상 인정평가 설문조사 전산/의무화 안내(`21. 11. 1. 시행)</a></td>
+						
+						
+						<td class="ce">
+							2021-10-26
+						</td>
+						<td class="ce">13965</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1142</td>
+						<td class="ce">KOLAS</td>
+						
+						
+						<td><a href="javascript:detail(26073);">2026년도 숙련도시험 운영기관의 숙련도시험 프로그램(시험, 메디컬시험, 교정) 운영 계획 공지</a></td>
+						
+						<td class="ce">
+							2026-01-22
+						</td>
+						<td class="ce">6117</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1141</td>
+						<td class="ce">KOLAS</td>
+						
+						
+						<td><a href="javascript:detail(25880);">「KOLAS 선임평가사·위원회 워크숍」 개최 안내</a></td>
+						
+						<td class="ce">
+							2025-11-21
+						</td>
+						<td class="ce">8478</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1140</td>
+						<td class="ce">KOLAS</td>
+						
+						
+						<td><a href="javascript:detail(25784);">e-나라표준인증 서비스 정상가동</a></td>
+						
+						<td class="ce">
+							2025-11-04
+						</td>
+						<td class="ce">8291</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1139</td>
+						<td class="ce">KOLAS</td>
+						
+						
+						<td><a href="javascript:detail(25599);">e-나라표준인증 대체 사이트 안내</a></td>
+						
+						<td class="ce">
+							2025-09-27
+						</td>
+						<td class="ce">27097</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1138</td>
+						<td class="ce">KOLAS</td>
+						
+						
+						<td><a href="javascript:detail(24999);">2025년도 숙련도시험 운영기관의 숙련도시험 프로그램(시험, 메디컬 시험, 교정) 운영 계획 변경 및 추가 알림</a></td>
+						
+						<td class="ce">
+							2025-02-19
+						</td>
+						<td class="ce">16124</td>
+					</tr>
+				
+					<tr>
+						<!--
+						<td align="center"><input type="checkbox" name="boardSnArray" value="{list.boardSn}"/></td>
+						 -->
+						<td class="ce">1137</td>
+						<td class="ce">KOLAS</td>
+						
+						
+						<td><a href="javascript:detail(24908);">2025년도 숙련도시험 운영기관의 숙련도시험 프로그램(시험, 메디컬시험, 교정) 운영 계획 공지</a></td>
+						
+						<td class="ce">
+							2025-01-09
+						</td>
+						<td class="ce">16141</td>
+					</tr>
+				
+				
+				</tbody>
+			</table>
+			<div class="pagination">
+				<a href="#" onclick="list(1); return false;">[처음]</a>&#160;<a href="#" onclick="list(1); return false;">[이전]</a>&#160;<strong>1</strong>&#160;<a href="#" onclick="list(2); return false;">2</a>&#160;<a href="#" onclick="list(3); return false;">3</a>&#160;<a href="#" onclick="list(4); return false;">4</a>&#160;<a href="#" onclick="list(5); return false;">5</a>&#160;<a href="#" onclick="list(6); return false;">6</a>&#160;<a href="#" onclick="list(7); return false;">7</a>&#160;<a href="#" onclick="list(8); return false;">8</a>&#160;<a href="#" onclick="list(9); return false;">9</a>&#160;<a href="#" onclick="list(10); return false;">10</a>&#160;<a href="#" onclick="list(11); return false;">[다음]</a>&#160;<a href="#" onclick="list(115); return false;">[마지막]</a>&#160;
+
+			</div>
+		
+		</div>
+	</div>
+	<!-- //주요컨텐츠 end -->
+</div>
+
+	<!-- FOOTER str-->
+	
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+                
+        
+                 
+
+
+
+
+
+<div id="footer">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9405605MPV"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9405605MPV');
+</script>
+
+	<script>
+		$(document).ready(function() { 
+		   // 하단 배너
+			var $fb = $('#foot_banner');
+			var $fb_ctl = $fb.find('.control');
+			var slider_foot_banner = $('#slider_foot_banner').bxSlider({
+				auto: true,
+				pause: 2000,
+				easing: 'easeOutCubic',
+				slideWidth: 146,
+				minSlides: 6,
+				maxSlides: 6,
+				moveSlides: 1,
+				slideMargin: 24,
+				controls: false,
+				pager: false,
+				autoHover: true
+			});
+			$fb_ctl.find('.btn_prev').click(function(){
+				slider_foot_banner.goToPrevSlide();
+			});
+			$fb_ctl.find('.btn_next').click(function(){
+				slider_foot_banner.goToNextSlide();
+			});
+			$fb_ctl.find('.btn_stop').click(function(){
+				slider_foot_banner.stopAuto();
+				$(this).hide().next().show();
+			});
+			$fb_ctl.find('.btn_play').click(function(){
+				slider_foot_banner.startAuto();
+				$(this).hide().prev().show();
+			});
+
+			 $('#slider_foot_banner').keydown(function() {
+				   slider_foot_banner.stopAuto();
+				   slider_foot_banner.css('transform', 'translate3d(0, 0, 0)');
+			  });
+		});
+	</script> 
+
+	<div id="foot_banner">
+		<div class="inner">
+			<h3>배너마당</h3>	
+			<div class="fb_box">
+				<ul id="slider_foot_banner">
+					<li><a href="http://www.standard.go.kr" target="_blank" title="새창이동">e나라표준인증</a></li>
+					<li><a href="http://www.buygr.or.kr" target="_blank" title="새창이동">GR제품 정보시스템</a></li>
+					<li><a href="http://www.nepmark.or.kr" target="_blank" title="새창이동">신제품인증</a></li>
+					<li><a href="http://www.kats.go.kr" target="_blank" title="새창이동">국가기술표준원</a></li>
+					<li><a href="http://www.knowtbt.kr" target="_blank" title="새창이동">TBT종합정보허브</a></li>
+					<li><a href="http://www.motie.go.kr" target="_blank" title="새창이동">산업통상부</a></li>
+					<li><a href="http://www.korea.go.kr" target="_blank" title="새창이동">대한민국정부</a></li>
+					<li><a href="http://safetykorea.kr" target="_blank" title="새창이동">제품안전포털</a></li>
+					<li><a href="https://www.law.go.kr/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=%EC%A0%81%ED%95%A9%EC%84%B1%ED%8F%89%EA%B0%80%EA%B4%80%EB%A6%AC)" target="_blank" title="새창이동">국가법령정보센터</a></li>
+				</ul>
+			</div>
+			<div class="control">						
+				<button type="button" class="ir img_comn btn_prev" id="fb_tn_prev"></button>
+				<button type="button" class="ir img_comn btn_next"></button>
+				<button type="button" class="ir img_comn btn_play"></button>
+			</div>
+		</div>
+	</div>
+    
+
+	<script >
+		$(document).ready(function() {
+			/* $("#mainImg_wrap").q_bg_slider("mainImg", "mainThumb", "btn_prev", "btn_next", "mainThumb_pause");
+			
+			$("ul#lt_tabs").tabs("#lt_tabContent");
+
+			$("#ft_banner_content").q_slider({
+				auto : true,
+				isNavi:false,
+				isArrow:true,
+				nextBtn: "ft_banner_right",
+				prevBtn: "ft_banner_left",
+				isPause: true,
+				pauseBtn: "ft_banner_pause",
+				effect: "left", // left, updown, fade 
+				sWidth:206,
+				sDelay:3000,
+				sDuration:2000,
+				marginVal : 15
+			}); */
+
+		});
+	</script>
+
+    <footer class="footer">
+	    <div class="footer-top">
+		    <div class="container">
+			    <div class="row">
+			    	<div class="col-lg-6">
+						<div class="footer-logo clear-after">
+							<img src="/img/common/logoF.png" alt="한국인정기구 logo" />
+	                    </div>
+	                    <ul class="footer-info">
+			                <li>[27737] 충청북도 음성군 맹동면 이수로 93 국가기술표준원 KOLAS 사무국</li>
+				    	</ul>
+						
+			    	</div>
+			    	<div class="col-lg-6">
+						<div class="relate_site">
+							<div>
+								<a href="#" class="btn">업무별 문의사항 연락처<span></span></a>
+								<ul>
+									<li>시험기관 문의 : 043-870-5345, 5533</li>
+									<li>교정기관 문의 : 043-870-5496, 5474, 5495</li>
+									<li>검사기관 문의 : 043-870-5474, 5499</li>
+									<li>메디컬시험기관 문의 : 043-870-5473</li>
+									<li>표준물질생산기관 문의 : 043-870-5533</li>
+									<li>숙련도시험운영기관 문의 : 043-870-5491</li>
+									<li>제품인증기관 문의 : 043-870-5496</li>
+									<li>생물자원은행 문의 : 043-870-5473</li>
+									<li>검증기관 문의: 043-870-5492</li>
+									<li>교육 및 평가사 등록 문의 : 043-870-5473(교육), 5495(평가사)</li>
+									<li>시험기관 문의 : kolast@korea.kr</li>
+									<li>검사기관 문의 : kolasi@korea.kr</li>
+									<li>교정기관 문의 : kolasc@korea.kr</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="container re">
+				<ul class="footer-info">
+					<li class="copy">Copyright(C) 2024 KOLAS. All Rights Reserved.</li>
+					<li><a href="http://www.kats.go.kr/content.do?cmsid=366">개인정보처리방침</a></li>
+				</ul>	
+			</div>
+
+		</div>
+		</footer>
+	</div>
+	<!-- //FOOTER end -->
+</div>
+
+</body>
+</html>

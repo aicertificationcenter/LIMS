@@ -25,41 +25,41 @@ export default async function handler(req, res) {
     const $ = cheerio.load(html);
     const notices = [];
 
-    // 파싱 로직: KOLAS 게시판은 tbody 안의 tr 요소로 되어 있음
-    $('table tbody tr').each((i, el) => {
-      // 상위 7개까지만 파싱
+    // 파싱 로직: KOLAS 게시판은 table.grid 안의 tbody > tr 로 구성됨
+    $('.grid tbody tr').each((i, el) => {
       if (notices.length >= 7) return false;
 
       const $el = $(el);
+      const tds = $el.find('td');
       
-      // 글 제목 및 링크 파싱 (a 태그 내부)
-      const aTag = $el.find('td.left a');
-      if (aTag.length > 0) {
-        // 제목 안의 strong 또는 텍스트
-        let title = aTag.find('strong').text().trim();
-        if (!title) {
-          title = aTag.text().trim();
-        }
-        
-        // 날짜 파싱 (보통 뒤에서 두 번째나 세 번째 td)
-        // KOLAS 공지사항: [번호, 제목, 첨부, 등록자, 등록일, 조회]
-        // 즉, 5번째 td가 등록일임
-        const dateStr = $el.find('td').eq(4).text().trim() || $el.find('td').last().prev().text().trim();
+      // KOLAS 공지사항 5열 구조: [번호, 구분, 제목, 작성일, 조회]
+      if (tds.length >= 4) {
+        const titleTd = tds.eq(2);
+        const aTag = titleTd.find('a');
+        const dateTd = tds.eq(3);
 
-        let link = aTag.attr('href') || '#';
-        if (link.startsWith('/')) {
-          link = `https://www.knab.go.kr${link}`;
-        } else if (!link.startsWith('http')) {
-           link = `https://www.knab.go.kr/usr/inf/bbs/notice/${link}`;
-        }
+        if (aTag.length > 0) {
+          const title = aTag.text().trim();
+          const dateStr = dateTd.text().trim();
+          
+          let href = aTag.attr('href') || '';
+          let link = '#';
 
-        if (title) {
-          notices.push({
-            id: i.toString(),
-            title: title.replace(/\s+/g, ' '),
-            date: dateStr,
-            url: link
-          });
+          // href가 javascript:detail(26049); 형태임
+          const match = href.match(/detail\s*\(\s*(\d+)\s*\)/);
+          if (match && match[1]) {
+            const boardSn = match[1];
+            link = `https://www.knab.go.kr/usr/inf/bbs/notice/Detail.do?boardSn=${boardSn}`;
+          }
+
+          if (title && link !== '#') {
+            notices.push({
+              id: match ? match[1] : i.toString(),
+              title: title.replace(/\s+/g, ' '),
+              date: dateStr,
+              url: link
+            });
+          }
         }
       }
     });
