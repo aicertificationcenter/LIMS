@@ -39,8 +39,9 @@ export const ScheduleCalendar = ({ data }: ScheduleCalendarProps) => {
     const byDate: Record<string, any[]> = {};
     
     filtered.forEach(item => {
-      // testStartDate는 'YYYY-MM-DD' 형태라고 가정
-      const startDateStr = item.testStartDate;
+      // testStartDate가 ISO 형식(2026-04-12T...)이거나 일반 문자열일 수 있으므로 앞 10자리(YYYY-MM-DD)만 추출
+      const rawDate = item.testStartDate || '';
+      const startDateStr = rawDate.slice(0, 10);
       const testerName = item.tests?.[0]?.tester?.name || '미배정';
       const clientName = item.clientName || item.clientId || '의뢰처 없음';
       
@@ -130,7 +131,7 @@ export const ScheduleCalendar = ({ data }: ScheduleCalendarProps) => {
   };
 
   return (
-    <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: 'auto' }}>
       {/* 캘린더 헤더 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2rem', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
         <button className="btn" style={{ background: 'white', border: '1px solid #cbd5e1', padding: '0.5rem' }} onClick={handlePrevMonth}>
