@@ -64,7 +64,7 @@ export const Ledger = () => {
       return;
     }
 
-    const headers = ['정식 발급번호', '의뢰 기관명', '시험대상 품목', '접수 일자', '시작 일자', '담당 시험원'];
+    const headers = ['성적서 번호', '의뢰 기관명', '시험대상 품목', '접수 일자', '시작 일자', '담당 시험원'];
     const rows = filteredData.map(r => [
       r.formalBarcode || r.barcode || '-',
       r.client || r.clientId || '-',
@@ -128,7 +128,7 @@ export const Ledger = () => {
             <table className="data-table" style={{ fontSize: '0.85rem' }}>
               <thead>
                 <tr>
-                  <th>정식 발급번호</th>
+                  <th>성적서 번호</th>
                   <th>의뢰 기관명</th>
                   <th>시험대상 품목</th>
                   <th>접수 일자</th>
