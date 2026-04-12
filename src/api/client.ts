@@ -148,5 +148,10 @@ export const apiClient = {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
+  },
+
+  /** KOLAS 기관 공지사항 조회 API (외부 파싱) */
+  kolas: {
+    listNotices: () => apiClient.fetch('/kolas'),
   }
 };
