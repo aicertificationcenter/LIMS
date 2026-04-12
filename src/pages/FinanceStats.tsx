@@ -51,8 +51,11 @@ export default function FinanceStats() {
 
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
+        const testerName = item.tests && item.tests[0]?.tester?.name ? item.tests[0].tester.name : '미배정';
         return (item.barcode && item.barcode.toLowerCase().includes(term)) ||
                (item.clientName && item.clientName.toLowerCase().includes(term)) ||
+               (item.clientId && item.clientId.toLowerCase().includes(term)) ||
+               (testerName.toLowerCase().includes(term)) ||
                (item.testerBarcode && item.testerBarcode.toLowerCase().includes(term));
       }
       return true;

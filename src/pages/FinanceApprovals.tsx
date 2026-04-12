@@ -157,8 +157,11 @@ export default function FinanceApprovals() {
     }
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
+      const testerName = item.tests && item.tests[0] ? (item.tests[0].tester?.name || '미배정') : '미배정';
       return (item.barcode && item.barcode.toLowerCase().includes(term)) ||
              (item.clientName && item.clientName.toLowerCase().includes(term)) ||
+             (item.clientId && item.clientId.toLowerCase().includes(term)) ||
+             (testerName.toLowerCase().includes(term)) ||
              (item.status && item.status.toLowerCase().includes(term));
     }
     if (testerFilter) {
@@ -244,7 +247,7 @@ export default function FinanceApprovals() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>접수번호/시험원명</th>
+                  <th>시험원명/접수번호</th>
                   <th>의뢰기관 (담당자)</th>
                   <th>견적액 <span style={{fontSize:'0.8rem'}}>(천원)</span></th>
                   <th>누적 입금액 <span style={{fontSize:'0.8rem'}}>(천원)</span></th>
@@ -477,26 +480,33 @@ export default function FinanceApprovals() {
 
       {/* 모달: 접수정보 보기창 */}
       {infoModalOpen && selectedInfo && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="card animate-fade-in" style={{ width: '500px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--kaic-navy)', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
-               접수 상세 정보
-            </h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', fontSize: '0.95rem' }}>
-              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>접수번호:</strong> {selectedInfo.barcode}</div>
-              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>접수일:</strong> {selectedInfo.receivedAt ? selectedInfo.receivedAt.substring(0, 10) : '-'}</div>
-              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>의뢰기관:</strong> {selectedInfo.clientId}</div>
-              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>담당자명:</strong> {selectedInfo.clientName}</div>
-              <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px dashed #cbd5e1' }}>
-                <strong style={{ color: '#475569', display: 'block', marginBottom: '8px' }}>접수내용:</strong>
-                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-                  {selectedInfo.content || '내용이 없습니다.'}
-                </div>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+            <div style={{ padding: '1.5rem 2rem', background: 'var(--kaic-navy)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem' }}>접수 상세 내역</h2>
+              <button style={{ background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', lineHeight: 1 }} onClick={() => setInfoModalOpen(false)}>&times;</button>
+            </div>
+            <div style={{ padding: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
+                <div><strong style={{ color: '#64748b' }}>번호:</strong> {selectedInfo.barcode}</div>
+                <div><strong style={{ color: '#64748b' }}>접수일:</strong> {selectedInfo.receivedAt ? selectedInfo.receivedAt.substring(0, 10) : '-'}</div>
+                <div><strong style={{ color: '#64748b' }}>의뢰기관:</strong> {selectedInfo.clientId}</div>
+                <div><strong style={{ color: '#64748b' }}>의뢰자:</strong> {selectedInfo.clientName}</div>
+                <div><strong style={{ color: '#64748b' }}>사업자번호:</strong> {selectedInfo.bizNo || 'N/A'}</div>
+                <div><strong style={{ color: '#64748b' }}>이메일:</strong> {selectedInfo.email || 'N/A'}</div>
+                <div><strong style={{ color: '#64748b' }}>연락처:</strong> {selectedInfo.phone || 'N/A'}</div>
+                <div><strong style={{ color: '#64748b' }}>상태:</strong> {selectedInfo.status}</div>
+              </div>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '8px' }}>시험 대상 (의뢰/접수 내용)</h3>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px', lineHeight: 1.5 }}>
+                {selectedInfo.target || selectedInfo.content || 'N/A'}
+              </div>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '8px' }}>기타 및 상담 사항</h3>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '8px', whiteSpace: 'pre-wrap', marginBottom: '1.5rem', minHeight: '80px', lineHeight: 1.5 }}>
+                {selectedInfo.extra || selectedInfo.consultation || 'N/A'}
               </div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '0 2rem 2rem 2rem' }}>
               <button className="btn btn-primary" onClick={() => setInfoModalOpen(false)}>닫기</button>
             </div>
           </div>
