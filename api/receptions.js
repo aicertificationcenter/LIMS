@@ -27,6 +27,7 @@ export default async function handler(req, res) {
             estFees: true, advAmt: true, advDate: true, interimAmt: true, interimDate: true, finalAmt: true, finalDate: true,
             advPaidAmt: true, advPaidDate: true, interimPaidAmt: true, interimPaidDate: true, finalPaidAmt: true, finalPaidDate: true,
             isDepositCompleted: true,
+            advInvoiced: true, interimInvoiced: true, finalInvoiced: true,
             consultations: {
               orderBy: { createdAt: 'desc' }
             },
@@ -81,7 +82,8 @@ export default async function handler(req, res) {
       try {
         const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, bizLicenseUrl, consultation, testProduct, testPurpose, testMethod, extra,
           estFees, advAmt, advDate, interimAmt, interimDate, finalAmt, finalDate,
-          advPaidAmt, advPaidDate, interimPaidAmt, interimPaidDate, finalPaidAmt, finalPaidDate, isDepositCompleted
+          advPaidAmt, advPaidDate, interimPaidAmt, interimPaidDate, finalPaidAmt, finalPaidDate, isDepositCompleted,
+          advInvoiced, interimInvoiced, finalInvoiced
         } = req.body;
         
         // Update sample status and generate testerBarcode if needed
@@ -129,6 +131,9 @@ export default async function handler(req, res) {
         if (finalPaidAmt !== undefined) updatedData.finalPaidAmt = finalPaidAmt;
         if (finalPaidDate !== undefined) updatedData.finalPaidDate = finalPaidDate;
         if (isDepositCompleted !== undefined) updatedData.isDepositCompleted = isDepositCompleted;
+        if (advInvoiced !== undefined) updatedData.advInvoiced = advInvoiced;
+        if (interimInvoiced !== undefined) updatedData.interimInvoiced = interimInvoiced;
+        if (finalInvoiced !== undefined) updatedData.finalInvoiced = finalInvoiced;
         
         if (status) {
           updatedData.status = status;

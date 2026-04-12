@@ -20,6 +20,7 @@ import { Ledger } from './pages/Ledger';
 import { UploadReport } from './pages/UploadReport';
 import { Clients } from './pages/Clients';
 import { Invoices } from './pages/Invoices';
+import InvoiceMgmt from './pages/InvoiceMgmt';
 import FinanceApprovals from './pages/FinanceApprovals';
 import FinanceStats from './pages/FinanceStats';
 import './App.css';
@@ -54,6 +55,7 @@ function App() {
             <Route path="ledger" element={<Ledger />} />        {/* 관리자 발급대장 */}
             <Route path="clients" element={<Clients />} />      {/* 의뢰 기관 정보 관리 */}
             <Route path="invoices" element={<Invoices />} />    {/* 인보이스/견적서 발행 */}
+            <Route path="invoice-mgmt" element={<InvoiceMgmt />} /> {/* 재무관리자 계산서 발행 관리 */}
             <Route path="finance-approvals" element={<FinanceApprovals />} /> {/* 재무관리자 입금 결재 통계 */}
             <Route path="finance-stats" element={<FinanceStats />} />         {/* 재무관리자 글로벌 통계 */}
             

@@ -97,6 +97,11 @@ model Sample {
   finalPaidDate  String?             // 재무관리자 확인 잔금 입금일
 
   isDepositCompleted Boolean @default(false) // 입금 완료 여부
+
+  // 세금계산서 발행 여부 추적
+  advInvoiced     Boolean @default(false)
+  interimInvoiced Boolean @default(false)
+  finalInvoiced   Boolean @default(false)
 }
 
 enum SampleStatus {
