@@ -117,7 +117,7 @@ export const UploadReport = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>접수번호 (정식번호)</th>
+                <th>접수번호 (성적서번호)</th>
                 <th>의뢰 기관</th>
                 <th>진행 상태</th>
                 <th>성적서 PDF 파일</th>
