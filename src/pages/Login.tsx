@@ -92,11 +92,11 @@ export const Login = () => {
       
       {/* 1. 사이드바 (로그인 영역) */}
       <div style={{ width: '380px', background: 'white', padding: '3rem 2.5rem', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 24px rgba(0,0,0,0.04)', zIndex: 10, flexShrink: 0 }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem', marginTop: '2rem' }}>
-          <img src="/logo.png" alt="KAIC 한국인공지능검증원 로고" style={{ height: '55px', objectFit: 'contain' }} />
-        </div>
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem', marginTop: '2rem', fontSize: '1.5rem', color: '#1e293b', fontWeight: 800 }}>
+          시스템 로그인
+        </h2>
         <p style={{ textAlign: 'center', marginBottom: '3rem', color: '#64748b', fontSize: '0.95rem', fontWeight: 500 }}>
-          통합 시험 관리 시스템
+          통합 시험 관리 시스템 (LIMS)
         </p>
         
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -130,6 +130,11 @@ export const Login = () => {
       {/* 2. 메인 대시보드 데이터 영역 */}
       <div style={{ flex: 1, padding: '3rem', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
+        {/* 회사 로고 영역 (중앙 정렬) */}
+        <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+          <img src="/logo.png" alt="KAIC 한국인공지능검증원 로고" style={{ height: '55px', objectFit: 'contain' }} />
+        </div>
+
         {/* 상단 2분할 그리드 (기관 공지 & 인공지능 뉴스) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
           
