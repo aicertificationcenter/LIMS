@@ -44,14 +44,42 @@ export const ReceptionDetailModal: React.FC<ReceptionDetailModalProps> = ({ rece
             <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>총괄 담당자</label><span style={{ fontWeight: 700, color: '#047857' }}>{reception.tests?.[0]?.tester?.name || '미배정'}</span></div>
           </div>
 
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>시험 대상</h3>
-          <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', whiteSpace: 'pre-wrap', marginBottom: '2rem', minHeight: '100px', fontSize: '0.95rem', lineHeight: 1.6 }}>
-            {reception.target || reception.content || 'N/A'}
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>시험대상 정보</h3>
+          <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', whiteSpace: 'pre-wrap', marginBottom: '2rem', minHeight: '80px', fontSize: '0.95rem', lineHeight: 1.6 }}>
+            {reception.testProduct || reception.target || reception.content || '-'}
           </div>
           
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>기타 및 상담 사항</h3>
-          <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', whiteSpace: 'pre-wrap', marginBottom: '2rem', minHeight: '100px', fontSize: '0.95rem', lineHeight: 1.6 }}>
-            {reception.extra || reception.consultation || 'N/A'}
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>관리자 상담내용</h3>
+          <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', whiteSpace: 'pre-wrap', marginBottom: '2rem', minHeight: '80px', fontSize: '0.95rem', lineHeight: 1.6 }}>
+            {reception.consultation || reception.extra || '-'}
+          </div>
+
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>시험원 상담/협의 기록</h3>
+          <div style={{ background: 'white', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', minHeight: '80px' }}>
+            {(reception.consultations && reception.consultations.length > 0) ? (
+              reception.consultations.map((c: any, idx: number) => (
+                <div key={c.id} style={{ marginBottom: idx === reception.consultations.length - 1 ? 0 : '1rem', paddingBottom: idx === reception.consultations.length - 1 ? 0 : '1rem', borderBottom: idx === reception.consultations.length - 1 ? 'none' : '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '6px' }}>작성자: {c.authorId} | 일시: {new Date(c.createdAt).toLocaleString()}</div>
+                  <div style={{ fontSize: '0.95rem', color: '#1e293b', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{c.message}</div>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: '#94a3b8', textAlign: 'center', paddingTop: '10px', fontSize: '0.9rem' }}>등록된 협의 기록이 없습니다.</div>
+            )}
+          </div>
+
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', borderLeft: '4px solid var(--kaic-blue)', paddingLeft: '10px' }}>시험 정보</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
+            <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>시작일</label><span style={{ fontWeight: 700 }}>{reception.testStartDate || '-'}</span></div>
+            <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>종료일</label><span style={{ fontWeight: 700 }}>{reception.testEndDate || '-'}</span></div>
+            <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>장소</label><span style={{ fontWeight: 700 }}>{reception.testLocation || '-'}</span></div>
+            <div><label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>구분</label><span style={{ fontWeight: 700 }}>{reception.testType || '-'}</span></div>
+            {reception.testAddress && (
+               <div style={{ gridColumn: 'span 4', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #cbd5e1' }}>
+                 <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>현장 상세 주소</label>
+                 <span style={{ fontWeight: 700 }}>{reception.testAddress}</span>
+               </div>
+            )}
           </div>
           
           {reception.status === 'COMPLETED' && reception.reportPdfUrl && (

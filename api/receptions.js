@@ -23,6 +23,9 @@ export default async function handler(req, res) {
             extra: true, testerBarcode: true, formalBarcode: true,
             gapjiApproved: true, euljiApproved: true,
             gapjiRejection: true, euljiRejection: true, receivedAt: true,
+            consultations: {
+              orderBy: { createdAt: 'desc' }
+            },
             invoice: { include: { items: true } },
             tests: { include: { tester: true } }
           }

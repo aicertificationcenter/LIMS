@@ -63,9 +63,10 @@ git push origin main
 git add .
 
 # 2. 커밋 메시지 작성
-git commit -m "04052330"
+git commit -m "04062040"
 
 # 3. 깃허브로 업로드
 git push origin main
 =============
 이지숙 jisook1206 / jisook1206
+=====================
