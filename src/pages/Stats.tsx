@@ -265,8 +265,10 @@ export const Stats = () => {
           <table className="data-table" style={{ fontSize: '0.9rem' }}>
             <thead>
               <tr>
-                <th>번호</th>
+                <th>접수번호</th>
                 <th>의뢰 기관</th>
+                <th>담당자명</th>
+                <th>연락처</th>
                 <th>상태</th>
                 <th>담당 시험원</th>
                 <th>상세</th>
@@ -277,6 +279,8 @@ export const Stats = () => {
                 <tr key={r.id}>
                   <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{r.barcode}</td>
                   <td style={{ fontWeight: 600 }}>{r.clientId}</td>
+                  <td style={{ fontSize: '0.85rem' }}>{r.clientName || '-'}</td>
+                  <td style={{ fontSize: '0.85rem' }}>{r.phone || '-'}</td>
                   <td><StatusBadge status={r.status} /></td>
                   <td style={{ color: '#047857', fontWeight: 600 }}>{r.tests?.[0]?.tester?.name || '-'}</td>
                   <td>
@@ -285,7 +289,7 @@ export const Stats = () => {
                 </tr>
               ))}
               {paginatedTests.length === 0 && (
-                <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>데이터가 없습니다.</td></tr>
               )}
             </tbody>
           </table>
