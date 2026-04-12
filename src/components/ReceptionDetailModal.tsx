@@ -86,7 +86,7 @@ export const ReceptionDetailModal: React.FC<ReceptionDetailModalProps> = ({ rece
             <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#f0fffa', borderRadius: '16px', border: '1px solid #c6f6d5', textAlign: 'center' }}>
               <h4 style={{ margin: '0 0 1rem 0', color: '#276749' }}>✅ 최종 시험 완료 리포트가 업로드되어 있습니다.</h4>
               <button 
-                onClick={() => { const win = window.open(); win?.document.write(`<html><body style="margin:0"><iframe src="${reception.reportPdfUrl}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe></body></html>`); }} 
+                onClick={() => window.open(reception.reportPdfUrl, '_blank')} 
                 className="btn btn-primary" 
                 style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1.5rem' }}
               >
