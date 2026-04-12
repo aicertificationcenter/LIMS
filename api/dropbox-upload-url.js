@@ -19,9 +19,12 @@ export default async function handler(req, res) {
     let suffix = '최종성적서';
     if (type === 'BIZ_LICENSE') suffix = '사업자등록증';
     
+    // Sanitize barcode to be safe for Dropbox paths
+    const safeBarcode = (sample.barcode || 'Unknown').replace(/[\/\\:*?"<>|]/g, '_');
+    
     // Clean extension if provided as .ext
-    const cleanExt = extension.replace('.', '');
-    const filename = `${sample.barcode}_${suffix}.${cleanExt}`;
+    const cleanExt = (extension || 'pdf').replace('.', '');
+    const filename = `${safeBarcode}_${suffix}.${cleanExt}`;
     const dropboxPath = `/LIMS_Reports/${filename}`;
 
     // Dropbox API: get_temporary_upload_link

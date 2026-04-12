@@ -52,7 +52,8 @@ export const UploadReport = () => {
       
       if (!linkRes.ok) {
         const errData = await linkRes.json().catch(() => ({}));
-        throw new Error(errData.message || errData.error || '업로드 세션 생성 실패');
+        const detail = typeof errData.error === 'string' ? errData.error : JSON.stringify(errData.error);
+        throw new Error(`${errData.message || '세션 생성 실패'}${detail ? ` (${detail})` : ''}`);
       }
       
       const { link, path } = await linkRes.json();
