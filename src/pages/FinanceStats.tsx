@@ -100,7 +100,7 @@ export default function FinanceStats() {
       
       return [
         item.barcode,
-        item.client,
+        item.clientId,
         item.clientName, // 담당자
         testerName,
         est,
@@ -218,8 +218,8 @@ export default function FinanceStats() {
                       <tr key={item.id}>
                         <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{item.barcode}</td>
                         <td>
-                          <div style={{ fontWeight: 600 }}>{item.client}</div>
-                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>담당: {item.clientName}</div>
+                          <div style={{ fontWeight: 800, color: '#1e293b' }}>{item.clientId}</div>
+                          <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>담당: {item.clientName}</div>
                         </td>
                         <td style={{ fontWeight: 600 }}>{testerName}</td>
                         <td style={{ textAlign: 'right', fontWeight: 700 }}>{toThousands(est)}</td>

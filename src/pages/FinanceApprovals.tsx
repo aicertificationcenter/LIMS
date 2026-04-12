@@ -10,6 +10,11 @@ export default function FinanceApprovals() {
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [testerFilter, setTesterFilter] = useState('');
+  
+  // 접수 상세정보 모달 상태
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [selectedInfo, setSelectedInfo] = useState<any>(null);
 
   // 결재 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -156,10 +161,19 @@ export default function FinanceApprovals() {
              (item.clientName && item.clientName.toLowerCase().includes(term)) ||
              (item.status && item.status.toLowerCase().includes(term));
     }
+    if (testerFilter) {
+      const testerName = item.tests && item.tests[0] ? (item.tests[0].tester?.name || '미배정') : '미배정';
+      if (testerName !== testerFilter) return false;
+    }
     return true;
   });
 
+  const uniqueTesters = Array.from(new Set(data.map(item => item.tests && item.tests[0] ? (item.tests[0].tester?.name || '미배정') : '미배정'))).sort();
   const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const filteredTotalEst = filteredData.reduce((acc, item) => acc + (item.estFees || item.invoice?.total || 0), 0);
+  const filteredTotalPaid = filteredData.reduce((acc, item) => acc + (item.advPaidAmt || 0) + (item.interimPaidAmt || 0) + (item.finalPaidAmt || 0), 0);
+  const filteredTotalBal = filteredTotalEst - filteredTotalPaid;
 
   return (
     <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
@@ -180,7 +194,18 @@ export default function FinanceApprovals() {
               onChange={(e) => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
               style={{ width: 'auto', margin: 0, fontWeight: 700 }}
             />
-            <div className="search-bar" style={{ width: '300px' }}>
+            <select 
+              className="input-field" 
+              value={testerFilter} 
+              onChange={(e) => { setTesterFilter(e.target.value); setCurrentPage(1); }} 
+              style={{ width: '150px', margin: 0, fontWeight: 700 }}
+            >
+              <option value="">전체 시험원</option>
+              {uniqueTesters.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            <div className="search-bar" style={{ width: '250px' }}>
               <Search size={20} className="search-icon" />
               <input type="text" placeholder="접수번호, 업체명 검색" className="search-input" value={searchTerm} onChange={e => {setSearchTerm(e.target.value); setCurrentPage(1);}} />
             </div>
@@ -239,12 +264,17 @@ export default function FinanceApprovals() {
                   return (
                     <tr key={item.id}>
                       <td>
-                        <div style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{item.barcode}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>시험원: {testerName}</div>
+                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--kaic-navy)' }}>{testerName}</div>
+                        <button 
+                          onClick={() => { setSelectedInfo(item); setInfoModalOpen(true); }}
+                          style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '4px' }}
+                        >
+                          {item.barcode}
+                        </button>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{item.client}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>담당자: {item.clientName} | 접수일: {item.receivedAt ? item.receivedAt.substring(0, 10) : ''}</div>
+                        <div style={{ fontWeight: 800, color: '#1e293b' }}>{item.clientId}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>담당자: {item.clientName}</div>
                       </td>
                       <td style={{ fontWeight: 700, color: '#334155' }}>
                          {toThousands(est)}
@@ -287,6 +317,19 @@ export default function FinanceApprovals() {
                   </tr>
                 )}
               </tbody>
+              {testerFilter && (
+                <tfoot style={{ background: '#f8fafc', fontWeight: 800 }}>
+                  <tr style={{ borderTop: '2px solid #cbd5e1' }}>
+                    <td colSpan={2} style={{ textAlign: 'center', color: 'var(--kaic-navy)' }}>
+                      [{testerFilter}] 조회 결과 합계
+                    </td>
+                    <td style={{ color: '#334155' }}>{toThousands(filteredTotalEst)}</td>
+                    <td style={{ color: filteredTotalPaid > 0 ? '#059669' : '#94a3b8' }}>{toThousands(filteredTotalPaid)}</td>
+                    <td style={{ color: filteredTotalBal > 0 ? '#ef4444' : '#64748b' }}>{toThousands(filteredTotalBal > 0 ? filteredTotalBal : 0)}</td>
+                    <td colSpan={2}></td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         )}
@@ -427,6 +470,34 @@ export default function FinanceApprovals() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '2rem' }}>
               <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>취소</button>
               <button className="btn btn-primary" onClick={handleModalSave}>입금내역 저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 모달: 접수정보 보기창 */}
+      {infoModalOpen && selectedInfo && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card animate-fade-in" style={{ width: '500px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--kaic-navy)', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
+               접수 상세 정보
+            </h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', fontSize: '0.95rem' }}>
+              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>접수번호:</strong> {selectedInfo.barcode}</div>
+              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>접수일:</strong> {selectedInfo.receivedAt ? selectedInfo.receivedAt.substring(0, 10) : '-'}</div>
+              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>의뢰기관:</strong> {selectedInfo.clientId}</div>
+              <div><strong style={{ color: '#475569', display: 'inline-block', width: '100px' }}>담당자명:</strong> {selectedInfo.clientName}</div>
+              <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px dashed #cbd5e1' }}>
+                <strong style={{ color: '#475569', display: 'block', marginBottom: '8px' }}>접수내용:</strong>
+                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                  {selectedInfo.content || '내용이 없습니다.'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+              <button className="btn btn-primary" onClick={() => setInfoModalOpen(false)}>닫기</button>
             </div>
           </div>
         </div>
