@@ -460,14 +460,13 @@ export const Invoices = () => {
                 {/* Invoice Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '4px solid #1e3a8a', paddingBottom: '15px', marginBottom: '20px' }}>
                   <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 900, letterSpacing: '4px', whiteSpace: 'nowrap', paddingTop: '10px' }}>견 적 서</h1>
-                  <div style={{ textAlign: 'left', fontSize: '9px', color: '#1e293b', lineHeight: 1.4, maxWidth: '420px' }}>
-                    <div style={{ fontWeight: 900, fontSize: '11px', marginBottom: '4px' }}>KOLAS/ILAC 국제공인시험기관 한국인공지능검증원 (KT1177)</div>
-                    <img src="/KOLAS.jpg" alt="KOLAS/ILAC Logo" style={{ height: '35px', marginBottom: '6px' }} />
-                    <div style={{ fontWeight: 700 }}>KOREA Artificial Intrlligence Certification(EU NB ISO 17025 Accredited)</div>
-                    <div>KS X ISO/IEC 25023:2016 / KS X ISO/IEC 25051:2014 / 과학기술정보통신부 고시 제 2024-41호</div>
-                    <div style={{ color: '#475569' }}>(04778) #416, Seoul Forest Pohu, 58 Wangsimni-ro, Seongdong-gu, Seoul (Seoul Forest Station, Bundang Line, Exit 2)</div>
-                    <div style={{ color: '#475569' }}>서울특별시 성동구 왕십리로 58. 서울숲포휴 416호 (분당선 서울숲역 2번출구)</div>
-                    <div style={{ color: '#475569' }}>T. 02-2135-4264 / F. 02-6280-3134 / 사업자등록번호 880-81-02140 / E. ai@aicerti.com / H. https://www.aicerti.com</div>
+                  <div style={{ textAlign: 'left', fontSize: '9px', color: '#1e293b', lineHeight: 1.4, maxWidth: '450px' }}>
+                    <div style={{ fontWeight: 900, fontSize: '12px', marginBottom: '8px' }}>KOLAS/ILAC 국제공인시험기관 한국인공지능검증원 (KT1177)</div>
+                    <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+                      <img src="/KOLAS.jpg" alt="KOLAS/ILAC Logo" style={{ height: '60px' }} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '10px' }}>KOREA Artificial Intrlligence Certification(EU NB ISO 17025 Accredited)</div>
+                    <div style={{ fontSize: '10px' }}>KS X ISO/IEC 25023:2016 / KS X ISO/IEC 25051:2014 / 과학기술정보통신부 고시 제 2024-41호</div>
                   </div>
                 </div>
 
