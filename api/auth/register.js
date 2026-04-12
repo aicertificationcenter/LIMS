@@ -25,6 +25,7 @@ export default async function handler(req, res) {
         passwordHash: pw, // bcrypt.hashSync(pw, 10)
         name: name || `${id} 님`,
         role: 'PENDING', // default role
+        phone: phone || null,
       }
     });
 
