@@ -458,15 +458,30 @@ export const Invoices = () => {
                 }}
               >
                 {/* Invoice Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '4px solid #1e3a8a', paddingBottom: '15px', marginBottom: '20px' }}>
-                  <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 900, letterSpacing: '4px', whiteSpace: 'nowrap', paddingTop: '10px' }}>견 적 서</h1>
-                  <div style={{ textAlign: 'right', fontSize: '10px', color: '#1e293b', lineHeight: 1.4, maxWidth: '450px' }}>
-                    <div style={{ marginBottom: '8px' }}>
-                      <img src="/KOLAS.jpg" alt="KOLAS/ILAC Logo" style={{ height: '60px' }} />
-                    </div>
-                    <div style={{ fontWeight: 900, fontSize: '12px', marginBottom: '4px' }}>KOLAS/ILAC 국제공인시험기관 한국인공지능검증원 (KT1177)</div>
-                    <div style={{ fontWeight: 700 }}>KOREA Artificial Intrlligence Certification(EU NB ISO 17025 Accredited)</div>
-                    <div>KS X ISO/IEC 25023:2016 / KS X ISO/IEC 25051:2014 / 과학기술정보통신부 고시 제 2024-41호</div>
+                <img 
+                  src="/KOLAS.jpg" 
+                  alt="Background Watermark" 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '55%', 
+                    left: '50%', 
+                    transform: 'translate(-50%, -50%)', 
+                    width: '160mm', 
+                    opacity: 0.06, 
+                    zIndex: 0, 
+                    pointerEvents: 'none' 
+                  }} 
+                />
+
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h1 style={{ margin: 0, fontSize: '46px', fontWeight: 900, letterSpacing: '8px', whiteSpace: 'nowrap' }}>견 적 서</h1>
+                    <img src="/KOLAS.jpg" alt="KOLAS/ILAC Logo" style={{ height: '75px', objectFit: 'contain' }} />
+                  </div>
+                  
+                  <div style={{ background: '#1e3a8a', padding: '10px 15px', color: 'white', fontSize: '10px', fontWeight: 600, textAlign: 'center', borderRadius: '4px', lineHeight: 1.5 }}>
+                    KOLAS/ILAC 국제공인시험기관 한국인공지능검증원 (KT1177) / KOREA Artificial Intrlligence Certification(EU NB ISO 17025 Accredited)<br/>
+                    KS X ISO/IEC 25023:2016 / KS X ISO/IEC 25051:2014 / 과학기술정보통신부 고시 제 2024-41호
                   </div>
                 </div>
 
