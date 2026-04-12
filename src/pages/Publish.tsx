@@ -95,6 +95,10 @@ export const Publish = () => {
 
     if (!euljiContent && !gapjiContent) return;
 
+    if (!isPreview) {
+      alert("시점확인 완료된 성적서는 LIMS 시스템에 업로드 및 최종제출을 완료해 주세요.");
+    }
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       alert('팝업 차단을 해제해주세요.');
