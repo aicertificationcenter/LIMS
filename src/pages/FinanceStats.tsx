@@ -69,7 +69,7 @@ export default function FinanceStats() {
         stats[testerId] = { count: 0, totalSales: 0, totalUnpaid: 0 };
       }
       
-      const sales = item.estFees || 0;
+      const sales = item.estFees || item.invoice?.total || 0;
       const paid = (item.advPaidAmt || 0) + (item.interimPaidAmt || 0) + (item.finalPaidAmt || 0);
       const unpaid = sales - paid;
 
@@ -93,14 +93,14 @@ export default function FinanceStats() {
     if (filteredData.length === 0) return alert('다운로드할 데이터가 없습니다.');
     const headers = ['접수번호', '의뢰기관', '담당자명', '시험원명', '견적금액_원', '총입금액_원', '결재잔액_원', '상태'];
     const rows = filteredData.map(item => {
-      const est = item.estFees || 0;
+      const est = item.estFees || item.invoice?.total || 0;
       const paid = (item.advPaidAmt || 0) + (item.interimPaidAmt || 0) + (item.finalPaidAmt || 0);
       const bal = est > paid ? est - paid : 0;
       const testerName = item.tests && item.tests[0]?.tester?.name ? item.tests[0].tester.name : '미배정';
       
       return [
-        item.testerBarcode || item.barcode,
-        item.clientName,
+        item.barcode,
+        item.client,
         item.clientName, // 담당자
         testerName,
         est,
@@ -209,17 +209,17 @@ export default function FinanceStats() {
                 </thead>
                 <tbody>
                   {currentData.length > 0 ? currentData.map(item => {
-                    const est = item.estFees || 0;
+                    const est = item.estFees || item.invoice?.total || 0;
                     const paid = (item.advPaidAmt || 0) + (item.interimPaidAmt || 0) + (item.finalPaidAmt || 0);
                     const bal = est - paid;
                     const testerName = item.tests && item.tests[0]?.tester?.name ? item.tests[0].tester.name : '미배정';
 
                     return (
                       <tr key={item.id}>
-                        <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{item.testerBarcode || item.barcode}</td>
+                        <td style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{item.barcode}</td>
                         <td>
-                          <div style={{ fontWeight: 600 }}>{item.clientName}</div>
-                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>담당: {item.clientName /* 임시담당자 */}</div>
+                          <div style={{ fontWeight: 600 }}>{item.client}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>담당: {item.clientName}</div>
                         </td>
                         <td style={{ fontWeight: 600 }}>{testerName}</td>
                         <td style={{ textAlign: 'right', fontWeight: 700 }}>{toThousands(est)}</td>

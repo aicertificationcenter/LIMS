@@ -118,14 +118,6 @@ export default function FinanceApprovals() {
     const iDate = item.interimPaidDate ? item.interimPaidDate.substring(0, 7) : '';
     const fDate = item.finalPaidDate ? item.finalPaidDate.substring(0, 7) : '';
 
-    if (!m || rDate === m) {
-      intakeCount++;
-      totalEstimated += (item.estFees || 0);  // 현재 달력월에 견적 발생
-    }
-    if (!m || sDate === m) {
-      runningCount++;
-    }
-
     if (!m) {
       // 전체 기간 필터일경우, 무조건 누적
       totalDeposited += (item.advPaidAmt || 0) + (item.interimPaidAmt || 0) + (item.finalPaidAmt || 0);
@@ -134,6 +126,14 @@ export default function FinanceApprovals() {
       if (aDate === m) totalDeposited += (item.advPaidAmt || 0);
       if (iDate === m) totalDeposited += (item.interimPaidAmt || 0);
       if (fDate === m) totalDeposited += (item.finalPaidAmt || 0);
+    }
+
+    if (!m || rDate === m) {
+      intakeCount++;
+      totalEstimated += (item.estFees || item.invoice?.total || 0);  // 현재 달력월에 견적 발생
+    }
+    if (!m || sDate === m) {
+      runningCount++;
     }
   });
 
@@ -230,7 +230,7 @@ export default function FinanceApprovals() {
               </thead>
               <tbody>
                 {currentData.length > 0 ? currentData.map(item => {
-                  const est = item.estFees || 0;
+                  const est = item.estFees || item.invoice?.total || 0;
                   const paid = (item.advPaidAmt || 0) + (item.interimPaidAmt || 0) + (item.finalPaidAmt || 0);
                   const bal = est - paid;
                   const testRecord = item.tests && item.tests[0];
@@ -239,12 +239,12 @@ export default function FinanceApprovals() {
                   return (
                     <tr key={item.id}>
                       <td>
-                        <div style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{item.testerBarcode || item.barcode}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--kaic-navy)' }}>{item.barcode}</div>
                         <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>시험원: {testerName}</div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{item.clientName}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>접수일: {item.receivedAt ? item.receivedAt.substring(0, 10) : ''}</div>
+                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{item.client}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>담당자: {item.clientName} | 접수일: {item.receivedAt ? item.receivedAt.substring(0, 10) : ''}</div>
                       </td>
                       <td style={{ fontWeight: 700, color: '#334155' }}>
                          {toThousands(est)}
@@ -312,10 +312,10 @@ export default function FinanceApprovals() {
             {/* 기본 정보 표기 영역 */}
             <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                 <div><strong style={{ color: '#475569' }}>접수번호:</strong> {selectedTest.testerBarcode || selectedTest.barcode}</div>
-                 <div><strong style={{ color: '#475569' }}>의뢰기관:</strong> {selectedTest.clientName}</div>
+                 <div><strong style={{ color: '#475569' }}>접수번호:</strong> {selectedTest.barcode}</div>
+                 <div><strong style={{ color: '#475569' }}>의뢰기관:</strong> {selectedTest.client} ({selectedTest.clientName})</div>
                  <div><strong style={{ color: '#475569' }}>시험시작일:</strong> {selectedTest.testStartDate || '-'}</div>
-                 <div><strong style={{ color: '#475569' }}>총 견적금액:</strong> <b style={{ color: '#1e293b' }}>{(selectedTest.estFees || 0).toLocaleString()} 원</b></div>
+                 <div><strong style={{ color: '#475569' }}>총 견적금액:</strong> <b style={{ color: '#1e293b' }}>{((selectedTest.estFees || selectedTest.invoice?.total || 0)).toLocaleString()} 원</b></div>
                </div>
             </div>
 
