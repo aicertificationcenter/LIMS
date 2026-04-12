@@ -1,4 +1,5 @@
 import { prisma } from './lib/prisma.js';
+import { getDropboxToken } from './lib/dropbox.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,7 +10,7 @@ export default async function handler(req, res) {
   if (!id || !path) return res.status(400).json({ message: 'ID and Path are required' });
 
   try {
-    const dropboxToken = process.env.DROPBOX_ACCESS_TOKEN;
+    const dropboxToken = await getDropboxToken();
     
     // Create shared link for viewing
     const dropRes = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {

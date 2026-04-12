@@ -1,4 +1,5 @@
 import { prisma } from './lib/prisma.js';
+import { getDropboxToken } from './lib/dropbox.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,8 +13,8 @@ export default async function handler(req, res) {
     const sample = await prisma.sample.findUnique({ where: { id }, select: { barcode: true } });
     if (!sample) return res.status(404).json({ message: 'Test not found' });
 
-    const dropboxToken = process.env.DROPBOX_ACCESS_TOKEN;
-    if (!dropboxToken) return res.status(500).json({ message: 'Dropbox Token missing in environment (DROPBOX_ACCESS_TOKEN)' });
+    const dropboxToken = await getDropboxToken();
+    if (!dropboxToken) return res.status(500).json({ message: 'Dropbox Token missing in environment (DROPBOX_ACCESS_TOKEN or REFRESH info)' });
 
     // Determine path based on type
     let suffix = '최종성적서';
