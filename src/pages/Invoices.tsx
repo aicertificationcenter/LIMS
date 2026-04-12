@@ -489,7 +489,7 @@ export const Invoices = () => {
                 <div style={{ marginBottom: '20px' }}></div>
 
                 {/* Client Info Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '30px', marginBottom: '40px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '30px', marginBottom: '10px' }}>
                   <div style={{ border: '2px solid #e2e8f0', padding: '15px', borderRadius: '4px' }}>
                       <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#475569', marginBottom: '8px' }}>Client</div>
                       <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '4px' }}>{selectedSample?.clientId || '의뢰처명'}</div>
