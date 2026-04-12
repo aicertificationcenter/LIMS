@@ -5,7 +5,6 @@
  */
 
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { useAuth } from '../AuthContext';
 import { apiClient } from '../api/client';
 import { Users, Search, Download, Mail, Send, CheckSquare, Square, Paperclip, Trash2, AlertTriangle } from 'lucide-react';
 import { ReceptionDetailModal } from '../components/ReceptionDetailModal';
@@ -13,9 +12,6 @@ import { StatusBadge } from '../components/StatusBadge';
 import { Pagination } from '../components/Pagination';
 
 export const Clients = () => {
-  // 인증 정보
-  const { user } = useAuth();
-  
   // 데이터 상태 관리
   const [receptions, setReceptions] = useState<any[]>([]); // 원천 데이터 (모든 접수 건)
   const [loading, setLoading] = useState(true);           // 로딩 플래그
