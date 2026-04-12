@@ -171,8 +171,8 @@ export const AdminAuth = () => {
                 <td>{u.email}</td>
                 <td>{u.phone || '-'}</td>
                 <td>
-                   <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : u.role === 'RESIGNED' ? 'error' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : u.role === 'RESIGNED' ? '#ef4444' : undefined, padding: '4px 10px' }}>
-                     {u.role === 'ADMIN' ? '최고 관리자' : u.role === 'RESIGNED' ? '퇴사자 (정지)' : u.role}
+                   <span className={`badge badge-${u.role === 'ADMIN' ? 'completed' : u.role === 'RESIGNED' ? 'error' : u.role === 'FIN_MGR' ? 'completed' : 'progress'}`} style={{ background: u.role === 'ADMIN' ? 'var(--kaic-navy)' : u.role === 'FIN_MGR' ? '#059669' : u.role === 'RESIGNED' ? '#ef4444' : undefined, padding: '4px 10px' }}>
+                     {u.role === 'ADMIN' ? '최고 관리자' : u.role === 'RESIGNED' ? '퇴사자 (정지)' : u.role === 'FIN_MGR' ? '재무관리자' : u.role}
                    </span>
                 </td>
                 <td>
@@ -201,6 +201,7 @@ export const AdminAuth = () => {
                     <option value="TESTER">시험원</option>
                     <option value="TECH_MGR">기술책임자</option>
                     <option value="QUAL_MGR">품질책임자</option>
+                    <option value="FIN_MGR">재무관리자</option>
                     <option value="ADMIN">관리자 전용</option>
                     <option value="RESIGNED">퇴사처리 (정지)</option>
                   </select>

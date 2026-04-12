@@ -82,6 +82,14 @@ export const MyTests = () => {
   const [testMethod, setTestMethod] = useState('');     // 시험 방법
   const [clientAddress, setClientAddress] = useState(''); // 현장 주소와 별개인 의뢰처 회사 주소 (갑지 연동용)
 
+  // 결재 일정 계획 (화면 입력은 천원단위, DB는 원단위)
+  const [advAmt, setAdvAmt] = useState<number | ''>('');
+  const [advDate, setAdvDate] = useState('');
+  const [interimAmt, setInterimAmt] = useState<number | ''>('');
+  const [interimDate, setInterimDate] = useState('');
+  const [finalAmt, setFinalAmt] = useState<number | ''>('');
+  const [finalDate, setFinalDate] = useState('');
+
   /** 
    * 선택된 시험이 변경될 때 양식 데이터 동기화
    * 기존에 저장된 데이터가 있으면 불러옵니다.
@@ -102,6 +110,14 @@ export const MyTests = () => {
         if (selectedTest.extra) parsedExtra = JSON.parse(selectedTest.extra);
       } catch (e) {}
       setClientAddress(parsedExtra.clientAddress || '');
+
+      setAdvAmt(selectedTest.advAmt ? selectedTest.advAmt / 1000 : '');
+      setAdvDate(selectedTest.advDate || '');
+      setInterimAmt(selectedTest.interimAmt ? selectedTest.interimAmt / 1000 : '');
+      setInterimDate(selectedTest.interimDate || '');
+      setFinalAmt(selectedTest.finalAmt ? selectedTest.finalAmt / 1000 : '');
+      setFinalDate(selectedTest.finalDate || '');
+
     }
   }, [selectedId, selectedTest]);
 
@@ -170,6 +186,15 @@ export const MyTests = () => {
       alert('시험 시작 전 필수 시험 정보를 입력해주세요.');
       return;
     }
+
+    const estFeesThousand = (selectedTest?.estFees || 0) / 1000;
+    const sumPlan = (Number(advAmt) || 0) + (Number(interimAmt) || 0) + (Number(finalAmt) || 0);
+    // 견적금액이 존재할 경우만 검증
+    if (estFeesThousand > 0 && sumPlan !== estFeesThousand) {
+      alert(`결재 일정 금액의 합계(${sumPlan.toLocaleString()}천원)가 견적금액(${estFeesThousand.toLocaleString()}천원)과 다릅니다. 확인 후 다시 시도해주세요.`);
+      return;
+    }
+
     try {
       let currentExtra: any = {};
       try {
@@ -193,6 +218,12 @@ export const MyTests = () => {
           testProduct,
           testPurpose,
           testMethod,
+          advAmt: (Number(advAmt) || 0) * 1000,
+          advDate,
+          interimAmt: (Number(interimAmt) || 0) * 1000,
+          interimDate,
+          finalAmt: (Number(finalAmt) || 0) * 1000,
+          finalDate,
           extra: JSON.stringify(currentExtra)
         })
       });
@@ -483,6 +514,53 @@ export const MyTests = () => {
                         <Save size={18} /> 정보 업데이트
                       </button>
                     </div>
+                  </div>
+                  
+                  {/* 결재 정보 (견적액 표출 및 일정계획 입력) */}
+                  <div className="form-group" style={{ gridColumn: 'span 2', marginTop: '1rem', borderTop: '2px dashed #cbd5e1', paddingTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <label className="label" style={{ color: '#334155', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                         💳 결재 일정 정보 (천원 단위)
+                      </label>
+                      <div style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', fontWeight: 600, color: '#0f172a' }}>
+                        총 견적금액: <span style={{ color: 'var(--kaic-navy)', fontSize: '1.1rem', fontWeight: 800, marginLeft: '6px' }}>{selectedTest.estFees ? (selectedTest.estFees / 1000).toLocaleString() : 0} 천원</span>
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '1.5rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      {/* 선금 */}
+                      <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <h4 style={{ margin: 0, marginBottom: '12px', fontSize: '0.9rem', color: '#1e293b' }}>1. 착수금</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={advAmt} onChange={e => setAdvAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0 }} />
+                          <input type="date" className="input-field" value={advDate} onChange={e => setAdvDate(e.target.value)} disabled={isLocked} style={{ margin: 0 }} />
+                        </div>
+                      </div>
+                      
+                      {/* 중도금 */}
+                      <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <h4 style={{ margin: 0, marginBottom: '12px', fontSize: '0.9rem', color: '#1e293b' }}>2. 중도금</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={interimAmt} onChange={e => setInterimAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0 }} />
+                          <input type="date" className="input-field" value={interimDate} onChange={e => setInterimDate(e.target.value)} disabled={isLocked} style={{ margin: 0 }} />
+                        </div>
+                      </div>
+                      
+                      {/* 잔금 */}
+                      <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                        <h4 style={{ margin: 0, marginBottom: '12px', fontSize: '0.9rem', color: '#1e293b' }}>3. 잔금</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <input type="number" placeholder="금액(천원)" className="input-field" value={finalAmt} onChange={e => setFinalAmt(e.target.value ? Number(e.target.value) : '')} disabled={isLocked} style={{ margin: 0 }} />
+                          <input type="date" className="input-field" value={finalDate} onChange={e => setFinalDate(e.target.value)} disabled={isLocked} style={{ margin: 0 }} />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {isLocked && (
+                      <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+                        <button className="btn btn-secondary" onClick={() => alert('결재일정 변경요청 기능은 현재 준비 중입니다.')}>결재일정 변경요청</button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

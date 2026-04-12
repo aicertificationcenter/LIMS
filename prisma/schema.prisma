@@ -31,6 +31,7 @@ enum Role {
   RESIGNED
   MANAGER
   CLIENT
+  FIN_MGR
 }
 
 model Equipment {
@@ -76,6 +77,25 @@ model Sample {
   consultations Consultation[]
   evidences     Evidence[]
   invoice       Invoice?
+
+  // 재무/결재 관련 필드 (모두 원 단위 저장)
+  estFees        Float?  @default(0) // 총 견적금액
+
+  advAmt         Float?  @default(0) // 착수금 예상 청구액
+  advDate        String?             // 착수금 예상 청구일 (YYYY-MM-DD)
+  interimAmt     Float?  @default(0) // 중도금 예상 청구액
+  interimDate    String?             // 중도금 예상 청구일
+  finalAmt       Float?  @default(0) // 잔금 예상 청구액
+  finalDate      String?             // 잔금 예상 청구일
+
+  advPaidAmt     Float?  @default(0) // 재무관리자 확인 착수금 입금액
+  advPaidDate    String?             // 재무관리자 확인 착수금 입금일
+  interimPaidAmt Float?  @default(0) // 재무관리자 확인 중도금 입금액
+  interimPaidDate String?            // 재무관리자 확인 중도금 입금일
+  finalPaidAmt   Float?  @default(0) // 재무관리자 확인 잔금 입금액
+  finalPaidDate  String?             // 재무관리자 확인 잔금 입금일
+
+  isDepositCompleted Boolean @default(false) // 입금 완료 여부
 }
 
 enum SampleStatus {

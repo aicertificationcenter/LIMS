@@ -23,6 +23,9 @@ export default async function handler(req, res) {
             extra: true, testerBarcode: true, formalBarcode: true,
             gapjiApproved: true, euljiApproved: true,
             gapjiRejection: true, euljiRejection: true, receivedAt: true,
+            estFees: true, advAmt: true, advDate: true, interimAmt: true, interimDate: true, finalAmt: true, finalDate: true,
+            advPaidAmt: true, advPaidDate: true, interimPaidAmt: true, interimPaidDate: true, finalPaidAmt: true, finalPaidDate: true,
+            isDepositCompleted: true,
             consultations: {
               orderBy: { createdAt: 'desc' }
             },
@@ -75,7 +78,10 @@ export default async function handler(req, res) {
 
     case 'PATCH':
       try {
-        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation, testProduct, testPurpose, testMethod, extra } = req.body;
+        const { id, testerId, status, testStartDate, testEndDate, testLocation, testType, testAddress, reportPdfUrl, consultation, testProduct, testPurpose, testMethod, extra,
+          estFees, advAmt, advDate, interimAmt, interimDate, finalAmt, finalDate,
+          advPaidAmt, advPaidDate, interimPaidAmt, interimPaidDate, finalPaidAmt, finalPaidDate, isDepositCompleted
+        } = req.body;
         
         // Update sample status and generate testerBarcode if needed
         const sample = await prisma.sample.findUnique({ where: { id } });
@@ -104,6 +110,23 @@ export default async function handler(req, res) {
              testMethod,
              extra
         };
+
+        // Add optional finance fields if they are explicitly provided in req.body
+        if (estFees !== undefined) updatedData.estFees = estFees;
+        if (advAmt !== undefined) updatedData.advAmt = advAmt;
+        if (advDate !== undefined) updatedData.advDate = advDate;
+        if (interimAmt !== undefined) updatedData.interimAmt = interimAmt;
+        if (interimDate !== undefined) updatedData.interimDate = interimDate;
+        if (finalAmt !== undefined) updatedData.finalAmt = finalAmt;
+        if (finalDate !== undefined) updatedData.finalDate = finalDate;
+        
+        if (advPaidAmt !== undefined) updatedData.advPaidAmt = advPaidAmt;
+        if (advPaidDate !== undefined) updatedData.advPaidDate = advPaidDate;
+        if (interimPaidAmt !== undefined) updatedData.interimPaidAmt = interimPaidAmt;
+        if (interimPaidDate !== undefined) updatedData.interimPaidDate = interimPaidDate;
+        if (finalPaidAmt !== undefined) updatedData.finalPaidAmt = finalPaidAmt;
+        if (finalPaidDate !== undefined) updatedData.finalPaidDate = finalPaidDate;
+        if (isDepositCompleted !== undefined) updatedData.isDepositCompleted = isDepositCompleted;
         
         if (status) {
           updatedData.status = status;

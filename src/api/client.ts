@@ -127,6 +127,12 @@ export const apiClient = {
         method: 'PATCH',
         body: JSON.stringify({ id, testerId }),
       }),
+    /** 접수 내역 정보 변경 (재무/입금 결재 등) */
+    update: (id: string, data: any) =>
+      apiClient.fetch('/receptions', {
+        method: 'PATCH',
+        body: JSON.stringify({ id, ...data }),
+      }),
   },
 
   /** 인보이스(발행 내역) 관리 API */

@@ -121,6 +121,7 @@ export const UploadReport = () => {
                 <th>접수번호 (성적서번호)</th>
                 <th>의뢰 기관</th>
                 <th>진행 상태</th>
+                <th>결재/입금 내역 (천원별)</th>
                 <th>성적서 PDF 파일</th>
                 <th>업무 마감</th>
               </tr>
@@ -132,8 +133,21 @@ export const UploadReport = () => {
                     <div>{t.barcode}</div>
                     {t.formalBarcode && <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '2px' }}>{t.formalBarcode}</div>}
                   </td>
-                  <td style={{ fontWeight: 700 }}>{t.client}</td>
+                  <td style={{ fontWeight: 700 }}>{t.clientName || t.client}</td>
                   <td><StatusBadge status={t.status} /></td>
+                  <td>
+                    {(() => {
+                      const est = (t.estFees || 0) / 1000;
+                      const paid = ((t.advPaidAmt || 0) + (t.interimPaidAmt || 0) + (t.finalPaidAmt || 0)) / 1000;
+                      return (
+                        <div style={{ textAlign: 'left', fontSize: '0.85rem' }}>
+                          <div>견적: <b style={{ color: '#1e293b' }}>{est.toLocaleString()}</b></div>
+                          <div>입금: <b style={{ color: t.isDepositCompleted ? '#10b981' : '#ef4444' }}>{paid.toLocaleString()}</b></div>
+                          {t.isDepositCompleted && <div style={{ color: '#10b981', fontWeight: 800, fontSize: '0.75rem', marginTop: '4px' }}>입금완료</div>}
+                        </div>
+                      );
+                    })()}
+                  </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
                       {t.reportPdfUrl ? (
@@ -153,7 +167,14 @@ export const UploadReport = () => {
                      {t.status === 'COMPLETED' ? (
                        <div style={{ color: '#64748b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}><Lock size={16}/> 마감됨</div>
                      ) : (
-                       <button className="btn btn-primary" style={{ minHeight: '30px', padding: '4px 12px', margin: 0, borderRadius: '6px' }} disabled={!t.reportPdfUrl} onClick={() => handleCompleteTest(t.id, t.barcode)}>시험 완료(제출)</button>
+                       <button 
+                         className="btn btn-primary" 
+                         style={{ minHeight: '30px', padding: '4px 12px', margin: 0, borderRadius: '6px', opacity: (!t.reportPdfUrl || !t.isDepositCompleted) ? 0.5 : 1 }} 
+                         disabled={!t.reportPdfUrl || !t.isDepositCompleted} 
+                         title={!t.isDepositCompleted ? "재무관리자의 입금완료 승인이 필요합니다." : ""}
+                         onClick={() => handleCompleteTest(t.id, t.barcode)}>
+                           시험 완료(제출)
+                       </button>
                      )}
                   </td>
                 </tr>

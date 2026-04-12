@@ -156,6 +156,20 @@ export const Layout = () => {
               </Link>
             </>
           )}
+
+          {['FIN_MGR'].includes(user.role) && (
+            <>
+              <Link to="/finance-approvals" onClick={() => setIsMobileMenuOpen(false)} style={{ color: location.pathname==='/finance-approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckSquare size={18} /> 결재관리
+              </Link>
+              <Link to="/clients" onClick={() => setIsMobileMenuOpen(false)} style={{ color: location.pathname==='/clients' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={18} /> 의뢰처관리
+              </Link>
+              <Link to="/finance-stats" onClick={() => setIsMobileMenuOpen(false)} style={{ color: location.pathname==='/finance-stats' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <LayoutDashboard size={18} /> 통계관리
+              </Link>
+            </>
+          )}
         </nav>
 
         <div style={{ position: 'relative' }}>
