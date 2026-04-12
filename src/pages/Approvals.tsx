@@ -131,6 +131,7 @@ export const Approvals = () => {
         <h2 className="card-title">결재 대기 목록</h2>
         
         {filteredData.length > 0 ? (
+        <div className="table-responsive">
           <table className="data-table">
             <thead>
               <tr>
@@ -172,6 +173,7 @@ export const Approvals = () => {
               ))}
             </tbody>
           </table>
+        </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>결재요청 건이 없습니다.</div>
         )}

@@ -125,6 +125,7 @@ export const Ledger = () => {
 
         {filteredData.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
+          <div className="table-responsive">
             <table className="data-table" style={{ fontSize: '0.85rem' }}>
               <thead>
                 <tr>
@@ -168,6 +169,7 @@ export const Ledger = () => {
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>조회된 발급대장 내역이 없습니다.</div>

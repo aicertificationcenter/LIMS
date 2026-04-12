@@ -114,6 +114,7 @@ export const UploadReport = () => {
         <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>관리자 승인이 완료된 정식 성적서(PDF)를 이곳에 업로드하여 시험 업무를 최종 마감합니다.</p>
 
         {myTests.length > 0 ? (
+        <div className="table-responsive">
           <table className="data-table">
             <thead>
               <tr>
@@ -159,6 +160,7 @@ export const UploadReport = () => {
               ))}
             </tbody>
           </table>
+        </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>승인 완료되어 업로드가 필요한 항목이 없습니다.</div>
         )}

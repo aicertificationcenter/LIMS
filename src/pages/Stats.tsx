@@ -189,7 +189,7 @@ export const Stats = () => {
         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem' }}>
           <Users size={20} /> 시험원별 수행 현황 (Tester Metrics)
         </h2>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-responsive">
           <table className="data-table">
             <thead>
               <tr>
@@ -261,7 +261,7 @@ export const Stats = () => {
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-responsive">
           <table className="data-table" style={{ fontSize: '0.9rem' }}>
             <thead>
               <tr>

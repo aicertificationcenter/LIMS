@@ -1104,7 +1104,8 @@ export const Reports = () => {
         <p style={{ color: '#64748b', marginBottom: '2rem' }}>현재 진행 중이거나 완료된 시험 목록입니다. 증적을 관리하고 최종 성적서를 업로드하세요.</p>
         
         {myTests.length > 0 ? (
-          <table className="data-table">
+          <div className="table-responsive">
+            <table className="data-table">
             <thead>
               <tr>
                 <th>시험번호</th>
@@ -1134,6 +1135,7 @@ export const Reports = () => {
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>진행 중인 시험 업무가 없습니다.</div>
         )}

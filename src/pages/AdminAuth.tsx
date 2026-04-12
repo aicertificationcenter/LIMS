@@ -140,7 +140,8 @@ export const AdminAuth = () => {
         )}
 
         {/* 1.2 활성 사용자 관리 테이블 */}
-        <table className="data-table">
+        <div className="table-responsive">
+          <table className="data-table">
           <thead>
             <tr>
               <th>성명 (ID / 비밀번호)</th>
@@ -212,7 +213,8 @@ export const AdminAuth = () => {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </section>
 
       {/* 2. 사용자 상세 정보 수정용 모달 */}

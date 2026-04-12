@@ -740,7 +740,8 @@ export const Publish = () => {
         </h2>
 
         {myTests.length > 0 ? (
-          <table className="data-table" style={{ marginTop: '1rem' }}>
+          <div className="table-responsive">
+            <table className="data-table" style={{ marginTop: '1rem' }}>
             <thead>
               <tr>
                 <th>접수번호</th>
@@ -764,6 +765,7 @@ export const Publish = () => {
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
            <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>발행 대상 파일이 없습니다.</div>
         )}

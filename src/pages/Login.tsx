@@ -88,10 +88,10 @@ export const Login = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="stack-mobile" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       
       {/* 1. 사이드바 (로그인 영역) */}
-      <div style={{ width: '380px', background: 'white', padding: '3rem 2.5rem', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 24px rgba(0,0,0,0.04)', zIndex: 10, flexShrink: 0 }}>
+      <div className="mobile-full-width mobile-padding" style={{ width: '380px', background: 'white', padding: '3rem 2.5rem', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 24px rgba(0,0,0,0.04)', zIndex: 10, flexShrink: 0 }}>
         <h2 style={{ textAlign: 'center', marginBottom: '1rem', marginTop: '2rem', fontSize: '1.5rem', color: '#1e293b', fontWeight: 800 }}>
           시스템 로그인
         </h2>
@@ -128,7 +128,7 @@ export const Login = () => {
       </div>
 
       {/* 2. 메인 대시보드 데이터 영역 */}
-      <div style={{ flex: 1, padding: '3rem', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="mobile-padding mobile-gap" style={{ flex: 1, padding: '3rem', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
         {/* 회사 로고 영역 (중앙 정렬) */}
         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
@@ -136,7 +136,7 @@ export const Login = () => {
         </div>
 
         {/* 상단 2분할 그리드 (기관 공지 & 인공지능 뉴스) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+        <div className="mobile-gap" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
           
           {/* KOLAS 공지 패널 */}
           <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' }}>

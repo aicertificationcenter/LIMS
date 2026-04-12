@@ -269,6 +269,7 @@ export const Clients = () => {
           <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b' }}>데이터를 불러오는 중...</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
+          <div className="table-responsive">
             <table className="data-table">
               <thead>
                 <tr>
@@ -311,6 +312,7 @@ export const Clients = () => {
                 )}
               </tbody>
             </table>
+          </div>
           </div>
         )}
 

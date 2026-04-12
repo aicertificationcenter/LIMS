@@ -112,3 +112,40 @@ button {
 button:active {
   transform: scale(0.98);
 }
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .show-mobile-flex { display: flex !important; }
+  .show-mobile-block { display: block !important; }
+  .stack-mobile { flex-direction: column !important; align-items: stretch !important; height: auto !important; }
+  .stack-items-start { align-items: flex-start !important; }
+  
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--neutral-100);
+    border-radius: 8px;
+  }
+  
+  .table-responsive table {
+    min-width: 800px; /* force scrolling */
+  }
+
+  .nav-mobile-open {
+    display: flex !important;
+    flex-direction: column !important;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: var(--kaic-navy);
+    padding: 1rem;
+    z-index: 1000;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  }
+
+  .mobile-padding { padding: 1rem !important; }
+  .mobile-gap { gap: 1rem !important; }
+  .mobile-full-width { width: 100% !important; max-width: 100% !important; }
+}
