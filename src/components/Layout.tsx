@@ -89,7 +89,7 @@ export const Layout = () => {
               <FileText size={18} /> 견적서발행
             </Link>
           )}
-          {['TECH_MGR'].includes(user.role) && (
+          {['ADMIN', 'TECH_MGR'].includes(user.role) && (
             <Link to="/approvals" style={{ color: location.pathname==='/approvals' ? '#0066B3' : 'white', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckSquare size={18} /> 결재하기
             </Link>
