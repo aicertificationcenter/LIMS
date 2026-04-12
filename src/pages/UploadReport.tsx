@@ -43,12 +43,16 @@ export const UploadReport = () => {
       const linkRes = await fetch('/api/dropbox-upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ 
+          id, 
+          type: 'REPORT',
+          extension: 'pdf'
+        })
       });
       
       if (!linkRes.ok) {
-        const dropErr = await linkRes.json().catch(() => null);
-        throw new Error(dropErr?.message || '업로드 세션 생성 실패');
+        const errData = await linkRes.json().catch(() => ({}));
+        throw new Error(errData.message || errData.error || '업로드 세션 생성 실패');
       }
       
       const { link, path } = await linkRes.json();
