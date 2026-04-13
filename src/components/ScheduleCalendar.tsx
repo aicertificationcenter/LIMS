@@ -49,12 +49,12 @@ export const ScheduleCalendar = ({ data }: ScheduleCalendarProps) => {
       }
 
       const testerName = item.tests?.[0]?.tester?.name || '미배정';
-      const clientName = item.clientName || item.clientId || '의뢰처 없음';
+      const clientCompany = item.clientId || item.clientName || '의뢰처 없음';
       
       const payload = {
         id: item.id,
         testerName,
-        clientName,
+        clientCompany,
       };
       
       if (!byDate[startDateStr]) {
@@ -123,8 +123,8 @@ export const ScheduleCalendar = ({ data }: ScheduleCalendarProps) => {
                   textOverflow: 'ellipsis',
                   fontWeight: 600,
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                }} title={`[${sch.testerName}] ${sch.clientName}`}>
-                  <span style={{opacity: 0.8}}>[{sch.testerName}]</span> {sch.clientName}
+                }} title={`[${sch.testerName}] ${sch.clientCompany}`}>
+                  <span style={{opacity: 0.8}}>[{sch.testerName}]</span> {sch.clientCompany}
                 </div>
               );
             })}
