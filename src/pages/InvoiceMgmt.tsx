@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, Search, ExternalLink, CheckCircle2, AlertCircle, Clock, Phone, Mail, FileCheck, Save } from 'lucide-react';
+import { FileText, Search, CheckCircle2, AlertCircle, Clock, Phone, Mail, FileCheck, Save } from 'lucide-react';
 import { apiClient } from '../api/client';
 
 /**
