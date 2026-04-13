@@ -13,6 +13,7 @@ export default function InvoiceMgmt() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [notices, setNotices] = useState<Record<string, string>>({});
+  const [filterStatus, setFilterStatus] = useState<'all' | 'needed' | 'issued' | 'completed'>('all');
 
   const fetchData = async () => {
     try {
@@ -62,38 +63,98 @@ export default function InvoiceMgmt() {
     }
   };
 
-  // 통계 계산
-  const stats = {
-    needsIssuance: 0,
-    issued: 0,
-    completed: 0
+  /** 데이터 평면화: 마일스톤별 액션 리스트 생성 */
+  const flattenMilestones = (items: any[]) => {
+    const actions: any[] = [];
+    items.forEach(item => {
+      const milestones = [
+        { key: 'advInvoiced', label: '선금', amt: item.advAmt, date: item.advDate, invoiced: item.advInvoiced, paidAmt: item.advPaidAmt },
+        { key: 'interimInvoiced', label: '중도금', amt: item.interimAmt, date: item.interimDate, invoiced: item.interimInvoiced, paidAmt: item.interimPaidAmt },
+        { key: 'finalInvoiced', label: '잔금', amt: item.finalAmt, date: item.finalDate, invoiced: item.finalInvoiced, paidAmt: item.finalPaidAmt }
+      ];
+
+      milestones.forEach(m => {
+        if (!m.amt || m.amt <= 0) return;
+        actions.push({
+          ...item,
+          actionKey: m.key,
+          actionLabel: m.label,
+          amount: m.amt,
+          targetDate: m.date,
+          isInvoiced: m.invoiced,
+          isPaid: (m.paidAmt || 0) >= m.amt
+        });
+      });
+    });
+    return actions;
   };
 
-  data.forEach(item => {
-    const milestones = [
-      { amt: item.advAmt, invoiced: item.advInvoiced, paidAmt: item.advPaidAmt },
-      { amt: item.interimAmt, invoiced: item.interimInvoiced, paidAmt: item.interimPaidAmt },
-      { amt: item.finalAmt, invoiced: item.finalInvoiced, paidAmt: item.finalPaidAmt }
-    ];
+  const allActions = flattenMilestones(data);
 
-    milestones.forEach(m => {
-      if (!m.amt || m.amt <= 0) return;
-      if (!m.invoiced) {
-        stats.needsIssuance++;
-      } else if (m.invoiced && (m.paidAmt || 0) < m.amt) {
-        stats.issued++;
-      } else if (m.invoiced && (m.paidAmt || 0) >= m.amt) {
-        stats.completed++;
-      }
-    });
-  });
-
-  const filteredData = data.filter(item => {
+  // 검색 및 필터링
+  const filteredActions = allActions.filter(action => {
     const term = searchTerm.toLowerCase();
-    return (item.barcode?.toLowerCase().includes(term)) ||
-           (item.clientId?.toLowerCase().includes(term)) ||
-           (item.clientName?.toLowerCase().includes(term));
+    const matchesSearch = (action.barcode?.toLowerCase().includes(term)) ||
+                         (action.clientId?.toLowerCase().includes(term)) ||
+                         (action.clientName?.toLowerCase().includes(term));
+    
+    if (!matchesSearch) return false;
+
+    if (filterStatus === 'needed') return !action.isInvoiced;
+    if (filterStatus === 'issued') return action.isInvoiced && !action.isPaid;
+    if (filterStatus === 'completed') return action.isPaid;
+    return true;
   });
+
+  // 타임라인 그룹화
+  const groupActionsByTimeline = (actions: any[]) => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    const groups: Record<string, any[]> = {
+      overdue: [],
+      today: [],
+      thisWeek: [],
+      upcoming: []
+    };
+
+    actions.forEach(a => {
+      if (!a.targetDate) {
+        groups.upcoming.push(a);
+        return;
+      }
+      const d = new Date(a.targetDate);
+      d.setHours(0,0,0,0);
+      const diff = d.getTime() - today.getTime();
+      const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+      if (a.isInvoiced && a.isPaid) {
+        groups.upcoming.push(a); // 완료건은 순차적으로 표시
+        return;
+      }
+
+      if (diffDays < 0) groups.overdue.push(a);
+      else if (diffDays === 0) groups.today.push(a);
+      else if (diffDays <= 7) groups.thisWeek.push(a);
+      else groups.upcoming.push(a);
+    });
+
+    // 날짜순 정렬
+    Object.keys(groups).forEach(key => {
+      groups[key].sort((x, y) => (x.targetDate || '').localeCompare(y.targetDate || ''));
+    });
+
+    return groups;
+  };
+
+  const timelineGroups = groupActionsByTimeline(filteredActions);
+
+  // 통계 재계산 (현재 필터 무시한 전체 기준)
+  const stats = {
+    needsIssuance: allActions.filter(a => !a.isInvoiced).length,
+    issued: allActions.filter(a => a.isInvoiced && !a.isPaid).length,
+    completed: allActions.filter(a => a.isPaid).length
+  };
 
   return (
     <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
@@ -155,104 +216,72 @@ export default function InvoiceMgmt() {
           </div>
         </div>
 
-        {/* 2. 업무 파이프라인 보드 */}
+        {/* 2. 상태 필터 및 검색 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[
+              { id: 'all', label: '전체보기', count: allActions.length },
+              { id: 'needed', label: '발행필요', count: stats.needsIssuance, color: '#dc2626' },
+              { id: 'issued', label: '발행완료', count: stats.issued, color: '#2563eb' },
+              { id: 'completed', label: '입금완료', count: stats.completed, color: '#059669' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setFilterStatus(tab.id as any)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  border: filterStatus === tab.id ? '2px solid var(--kaic-navy)' : '1px solid #e2e8f0',
+                  background: filterStatus === tab.id ? 'var(--kaic-navy)' : 'white',
+                  color: filterStatus === tab.id ? 'white' : '#64748b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {tab.label}
+                <span style={{ 
+                  background: filterStatus === tab.id ? 'rgba(255,255,255,0.2)' : '#f1f5f9', 
+                  color: filterStatus === tab.id ? 'white' : tab.color || '#64748b',
+                  padding: '2px 8px', 
+                  borderRadius: '6px', 
+                  fontSize: '0.75rem' 
+                }}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="search-bar" style={{ width: '350px', margin: 0 }}>
+            <Search size={20} className="search-icon" />
+            <input 
+              type="text" 
+              placeholder="업체명, 접수번호로 검색..." 
+              className="search-input" 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+            />
+          </div>
+        </div>
+
+        {/* 3. 액션 타임라인 보드 */}
         {loading ? (
              <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b' }}>데이터를 불러오는 중...</div>
         ) : (
-          <div className="table-responsive">
-            <table className="data-table" style={{ borderCollapse: 'separate', borderSpacing: '0 8px' }}>
-              <thead>
-                <tr style={{ background: 'transparent' }}>
-                  <th style={{ background: 'transparent', paddingLeft: '1rem', width: '30%' }}>의뢰기관 / 접수정보</th>
-                  <th style={{ background: 'transparent', textAlign: 'center' }}>선금 (착수금)</th>
-                  <th style={{ background: 'transparent', textAlign: 'center' }}>중도금</th>
-                  <th style={{ background: 'transparent', textAlign: 'center' }}>잔금</th>
-                  <th style={{ background: 'transparent', textAlign: 'center', width: '25%' }}>재무 관리자 Notice</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map(item => (
-                  <tr key={item.id} style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                    <td style={{ padding: '1.25rem 1rem', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: 900, color: 'var(--kaic-blue)', background: '#eff6ff', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>{item.barcode}</span>
-                          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>{item.clientId}</h3>
-                          {item.bizLicenseUrl && (
-                            <button 
-                              onClick={() => window.open(item.bizLicenseUrl, '_blank')}
-                              style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
-                              title="사업자등록증 보기"
-                            >
-                              <FileCheck size={18} color="#2563eb" />
-                            </button>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>
-                          <span>{item.clientName} 담당자</span>
-                          <span style={{ color: '#cbd5e1' }}>|</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Phone size={14} /> {item.phone || '연락처없음'}
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#64748b' }}>
-                          <Mail size={14} /> {item.email || '이메일없음'}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Milestone 1: Advance */}
-                    <MilestoneCell 
-                      label="선금"
-                      amount={item.advAmt}
-                      date={item.advDate}
-                      invoiced={item.advInvoiced}
-                      paidAmt={item.advPaidAmt}
-                      onToggle={() => toggleInvoiced(item.id, 'advInvoiced', item.advInvoiced)}
-                    />
-
-                    {/* Milestone 2: Interim */}
-                    <MilestoneCell 
-                      label="중도금"
-                      amount={item.interimAmt}
-                      date={item.interimDate}
-                      invoiced={item.interimInvoiced}
-                      paidAmt={item.interimPaidAmt}
-                      onToggle={() => toggleInvoiced(item.id, 'interimInvoiced', item.interimInvoiced)}
-                    />
-
-                    {/* Milestone 3: Final */}
-                    <MilestoneCell 
-                      label="잔금"
-                      amount={item.finalAmt}
-                      date={item.finalDate}
-                      invoiced={item.finalInvoiced}
-                      paidAmt={item.finalPaidAmt}
-                      onToggle={() => toggleInvoiced(item.id, 'finalInvoiced', item.finalInvoiced)}
-                    />
-
-                    <td style={{ padding: '1rem', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>
-                      <div style={{ position: 'relative' }}>
-                        <textarea 
-                          className="input-field"
-                          placeholder="재무 특이사항 입력..."
-                          style={{ width: '100%', minHeight: '80px', fontSize: '0.8rem', padding: '8px', paddingRight: '35px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
-                          value={notices[item.id] || ''}
-                          onChange={(e) => setNotices(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        />
-                        <button 
-                          onClick={() => handleSaveNotice(item.id)}
-                          style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'var(--kaic-blue)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                          title="저장"
-                        >
-                          <Save size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            {timelineGroups.overdue.length > 0 && <TimelineGroup title="기한 지남 (Overdue)" actions={timelineGroups.overdue} color="#dc2626" toggleInvoiced={toggleInvoiced} notices={notices} setNotices={setNotices} handleSaveNotice={handleSaveNotice} />}
+            {timelineGroups.today.length > 0 && <TimelineGroup title="오늘 발행 (Today)" actions={timelineGroups.today} color="#ea580c" toggleInvoiced={toggleInvoiced} notices={notices} setNotices={setNotices} handleSaveNotice={handleSaveNotice} />}
+            {timelineGroups.thisWeek.length > 0 && <TimelineGroup title="이번 주 (This Week)" actions={timelineGroups.thisWeek} color="#2563eb" toggleInvoiced={toggleInvoiced} notices={notices} setNotices={setNotices} handleSaveNotice={handleSaveNotice} />}
+            {timelineGroups.upcoming.length > 0 && <TimelineGroup title="향후 일정 (Upcoming)" actions={timelineGroups.upcoming} color="#64748b" toggleInvoiced={toggleInvoiced} notices={notices} setNotices={setNotices} handleSaveNotice={handleSaveNotice} />}
+            
+            {filteredActions.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '6rem', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                <FileText size={48} color="#cbd5e1" style={{ marginBottom: '1rem' }} />
+                <p style={{ color: '#64748b', fontWeight: 600 }}>표시할 발행 내역이 없습니다.</p>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -260,22 +289,40 @@ export default function InvoiceMgmt() {
   );
 }
 
-/** 마일스톤 셀 컴포넌트 */
-function MilestoneCell({ amount, date, invoiced, paidAmt, onToggle }: any) {
-  if (!amount || amount <= 0) {
-    return (
-      <td style={{ textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>
-        <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>-</span>
-      </td>
-    );
-  }
+/** 타임라인 그룹 컴포넌트 */
+function TimelineGroup({ title, actions, color, toggleInvoiced, notices, setNotices, handleSaveNotice }: any) {
+  return (
+    <div>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1e293b', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '4px', height: '24px', background: color, borderRadius: '2px' }}></div>
+        {title}
+        <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600 }}>({actions.length})</span>
+      </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {actions.map((action: any) => (
+          <ActionCard 
+            key={`${action.id}-${action.actionLabel}`} 
+            action={action} 
+            toggleInvoiced={toggleInvoiced}
+            notices={notices}
+            setNotices={setNotices}
+            handleSaveNotice={handleSaveNotice}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
-  const isPaid = (paidAmt || 0) >= amount;
-  
+/** 개별 액션 카드 컴포넌트 */
+function ActionCard({ action, toggleInvoiced, notices, setNotices, handleSaveNotice }: any) {
+  const isPaid = action.isPaid;
+  const isInvoiced = action.isInvoiced;
+
   // D-Day 계산
   const today = new Date();
   today.setHours(0,0,0,0);
-  const targetDate = date ? new Date(date) : null;
+  const targetDate = action.targetDate ? new Date(action.targetDate) : null;
   let dDayText = '';
   let dDayColor = '#64748b';
 
@@ -284,52 +331,120 @@ function MilestoneCell({ amount, date, invoiced, paidAmt, onToggle }: any) {
     const diffTime = targetDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) {
-      dDayText = 'D-Day (오늘)';
-      dDayColor = '#dc2626';
-    } else if (diffDays < 0) {
-      dDayText = `D+${Math.abs(diffDays)} (지남)`;
-      dDayColor = '#991b1b';
-    } else {
-      dDayText = `D-${diffDays}`;
-      if (diffDays <= 3) dDayColor = '#ea580c';
-      else dDayColor = '#2563eb';
-    }
+    if (diffDays === 0) { dDayText = 'D-Day (오늘)'; dDayColor = '#dc2626'; }
+    else if (diffDays < 0) { dDayText = `D+${Math.abs(diffDays)} (지남)`; dDayColor = '#991b1b'; }
+    else { dDayText = `D-${diffDays}`; dDayColor = diffDays <= 3 ? '#ea580c' : '#2563eb'; }
   }
 
   return (
-    <td style={{ padding: '0.75rem', borderRight: '1px solid #f1f5f9' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-        <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#1e293b' }}>
-          {amount.toLocaleString()}원
+    <div style={{ 
+      background: 'white', 
+      borderRadius: '20px', 
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
+      border: '1px solid #e2e8f0',
+      padding: '1.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '2rem',
+      transition: 'all 0.2s ease',
+      position: 'relative',
+      overflow: 'hidden'
+    }} className="hover-card">
+      {/* 1. 날짜 섹션 */}
+      <div style={{ minWidth: '120px', textAlign: 'center', borderRight: '1px solid #f1f5f9', paddingRight: '1.5rem' }}>
+        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1e293b' }}>{action.targetDate || '일정미정'}</div>
+        <div style={{ fontSize: '0.85rem', fontWeight: 800, color: dDayColor, marginTop: '4px' }}>{dDayText}</div>
+        <div style={{ 
+          marginTop: '8px', 
+          fontSize: '0.75rem', 
+          fontWeight: 900, 
+          padding: '4px 10px', 
+          borderRadius: '8px', 
+          background: action.actionLabel === '선금' ? '#eff6ff' : action.actionLabel === '중도금' ? '#faf5ff' : '#f0fdf4',
+          color: action.actionLabel === '선금' ? '#1d4ed8' : action.actionLabel === '중도금' ? '#7e22ce' : '#15803d',
+          display: 'inline-block'
+        }}>
+          {action.actionLabel}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>{date || '일정미정'}</div>
-          {date && <div style={{ fontSize: '0.7rem', fontWeight: 800, color: dDayColor }}>{dDayText}</div>}
+      </div>
+
+      {/* 2. 업체 정보 섹션 */}
+      <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--kaic-blue)', background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>{action.barcode}</span>
+          <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#1e293b' }}>{action.clientId}</h4>
+          {action.bizLicenseUrl && (
+            <button onClick={() => window.open(action.bizLicenseUrl, '_blank')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4 }}>
+              <FileCheck size={20} color="#2563eb" />
+            </button>
+          )}
         </div>
-        
+        <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Phone size={14} /> {action.phone || 'N/A'}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Mail size={14} /> {action.email || 'N/A'}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#1e293b' }}>
+            <strong>{action.clientName} 담당</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. 금액 및 상태 버튼 */}
+      <div style={{ textAlign: 'right', minWidth: '180px' }}>
+        <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1e293b', marginBottom: '10px' }}>
+          {action.amount?.toLocaleString()}원
+        </div>
         <button 
-          onClick={onToggle}
+          onClick={() => toggleInvoiced(action.id, action.actionKey, action.isInvoiced)}
           disabled={isPaid}
           style={{
-            marginTop: '4px',
-            padding: '6px 14px',
-            borderRadius: '9999px',
-            fontSize: '0.75rem',
+            padding: '10px 24px',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
             fontWeight: 800,
             cursor: isPaid ? 'default' : 'pointer',
             border: 'none',
-            background: isPaid ? '#ecfdf5' : invoiced ? '#eff6ff' : '#fef2f2',
-            color: isPaid ? '#059669' : invoiced ? '#2563eb' : '#dc2626',
-            width: '90px',
-            textAlign: 'center',
+            background: isPaid ? '#ecfdf5' : isInvoiced ? '#eff6ff' : '#fef2f2',
+            color: isPaid ? '#059669' : isInvoiced ? '#2563eb' : '#dc2626',
+            width: '100%',
             transition: 'all 0.2s',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
           }}
         >
-          {isPaid ? '입금마감' : invoiced ? '발행완료' : '발행필요'}
+          {isPaid ? '입금마감' : isInvoiced ? '발급완료' : '세금계산서 발급하기'}
         </button>
       </div>
-    </td>
+
+      {/* 4. Notice 입력칸 (오른쪽 사이드) */}
+      <div style={{ width: '250px', marginLeft: '1rem', position: 'relative' }}>
+        <textarea 
+          placeholder="재무 특이사항 입력..."
+          style={{ 
+            width: '100%', 
+            minHeight: '86px', 
+            fontSize: '0.8rem', 
+            padding: '10px', 
+            paddingRight: '35px',
+            borderRadius: '12px', 
+            border: '1px solid #e2e8f0', 
+            background: '#f8fafc',
+            resize: 'none',
+            fontFamily: 'inherit'
+          }}
+          value={notices[action.id] || ''}
+          onChange={(e) => setNotices((prev: any) => ({ ...prev, [action.id]: e.target.value }))}
+        />
+        <button 
+          onClick={() => handleSaveNotice(action.id)}
+          style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'var(--kaic-blue)', color: 'white', border: 'none', borderRadius: '6px', padding: '6px', cursor: 'pointer' }}
+          title="메모 저장"
+        >
+          <Save size={14} />
+        </button>
+      </div>
+    </div>
   );
 }
