@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, Search, ExternalLink, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { FileText, Search, ExternalLink, CheckCircle2, AlertCircle, Clock, Phone, Mail, FileCheck, Save } from 'lucide-react';
 import { apiClient } from '../api/client';
 
 /**
@@ -12,6 +12,7 @@ export default function InvoiceMgmt() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [notices, setNotices] = useState<Record<string, string>>({});
 
   const fetchData = async () => {
     try {
@@ -23,6 +24,12 @@ export default function InvoiceMgmt() {
         i.status !== 'DISPOSED'
       );
       setData(financialItems);
+      // Initialize notices from data
+      const noticeMap: Record<string, string> = {};
+      financialItems.forEach((item: any) => {
+        noticeMap[item.id] = item.financeNotice || '';
+      });
+      setNotices(noticeMap);
     } catch (err) {
       console.error(err);
     } finally {
@@ -41,6 +48,17 @@ export default function InvoiceMgmt() {
       fetchData();
     } catch (err: any) {
       alert('상태 변경 실패: ' + err.message);
+    }
+  };
+
+  /** 재무 메모 저장 */
+  const handleSaveNotice = async (sampleId: string) => {
+    try {
+      await apiClient.receptions.update(sampleId, { financeNotice: notices[sampleId] });
+      alert('메모가 저장되었습니다.');
+      fetchData();
+    } catch (err: any) {
+      alert('메모 저장 실패: ' + err.message);
     }
   };
 
@@ -81,12 +99,24 @@ export default function InvoiceMgmt() {
     <main className="dashboard-grid animate-fade-in" style={{ paddingBottom: '4rem' }}>
       <section className="card" style={{ gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <div>
-            <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FileText size={24} color="var(--kaic-navy)" />
-              세금계산서 발행 관리 (Invoice Management)
-            </h2>
-            <p style={{ color: '#64748b' }}>시험원이 입력한 청구 일정에 맞춰 세금계산서 발행 여부를 관리합니다.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div>
+              <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <FileText size={24} color="var(--kaic-navy)" />
+                세금계산서 발행 관리 (Invoice Management)
+              </h2>
+              <p style={{ color: '#64748b' }}>시험원이 입력한 청구 일정에 맞춰 세금계산서 발행 여부를 관리합니다.</p>
+            </div>
+            <a 
+              href="https://hometax.go.kr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', background: '#f8fafc', padding: '8px 12px', borderRadius: '12px', border: '1px solid #e2e8f0', transition: 'all 0.2s' }}
+              className="hover-card"
+            >
+              <img src="/hometax.png" alt="Hometax" style={{ height: '24px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#1e293b' }}>홈택스 바로가기</span>
+            </a>
           </div>
           <div className="search-bar" style={{ width: '300px' }}>
             <Search size={20} className="search-icon" />
@@ -133,28 +163,41 @@ export default function InvoiceMgmt() {
             <table className="data-table" style={{ borderCollapse: 'separate', borderSpacing: '0 8px' }}>
               <thead>
                 <tr style={{ background: 'transparent' }}>
-                  <th style={{ background: 'transparent', paddingLeft: '1rem' }}>의뢰기관 / 접수정보</th>
+                  <th style={{ background: 'transparent', paddingLeft: '1rem', width: '30%' }}>의뢰기관 / 접수정보</th>
                   <th style={{ background: 'transparent', textAlign: 'center' }}>선금 (착수금)</th>
                   <th style={{ background: 'transparent', textAlign: 'center' }}>중도금</th>
                   <th style={{ background: 'transparent', textAlign: 'center' }}>잔금</th>
+                  <th style={{ background: 'transparent', textAlign: 'center', width: '25%' }}>재무 관리자 Notice</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map(item => (
                   <tr key={item.id} style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <td style={{ padding: '1.25rem 1rem', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                           <button 
-                             onClick={() => item.bizLicenseUrl && window.open(item.bizLicenseUrl, '_blank')}
-                             style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b', border: 'none', background: 'none', cursor: 'pointer', padding: 0, textDecoration: item.bizLicenseUrl ? 'underline' : 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-                             disabled={!item.bizLicenseUrl}
-                             title={item.bizLicenseUrl ? "사업자등록증 보기" : "사업자등록증 미업로드"}
-                           >
-                             {item.clientId} {item.bizLicenseUrl && <ExternalLink size={14} color="#64748b" />}
-                           </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: 900, color: 'var(--kaic-blue)', background: '#eff6ff', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>{item.barcode}</span>
+                          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>{item.clientId}</h3>
+                          {item.bizLicenseUrl && (
+                            <button 
+                              onClick={() => window.open(item.bizLicenseUrl, '_blank')}
+                              style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
+                              title="사업자등록증 보기"
+                            >
+                              <FileCheck size={18} color="#2563eb" />
+                            </button>
+                          )}
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{item.barcode} | {item.clientName}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>
+                          <span>{item.clientName} 담당자</span>
+                          <span style={{ color: '#cbd5e1' }}>|</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Phone size={14} /> {item.phone || '연락처없음'}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#64748b' }}>
+                          <Mail size={14} /> {item.email || '이메일없음'}
+                        </div>
                       </div>
                     </td>
 
@@ -186,8 +229,26 @@ export default function InvoiceMgmt() {
                       invoiced={item.finalInvoiced}
                       paidAmt={item.finalPaidAmt}
                       onToggle={() => toggleInvoiced(item.id, 'finalInvoiced', item.finalInvoiced)}
-                      isLast
                     />
+
+                    <td style={{ padding: '1rem', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>
+                      <div style={{ position: 'relative' }}>
+                        <textarea 
+                          className="input-field"
+                          placeholder="재무 특이사항 입력..."
+                          style={{ width: '100%', minHeight: '80px', fontSize: '0.8rem', padding: '8px', paddingRight: '35px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
+                          value={notices[item.id] || ''}
+                          onChange={(e) => setNotices(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        />
+                        <button 
+                          onClick={() => handleSaveNotice(item.id)}
+                          style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'var(--kaic-blue)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="저장"
+                        >
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -200,10 +261,10 @@ export default function InvoiceMgmt() {
 }
 
 /** 마일스톤 셀 컴포넌트 */
-function MilestoneCell({ amount, date, invoiced, paidAmt, onToggle, isLast = false }: any) {
+function MilestoneCell({ amount, date, invoiced, paidAmt, onToggle }: any) {
   if (!amount || amount <= 0) {
     return (
-      <td style={{ textAlign: 'center', borderRight: isLast ? 'none' : '1px solid #f1f5f9' }}>
+      <td style={{ textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>
         <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>-</span>
       </td>
     );
@@ -211,29 +272,59 @@ function MilestoneCell({ amount, date, invoiced, paidAmt, onToggle, isLast = fal
 
   const isPaid = (paidAmt || 0) >= amount;
   
+  // D-Day 계산
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const targetDate = date ? new Date(date) : null;
+  let dDayText = '';
+  let dDayColor = '#64748b';
+
+  if (targetDate) {
+    targetDate.setHours(0,0,0,0);
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      dDayText = 'D-Day (오늘)';
+      dDayColor = '#dc2626';
+    } else if (diffDays < 0) {
+      dDayText = `D+${Math.abs(diffDays)} (지남)`;
+      dDayColor = '#991b1b';
+    } else {
+      dDayText = `D-${diffDays}`;
+      if (diffDays <= 3) dDayColor = '#ea580c';
+      else dDayColor = '#2563eb';
+    }
+  }
+
   return (
-    <td style={{ padding: '0.75rem', borderRight: isLast ? 'none' : '1px solid #f1f5f9', borderTopRightRadius: isLast ? '12px' : 0, borderBottomRightRadius: isLast ? '12px' : 0 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>
+    <td style={{ padding: '0.75rem', borderRight: '1px solid #f1f5f9' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+        <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#1e293b' }}>
           {amount.toLocaleString()}원
         </div>
-        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{date || '일정미정'}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>{date || '일정미정'}</div>
+          {date && <div style={{ fontSize: '0.7rem', fontWeight: 800, color: dDayColor }}>{dDayText}</div>}
+        </div>
         
         <button 
           onClick={onToggle}
           disabled={isPaid}
           style={{
-            padding: '4px 10px',
+            marginTop: '4px',
+            padding: '6px 14px',
             borderRadius: '9999px',
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             fontWeight: 800,
             cursor: isPaid ? 'default' : 'pointer',
             border: 'none',
             background: isPaid ? '#ecfdf5' : invoiced ? '#eff6ff' : '#fef2f2',
             color: isPaid ? '#059669' : invoiced ? '#2563eb' : '#dc2626',
-            width: '80px',
+            width: '90px',
             textAlign: 'center',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
           }}
         >
           {isPaid ? '입금마감' : invoiced ? '발행완료' : '발행필요'}
